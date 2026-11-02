@@ -1,0 +1,10 @@
+{
+  "@@locale": "id",
+  "appName": "Money Tracker",
+  "tabHome": "Beranda",
+  "tabTransactions": "Transaksi",
+  "tabAccounts": "Akun",
+  "tabBudget": "Budget",
+  "tabMore": "Lainnya",
+  "placeholderComingSoon": "Segera hadir"
+}

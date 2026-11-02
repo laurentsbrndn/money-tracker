@@ -1,0 +1,13 @@
+swagger_parser:
+  schema_path: ../contracts/openapi.yaml
+  output_directory: lib/core/network/generated
+  language: dart
+  client_postfix: Api
+  put_clients_in_folder: true
+  json_serializer: json_serializable
+  use_freezed3: false
+  freezed: false
+  root_client: true
+  root_client_name: MoneyTrackerApi
+  enums_to_json: true
+  unknown_enum_value: true

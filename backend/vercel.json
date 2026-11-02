@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "go",
+  "regions": ["sin1"],
+  "crons": [
+    { "path": "/v1/internal/cron/recurring", "schedule": "0 18 * * *" },
+    { "path": "/v1/internal/cron/maintenance", "schedule": "30 18 * * *" }
+  ]
+}

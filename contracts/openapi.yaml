@@ -1,0 +1,1961 @@
+openapi: 3.1.0
+info:
+  title: Money Tracker API
+  version: 1.0.0
+  description: |
+    Sumber kebenaran API Money Tracker. Ringkasan teks ada di `docs/API.md`,
+    protokol sinkronisasi di `docs/SYNC_PROTOCOL.md`.
+
+    Konvensi: JSON UTF-8 `snake_case`; uang integer rupiah; timestamp RFC 3339 UTC;
+    tanggal `YYYY-MM-DD`; bulan `YYYY-MM`. Semua error memakai `application/problem+json`.
+
+    **Header identitas client.** Semua endpoint yang dipanggil app (`/v1/auth/*`, `/v1/me*`,
+    `/v1/sync/*`, `/v1/reports/*`) mewajibkan `X-Device-ID` (ID instalasi, 1-64 karakter),
+    `X-Platform` (`android` atau `ios`), dan `X-App-Version` (semver, contoh `1.0.0`);
+    `X-Request-ID` opsional. `X-Device-Name` (maksimal 100 karakter) opsional dan dibaca
+    saat register, login, dan login OAuth untuk menamai perangkat. Header ini tidak
+    dideklarasikan per operasi: client menambahkannya lewat interceptor/middleware HTTP.
+    Header yang hilang atau tidak valid dijawab `422` (`code = validation`), dan versi di
+    bawah minimum dijawab `426` (`upgrade_required`). Pengecualian: `/healthz`, webhook
+    RevenueCat, dan endpoint cron `/v1/internal/cron/*`. Lihat `docs/API.md` §1.
+servers:
+  - url: https://{project}.vercel.app
+    description: Production
+    variables:
+      project:
+        default: money-tracker
+  - url: http://localhost:8080
+    description: Lokal
+
+tags:
+  - name: auth
+    description: Registrasi, login, token, verifikasi email, reset password
+  - name: me
+    description: Profil dan penghapusan akun
+  - name: sync
+    description: Push/pull offline-first
+  - name: reports
+    description: Laporan bulanan dan tren
+  - name: billing
+    description: Entitlement dan webhook RevenueCat
+  - name: internal
+    description: Endpoint cron (Vercel Cron)
+  - name: health
+    description: Cek kesehatan
+
+security:
+  - bearerAuth: []
+
+paths:
+  /healthz:
+    get:
+      tags: [health]
+      operationId: getHealth
+      summary: Cek kesehatan (database, timeout maksimal 2 detik)
+      security: []
+      responses:
+        "200":
+          description: Database terjangkau
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: Database tidak terjangkau (tanpa detail error)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /v1/auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Daftar dengan email dan password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Terdaftar; kode verifikasi dikirim ke email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "409":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Login dengan email dan password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "423":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/oauth/apple:
+    post:
+      tags: [auth]
+      operationId: loginWithApple
+      summary: Login atau daftar dengan Apple
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppleLoginRequest"
+      responses:
+        "200":
+          description: Berhasil (`is_new_user` true bila user baru)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "409":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/oauth/google:
+    post:
+      tags: [auth]
+      operationId: loginWithGoogle
+      summary: Login atau daftar dengan Google
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleLoginRequest"
+      responses:
+        "200":
+          description: Berhasil (`is_new_user` true bila user baru)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "409":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshTokens
+      summary: Tukar refresh token dengan token baru (rotasi)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: Token baru
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Cabut refresh token
+      description: |
+        Publik. Autentikasi lewat refresh token di body (bukan Bearer), karena access token
+        bisa sudah kedaluwarsa. Token yang tidak dikenal tetap dijawab 204.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "204":
+          description: Token dicabut
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/email/verification:
+    post:
+      tags: [auth]
+      operationId: resendEmailVerification
+      summary: Kirim ulang kode verifikasi email (maks 1 per 60 detik)
+      responses:
+        "202":
+          description: Kode dikirim
+        "401":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/email/verify:
+    post:
+      tags: [auth]
+      operationId: verifyEmail
+      summary: Verifikasi email dengan kode 6 digit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyEmailRequest"
+      responses:
+        "200":
+          description: Email terverifikasi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserEnvelope"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/password/forgot:
+    post:
+      tags: [auth]
+      operationId: forgotPassword
+      summary: Minta kode reset password
+      description: Selalu 202, tidak membocorkan apakah email terdaftar.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "202":
+          description: Diterima
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/password/reset:
+    post:
+      tags: [auth]
+      operationId: resetPassword
+      summary: Reset password dengan kode; semua refresh token user dicabut
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "204":
+          description: Password diganti
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/auth/password/change:
+    post:
+      tags: [auth]
+      operationId: changePassword
+      summary: Ubah password; refresh token lain dicabut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "204":
+          description: Password diganti
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "429":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/me:
+    get:
+      tags: [me]
+      operationId: getMe
+      summary: Profil dan entitlement
+      responses:
+        "200":
+          description: Profil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+    patch:
+      tags: [me]
+      operationId: updateMe
+      summary: Ubah nama
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMeRequest"
+      responses:
+        "200":
+          description: Profil terbaru
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserEnvelope"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+    delete:
+      tags: [me]
+      operationId: deleteMe
+      summary: Minta hapus akun (status `pending_deletion`, semua token dicabut)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteMeRequest"
+      responses:
+        "202":
+          description: Penghapusan dijadwalkan
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/me/entitlements:
+    get:
+      tags: [billing]
+      operationId: getEntitlements
+      summary: Status premium
+      responses:
+        "200":
+          description: Entitlement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entitlement"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/sync/push:
+    post:
+      tags: [sync]
+      operationId: syncPush
+      summary: Kirim perubahan dari outbox
+      description: |
+        Maksimal 100 entri per request, body maksimal 1 MB. Mengirim ulang dengan
+        `Idempotency-Key` yang sama mengembalikan respons yang tersimpan.
+        Lihat `docs/SYNC_PROTOCOL.md` §8.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: UUID batch
+          schema:
+            type: string
+            maxLength: 64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushRequest"
+      responses:
+        "200":
+          description: Hasil per entri
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "413":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/sync/pull:
+    get:
+      tags: [sync]
+      operationId: syncPull
+      summary: Ambil perubahan sejak cursor
+      description: Lihat `docs/SYNC_PROTOCOL.md` §9.
+      parameters:
+        - name: since
+          in: query
+          required: true
+          description: Cursor (`server_version` terakhir yang sudah diterapkan), 0 untuk initial sync
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 500
+      responses:
+        "200":
+          description: Halaman perubahan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PullResponse"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/reports/monthly:
+    get:
+      tags: [reports]
+      operationId: getMonthlyReport
+      summary: Laporan bulanan
+      description: Paket gratis dibatasi bulan berjalan + 2 bulan sebelumnya (`history_limit`).
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+            examples: ["2026-11"]
+      responses:
+        "200":
+          description: Laporan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyReport"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "403":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/reports/trend:
+    get:
+      tags: [reports]
+      operationId: getTrendReport
+      summary: Tren bulanan (premium)
+      parameters:
+        - name: months
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [6, 12]
+            default: 6
+      responses:
+        "200":
+          description: Array per bulan
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendMonth"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "403":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "426":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/billing/webhooks/revenuecat:
+    post:
+      tags: [billing]
+      operationId: revenueCatWebhook
+      summary: Webhook RevenueCat (idempoten via `event.id`)
+      description: |
+        Event disimpan, lalu diproses. Event yang gagal diproses tetap dibalas 200 setelah
+        tersimpan, dengan `error` terisi di `billing_events`.
+      security:
+        - webhookAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevenueCatWebhook"
+      responses:
+        "200":
+          description: Diterima
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/internal/cron/recurring:
+    get:
+      tags: [internal]
+      operationId: cronRecurring
+      summary: Buat kemunculan transaksi berulang yang jatuh tempo (0 18 * * * UTC)
+      security:
+        - cronAuth: []
+      responses:
+        "200":
+          description: Selesai
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CronResult"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+  /v1/internal/cron/maintenance:
+    get:
+      tags: [internal]
+      operationId: cronMaintenance
+      summary: Bersihkan data kedaluwarsa dan hapus permanen user (30 18 * * * UTC)
+      security:
+        - cronAuth: []
+      responses:
+        "200":
+          description: Selesai
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CronResult"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "500":
+          $ref: "#/components/responses/Problem"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token JWT (HS256, 15 menit)
+    cronAuth:
+      type: http
+      scheme: bearer
+      description: "`Authorization: Bearer <CRON_SECRET>`"
+    webhookAuth:
+      type: http
+      scheme: bearer
+      description: "`Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>`"
+
+  responses:
+    Problem:
+      description: Error (RFC 9457). Kode HTTP dan `code` ada di tabel `docs/API.md` §1.2.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+
+  schemas:
+    # ---------- Umum ----------
+    Uuid:
+      type: string
+      format: uuid
+      description: UUID huruf kecil dengan tanda hubung
+    Date:
+      type: string
+      format: date
+      examples: ["2026-11-02"]
+    Timestamp:
+      type: string
+      format: date-time
+      description: RFC 3339 UTC, disarankan dengan milidetik
+      examples: ["2026-11-02T14:05:00.123Z"]
+    Rupiah:
+      type: integer
+      format: int64
+      description: Rupiah utuh
+
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok, unavailable]
+
+    CronResult:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    ProblemCode:
+      type: string
+      enum:
+        - validation
+        - unauthorized
+        - token_expired
+        - refresh_invalid
+        - refresh_reused
+        - invalid_credentials
+        - account_locked
+        - email_taken
+        - code_invalid
+        - code_expired
+        - too_many_attempts
+        - forbidden
+        - not_found
+        - premium_required
+        - history_limit
+        - payload_too_large
+        - rate_limited
+        - upgrade_required
+        - internal
+
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    Problem:
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          format: uri
+          examples: ["https://moneytracker.app/errors/validation"]
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        code:
+          $ref: "#/components/schemas/ProblemCode"
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+        retry_after_seconds:
+          type: integer
+          description: Diisi untuk `account_locked`
+        request_id:
+          type: string
+
+    # ---------- Auth & user ----------
+    User:
+      type: object
+      required: [id, name, email_verified, has_password, providers]
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        name:
+          type: string
+        email:
+          type: ["string", "null"]
+          format: email
+        email_verified:
+          type: boolean
+        has_password:
+          type: boolean
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuthProvider"
+
+    AuthProvider:
+      type: string
+      enum: [apple, google]
+
+    UserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+
+    MeResponse:
+      type: object
+      required: [user, entitlement]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        entitlement:
+          $ref: "#/components/schemas/Entitlement"
+
+    Tokens:
+      type: object
+      required: [access_token, access_expires_at, refresh_token, refresh_expires_at]
+      properties:
+        access_token:
+          type: string
+        access_expires_at:
+          $ref: "#/components/schemas/Timestamp"
+        refresh_token:
+          type: string
+        refresh_expires_at:
+          $ref: "#/components/schemas/Timestamp"
+
+    AuthResponse:
+      type: object
+      required: [user, tokens, is_new_user]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        tokens:
+          $ref: "#/components/schemas/Tokens"
+        is_new_user:
+          type: boolean
+
+    RefreshResponse:
+      type: object
+      required: [tokens]
+      properties:
+        tokens:
+          $ref: "#/components/schemas/Tokens"
+
+    RegisterRequest:
+      type: object
+      required: [name, email, password, timezone]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+        timezone:
+          type: string
+          description: Nama IANA
+          examples: ["Asia/Jakarta"]
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AppleLoginRequest:
+      type: object
+      required: [identity_token, timezone]
+      properties:
+        identity_token:
+          type: string
+        name:
+          type: string
+          description: Hanya ada saat login Apple pertama
+          maxLength: 100
+        timezone:
+          type: string
+
+    GoogleLoginRequest:
+      type: object
+      required: [id_token, timezone]
+      properties:
+        id_token:
+          type: string
+        timezone:
+          type: string
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    VerifyEmailRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: '^\d{6}$'
+
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    ResetPasswordRequest:
+      type: object
+      required: [email, code, new_password]
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^\d{6}$'
+        new_password:
+          type: string
+          minLength: 8
+          maxLength: 72
+
+    ChangePasswordRequest:
+      type: object
+      required: [current_password, new_password]
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+          minLength: 8
+          maxLength: 72
+
+    UpdateMeRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+
+    DeleteMeRequest:
+      type: object
+      required: [confirmation]
+      properties:
+        confirmation:
+          type: string
+          description: Password (user email) atau `HAPUS` (user sosial)
+
+    # ---------- Entitlement ----------
+    Entitlement:
+      type: object
+      required: [premium, expires_at, will_renew]
+      properties:
+        premium:
+          type: boolean
+        expires_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+        will_renew:
+          type: boolean
+        product_id:
+          type: string
+          description: Opsional, ada bila ada langganan
+          examples: ["premium_monthly"]
+        store:
+          type: string
+          enum: [app_store, play_store]
+          description: Opsional, ada bila ada langganan
+
+    # ---------- Enum domain ----------
+    TransactionType:
+      type: string
+      enum: [income, expense, transfer, adjustment]
+    TransactionStatus:
+      type: string
+      enum: [posted, pending_confirmation]
+    Allocation:
+      type: string
+      enum: [needs, wants, savings]
+    AccountType:
+      type: string
+      enum: [bank, e_wallet, cash, savings]
+    CategoryType:
+      type: string
+      enum: [expense, income]
+    RecurringFrequency:
+      type: string
+      enum: [daily, weekly, monthly, yearly]
+    RecurringMode:
+      type: string
+      enum: [auto, confirm]
+    Theme:
+      type: string
+      enum: [system, light, dark]
+
+    # ---------- Sync: baris entitas (tanpa user_id, server_version, server_updated_at) ----------
+    UserSettingsRow:
+      type: object
+      required:
+        - id
+        - timezone
+        - currency
+        - week_start
+        - theme
+        - daily_reminder_time
+        - reconcile_reminder_enabled
+        - budget_alert_enabled
+        - hide_amounts
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+          description: Sama dengan user_id
+        timezone:
+          type: string
+          maxLength: 64
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          examples: ["IDR"]
+        week_start:
+          type: integer
+          minimum: 1
+          maximum: 7
+        theme:
+          $ref: "#/components/schemas/Theme"
+        daily_reminder_time:
+          type: ["string", "null"]
+          pattern: '^([01]\d|2[0-3]):[0-5]\d$'
+        reconcile_reminder_enabled:
+          type: boolean
+        budget_alert_enabled:
+          type: boolean
+        hide_amounts:
+          type: boolean
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    CategoryRow:
+      type: object
+      required:
+        - id
+        - type
+        - name
+        - icon
+        - color
+        - default_allocation
+        - sort_order
+        - is_default
+        - is_hidden
+        - archived_at
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        type:
+          $ref: "#/components/schemas/CategoryType"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        icon:
+          type: string
+          maxLength: 50
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        default_allocation:
+          oneOf:
+            - $ref: "#/components/schemas/Allocation"
+            - type: "null"
+          description: Wajib untuk expense, null untuk income
+        sort_order:
+          type: integer
+        is_default:
+          type: boolean
+        is_hidden:
+          type: boolean
+        archived_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    AccountRow:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - provider_key
+        - currency
+        - opening_balance
+        - opening_date
+        - include_in_total
+        - sort_order
+        - archived_at
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        type:
+          $ref: "#/components/schemas/AccountType"
+        provider_key:
+          type: ["string", "null"]
+          maxLength: 32
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        opening_balance:
+          $ref: "#/components/schemas/Rupiah"
+        opening_date:
+          $ref: "#/components/schemas/Date"
+        include_in_total:
+          type: boolean
+        sort_order:
+          type: integer
+        archived_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    BalanceSnapshotRow:
+      type: object
+      required:
+        - id
+        - account_id
+        - snapshot_date
+        - amount
+        - note
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        account_id:
+          $ref: "#/components/schemas/Uuid"
+        snapshot_date:
+          $ref: "#/components/schemas/Date"
+        amount:
+          $ref: "#/components/schemas/Rupiah"
+        note:
+          type: ["string", "null"]
+          maxLength: 255
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    TransactionRow:
+      type: object
+      required:
+        - id
+        - type
+        - status
+        - transaction_date
+        - amount
+        - currency
+        - account_id
+        - to_account_id
+        - category_id
+        - allocation
+        - source
+        - note
+        - linked_transaction_id
+        - recurring_rule_id
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        type:
+          $ref: "#/components/schemas/TransactionType"
+        status:
+          $ref: "#/components/schemas/TransactionStatus"
+        transaction_date:
+          $ref: "#/components/schemas/Date"
+        amount:
+          $ref: "#/components/schemas/Rupiah"
+          description: |
+            > 0 untuk income/expense/transfer. Untuk adjustment ≠ 0 dan bertanda.
+            Nilai absolut maksimal 999.999.999.999.
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        account_id:
+          $ref: "#/components/schemas/Uuid"
+        to_account_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        category_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        allocation:
+          oneOf:
+            - $ref: "#/components/schemas/Allocation"
+            - type: "null"
+        source:
+          type: ["string", "null"]
+          maxLength: 100
+        note:
+          type: ["string", "null"]
+          maxLength: 255
+        linked_transaction_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        recurring_rule_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    RecurringRuleRow:
+      type: object
+      required:
+        - id
+        - type
+        - amount
+        - account_id
+        - to_account_id
+        - category_id
+        - allocation
+        - source
+        - note
+        - frequency
+        - interval_count
+        - day_of_week
+        - day_of_month
+        - month_of_year
+        - start_date
+        - end_date
+        - mode
+        - is_paused
+        - last_generated_date
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        type:
+          type: string
+          enum: [income, expense, transfer]
+        amount:
+          $ref: "#/components/schemas/Rupiah"
+        account_id:
+          $ref: "#/components/schemas/Uuid"
+        to_account_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        category_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        allocation:
+          oneOf:
+            - $ref: "#/components/schemas/Allocation"
+            - type: "null"
+        source:
+          type: ["string", "null"]
+          maxLength: 100
+        note:
+          type: ["string", "null"]
+          maxLength: 255
+        frequency:
+          $ref: "#/components/schemas/RecurringFrequency"
+        interval_count:
+          type: integer
+          minimum: 1
+          default: 1
+        day_of_week:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 7
+          description: ISO, 1 = Senin; untuk weekly
+        day_of_month:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 31
+        month_of_year:
+          type: ["integer", "null"]
+          minimum: 1
+          maximum: 12
+        start_date:
+          $ref: "#/components/schemas/Date"
+        end_date:
+          oneOf:
+            - $ref: "#/components/schemas/Date"
+            - type: "null"
+        mode:
+          $ref: "#/components/schemas/RecurringMode"
+        is_paused:
+          type: boolean
+        last_generated_date:
+          oneOf:
+            - $ref: "#/components/schemas/Date"
+            - type: "null"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    BudgetGoalRow:
+      type: object
+      required:
+        - id
+        - effective_month
+        - needs_pct
+        - wants_pct
+        - savings_pct
+        - planned_income
+        - created_at
+        - updated_at
+        - deleted_at
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+          description: UUIDv5(NS_BUDGET_GOAL, "<user_id>|<YYYY-MM>")
+        effective_month:
+          $ref: "#/components/schemas/Date"
+          description: Selalu tanggal 1
+        needs_pct:
+          type: integer
+          minimum: 0
+          maximum: 100
+        wants_pct:
+          type: integer
+          minimum: 0
+          maximum: 100
+        savings_pct:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: needs + wants + savings = 100
+        planned_income:
+          type: ["integer", "null"]
+          format: int64
+          minimum: 0
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        deleted_at:
+          oneOf:
+            - $ref: "#/components/schemas/Timestamp"
+            - type: "null"
+
+    # ---------- Sync: push ----------
+    PushChange:
+      description: |
+        Satu perubahan. Varian ditentukan oleh `entity` (discriminator); `data` bertipe baris
+        entitas itu. `data` (seluruh baris) wajib untuk `op = upsert` dan tidak ada untuk
+        `op = delete`. Kolom `user_id`, `server_version`, dan `server_updated_at` diabaikan
+        bila dikirim. Nama entitas di luar daftar dijawab server per entri sebagai
+        `rejected` `unknown_entity` (bukan 422 untuk seluruh request).
+      oneOf:
+        - $ref: "#/components/schemas/PushChangeUserSettings"
+        - $ref: "#/components/schemas/PushChangeCategory"
+        - $ref: "#/components/schemas/PushChangeAccount"
+        - $ref: "#/components/schemas/PushChangeBalanceSnapshot"
+        - $ref: "#/components/schemas/PushChangeTransaction"
+        - $ref: "#/components/schemas/PushChangeRecurringRule"
+        - $ref: "#/components/schemas/PushChangeBudgetGoal"
+      discriminator:
+        propertyName: entity
+        mapping:
+          user_settings: "#/components/schemas/PushChangeUserSettings"
+          categories: "#/components/schemas/PushChangeCategory"
+          accounts: "#/components/schemas/PushChangeAccount"
+          balance_snapshots: "#/components/schemas/PushChangeBalanceSnapshot"
+          transactions: "#/components/schemas/PushChangeTransaction"
+          recurring_rules: "#/components/schemas/PushChangeRecurringRule"
+          budget_goals: "#/components/schemas/PushChangeBudgetGoal"
+    PushChangeUserSettings:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [user_settings]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/UserSettingsRow"
+
+    PushChangeCategory:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [categories]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/CategoryRow"
+
+    PushChangeAccount:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [accounts]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/AccountRow"
+
+    PushChangeBalanceSnapshot:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [balance_snapshots]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/BalanceSnapshotRow"
+
+    PushChangeTransaction:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [transactions]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/TransactionRow"
+
+    PushChangeRecurringRule:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [recurring_rules]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/RecurringRuleRow"
+
+    PushChangeBudgetGoal:
+      type: object
+      required: [entity, op, id, updated_at]
+      properties:
+        entity:
+          type: string
+          enum: [budget_goals]
+        op:
+          type: string
+          enum: [upsert, delete]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        data:
+          $ref: "#/components/schemas/BudgetGoalRow"
+
+
+    PushRequest:
+      type: object
+      required: [changes]
+      properties:
+        changes:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/PushChange"
+
+    PushResultStatus:
+      type: string
+      enum: [applied, stale, rejected]
+
+    PushRejectCode:
+      type: string
+      enum: [validation, reference_missing, forbidden, plan_limit, unknown_entity]
+
+    PushError:
+      type: object
+      required: [code, message, retryable]
+      properties:
+        code:
+          $ref: "#/components/schemas/PushRejectCode"
+        message:
+          type: string
+        retryable:
+          type: boolean
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+
+    PushResult:
+      type: object
+      required: [entity, id, status]
+      properties:
+        entity:
+          type: string
+        id:
+          $ref: "#/components/schemas/Uuid"
+        status:
+          $ref: "#/components/schemas/PushResultStatus"
+        server_version:
+          type: ["integer", "null"]
+          format: int64
+          description: Null untuk `delete` no-op (baris tidak ada di server) dan untuk `rejected`
+        error:
+          $ref: "#/components/schemas/PushError"
+
+    PushResponse:
+      type: object
+      required: [results, server_time]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/PushResult"
+        server_time:
+          $ref: "#/components/schemas/Timestamp"
+
+    # ---------- Sync: pull ----------
+    PullChange:
+      description: |
+        Varian ditentukan oleh `entity` (discriminator). `data` berisi seluruh baris termasuk
+        tombstone (`deleted_at` terisi), tanpa `user_id`, `server_version`, dan
+        `server_updated_at`. `server_version` hanya ada di envelope ini.
+      oneOf:
+        - $ref: "#/components/schemas/PullChangeUserSettings"
+        - $ref: "#/components/schemas/PullChangeCategory"
+        - $ref: "#/components/schemas/PullChangeAccount"
+        - $ref: "#/components/schemas/PullChangeBalanceSnapshot"
+        - $ref: "#/components/schemas/PullChangeTransaction"
+        - $ref: "#/components/schemas/PullChangeRecurringRule"
+        - $ref: "#/components/schemas/PullChangeBudgetGoal"
+      discriminator:
+        propertyName: entity
+        mapping:
+          user_settings: "#/components/schemas/PullChangeUserSettings"
+          categories: "#/components/schemas/PullChangeCategory"
+          accounts: "#/components/schemas/PullChangeAccount"
+          balance_snapshots: "#/components/schemas/PullChangeBalanceSnapshot"
+          transactions: "#/components/schemas/PullChangeTransaction"
+          recurring_rules: "#/components/schemas/PullChangeRecurringRule"
+          budget_goals: "#/components/schemas/PullChangeBudgetGoal"
+    PullChangeUserSettings:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [user_settings]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/UserSettingsRow"
+
+    PullChangeCategory:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [categories]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/CategoryRow"
+
+    PullChangeAccount:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [accounts]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/AccountRow"
+
+    PullChangeBalanceSnapshot:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [balance_snapshots]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/BalanceSnapshotRow"
+
+    PullChangeTransaction:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [transactions]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/TransactionRow"
+
+    PullChangeRecurringRule:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [recurring_rules]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/RecurringRuleRow"
+
+    PullChangeBudgetGoal:
+      type: object
+      required: [entity, id, server_version, data]
+      properties:
+        entity:
+          type: string
+          enum: [budget_goals]
+        id:
+          $ref: "#/components/schemas/Uuid"
+        server_version:
+          type: integer
+          format: int64
+        data:
+          $ref: "#/components/schemas/BudgetGoalRow"
+
+
+    PullMeta:
+      type: object
+      required: [entitlement, server_time]
+      properties:
+        entitlement:
+          $ref: "#/components/schemas/Entitlement"
+        server_time:
+          $ref: "#/components/schemas/Timestamp"
+
+    PullResponse:
+      type: object
+      required: [changes, next_cursor, has_more, meta]
+      properties:
+        changes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PullChange"
+        next_cursor:
+          type: integer
+          format: int64
+        has_more:
+          type: boolean
+        meta:
+          $ref: "#/components/schemas/PullMeta"
+
+    # ---------- Laporan ----------
+    MonthlySummary:
+      type: object
+      required: [income, expense, surplus, opening_total]
+      properties:
+        income:
+          $ref: "#/components/schemas/Rupiah"
+        expense:
+          $ref: "#/components/schemas/Rupiah"
+        surplus:
+          $ref: "#/components/schemas/Rupiah"
+        opening_total:
+          $ref: "#/components/schemas/Rupiah"
+
+    ReconciliationStatus:
+      type: string
+      enum: [matched, mismatch, stale]
+
+    AccountReconciliation:
+      type: object
+      required:
+        - id
+        - expected_balance
+        - latest_snapshot_amount
+        - latest_snapshot_date
+        - diff
+        - status
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        expected_balance:
+          $ref: "#/components/schemas/Rupiah"
+        latest_snapshot_amount:
+          $ref: "#/components/schemas/Rupiah"
+        latest_snapshot_date:
+          $ref: "#/components/schemas/Date"
+        diff:
+          $ref: "#/components/schemas/Rupiah"
+        status:
+          $ref: "#/components/schemas/ReconciliationStatus"
+
+    ReportTotals:
+      type: object
+      required: [expected_total, actual_accounts, actual_cash, actual_total, diff_total]
+      properties:
+        expected_total:
+          $ref: "#/components/schemas/Rupiah"
+        actual_accounts:
+          $ref: "#/components/schemas/Rupiah"
+        actual_cash:
+          $ref: "#/components/schemas/Rupiah"
+        actual_total:
+          $ref: "#/components/schemas/Rupiah"
+        diff_total:
+          $ref: "#/components/schemas/Rupiah"
+
+    BudgetAllocation:
+      type: object
+      required: [goal_amount, actual, actual_bp, remaining]
+      properties:
+        goal_amount:
+          $ref: "#/components/schemas/Rupiah"
+        actual:
+          $ref: "#/components/schemas/Rupiah"
+        actual_bp:
+          type: ["integer", "null"]
+          description: Basis point (1941 = 19,41%); null bila basis = 0
+        remaining:
+          $ref: "#/components/schemas/Rupiah"
+
+    ReportBudget:
+      type: object
+      required: [basis, needs, wants, savings, unallocated]
+      properties:
+        basis:
+          $ref: "#/components/schemas/Rupiah"
+        needs:
+          $ref: "#/components/schemas/BudgetAllocation"
+        wants:
+          $ref: "#/components/schemas/BudgetAllocation"
+        savings:
+          $ref: "#/components/schemas/BudgetAllocation"
+        unallocated:
+          $ref: "#/components/schemas/Rupiah"
+
+    CategoryTotal:
+      type: object
+      required: [category_id, amount]
+      properties:
+        category_id:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+          description: Null untuk income tanpa kategori
+        amount:
+          $ref: "#/components/schemas/Rupiah"
+
+    MonthlyReport:
+      type: object
+      required:
+        - monthly_summary
+        - accounts
+        - totals
+        - budget
+        - expense_by_category
+        - income_by_category
+      properties:
+        monthly_summary:
+          $ref: "#/components/schemas/MonthlySummary"
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountReconciliation"
+        totals:
+          $ref: "#/components/schemas/ReportTotals"
+        budget:
+          $ref: "#/components/schemas/ReportBudget"
+        expense_by_category:
+          type: array
+          description: Urut nominal menurun
+          items:
+            $ref: "#/components/schemas/CategoryTotal"
+        income_by_category:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryTotal"
+
+    TrendMonth:
+      type: object
+      required: [month, income, expense, surplus, savings, adjustments]
+      properties:
+        month:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        income:
+          $ref: "#/components/schemas/Rupiah"
+        expense:
+          $ref: "#/components/schemas/Rupiah"
+        surplus:
+          $ref: "#/components/schemas/Rupiah"
+        savings:
+          $ref: "#/components/schemas/Rupiah"
+        adjustments:
+          $ref: "#/components/schemas/Rupiah"
+
+    # ---------- Webhook RevenueCat ----------
+    RevenueCatWebhook:
+      type: object
+      required: [event]
+      properties:
+        api_version:
+          type: string
+        event:
+          type: object
+          required: [id, type, app_user_id, event_timestamp_ms]
+          additionalProperties: true
+          properties:
+            id:
+              type: string
+              description: ID event (kunci idempotensi)
+            type:
+              type: string
+              examples: [INITIAL_PURCHASE, RENEWAL, EXPIRATION]
+            app_user_id:
+              type: string
+              description: User ID server, atau `$RCAnonymousID:…` (disimpan, tidak diproses)
+            event_timestamp_ms:
+              type: integer
+              format: int64

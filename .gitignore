@@ -1,0 +1,41 @@
+# Secrets & env
+.env
+.env.*
+!.env.example
+app_android/env/*.json
+!app_android/env/example.json
+app_ios/Config/Secrets.xcconfig
+
+# Go
+backend/bin/
+backend/coverage.out
+
+# Flutter / Android
+app_android/.dart_tool/
+app_android/build/
+app_android/.flutter-plugins
+app_android/.flutter-plugins-dependencies
+app_android/android/.gradle/
+app_android/android/local.properties
+app_android/android/key.properties
+*.jks
+*.keystore
+
+# iOS / Xcode (project dibuat ulang oleh XcodeGen)
+app_ios/*.xcodeproj
+app_ios/build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Flutter generated code (regenerate: lihat bagian Perintah di CLAUDE.md)
+app_android/lib/l10n/generated/
+app_android/lib/core/network/generated/
+app_android/**/*.g.dart
+app_android/**/*.freezed.dart
