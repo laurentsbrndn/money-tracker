@@ -32,16 +32,6 @@ bool canViewMonth(Ref ref, YearMonth month) {
   return premium || month.compareTo(oldestFreeMonth(ref)) >= 0;
 }
 
-/// Live transactions of one month. Declared by hand because it returns a
-/// Drift row type.
-final monthTransactionsProvider = StreamProvider.autoDispose
-    .family<List<TransactionRow>, YearMonth>(
-      (ref, month) => ref
-          .watch(appDatabaseProvider)
-          .transactionsDao
-          .watchBetween(month.first, month.last),
-    );
-
 /// The five newest transactions.
 final recentTransactionsProvider =
     StreamProvider.autoDispose<List<TransactionRow>>(
@@ -52,10 +42,14 @@ final recentTransactionsProvider =
     );
 
 /// Income, expense and surplus of [month] from `core/domain_rules`.
+///
+/// The formulas pick the month themselves, and the opening total (the expected
+/// total at the end of the previous month) needs every earlier transaction, so
+/// the whole history is passed, not only the transactions of [month].
 @riverpod
 Future<MonthlySummary> monthlySummary(Ref ref, YearMonth month) async {
   final accounts = await ref.watch(allAccountsProvider.future);
-  final transactions = await ref.watch(monthTransactionsProvider(month).future);
+  final transactions = await ref.watch(allTransactionsProvider.future);
   return computeMonthlySummary(
     [for (final account in accounts) account.toDomain()],
     [for (final row in transactions) row.toDomain()],

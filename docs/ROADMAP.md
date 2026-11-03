@@ -116,12 +116,12 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 - [ ] (manual) User menguji skenario S8 dan S12
 
 ### Flutter
-- [ ] Catatan: perbaiki `openingTotal` pada `monthlySummary` dashboard Flutter sebelum laporan tren (hanya transaksi bulan terpilih yang diberikan ke `computeMonthlySummary`, sehingga `openingTotal` salah). iOS sudah benar sejak Fase 2
-- [ ] RevenueCat (`logIn`/`logOut`), paywall, layar langganan, pulihkan pembelian
-- [ ] Entitlement provider + toleransi offline 3 hari + UX batas paket (`plan_limit`)
-- [ ] Transaksi berulang: kelola aturan, generator lokal, konfirmasi pending
-- [ ] Laporan: per kategori, sumber income, tren, perbandingan, selisih tidak tercatat
-- [ ] Export CSV/PDF (minta persetujuan library dulu)
+- [x] Catatan: perbaiki `openingTotal` pada `monthlySummary` dashboard Flutter sebelum laporan tren (hanya transaksi bulan terpilih yang diberikan ke `computeMonthlySummary`, sehingga `openingTotal` salah). iOS sudah benar sejak Fase 2
+- [x] RevenueCat (`logIn`/`logOut`), paywall, layar langganan, pulihkan pembelian
+- [x] Entitlement provider + toleransi offline 3 hari + UX batas paket (`plan_limit`)
+- [x] Transaksi berulang: kelola aturan, generator lokal, konfirmasi pending
+- [x] Laporan: per kategori, sumber income, tren, perbandingan, selisih tidak tercatat
+- [x] Export CSV/PDF (`pdf` dan `share_plus` disetujui; CSV ditulis manual)
 
 ### iOS
 - [ ] Semua item Flutter Fase 3 dengan padanan iOS

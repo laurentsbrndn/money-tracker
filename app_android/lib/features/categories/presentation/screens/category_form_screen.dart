@@ -7,6 +7,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/network/error_messages.dart';
 import '../../../../core/theme/category_icons.dart';
 import '../../../../core/validation/validation_exception.dart';
+import '../../../../core/widgets/plan_limit_snack_bar.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../application/categories_providers.dart';
 
@@ -102,7 +103,15 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
     } on ValidationException catch (error) {
       _fail(messenger, error.message(l10n));
     } on PlanLimitException {
-      _fail(messenger, l10n.planLimitCategories);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+      showPlanLimitSnackBar(
+        messenger,
+        router,
+        l10n,
+        l10n.planLimitCategories,
+      );
     } on Object catch (error) {
       _fail(messenger, describeError(error, l10n));
     }

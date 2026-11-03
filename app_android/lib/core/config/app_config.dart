@@ -10,4 +10,9 @@ abstract final class AppConfig {
   static const String googleServerClientId = String.fromEnvironment(
     'GOOGLE_SERVER_CLIENT_ID',
   );
+
+  /// Terms of service and privacy policy pages, shown on the paywall. Empty
+  /// hides the links.
+  static const String termsUrl = String.fromEnvironment('TERMS_URL');
+  static const String privacyUrl = String.fromEnvironment('PRIVACY_URL');
 }

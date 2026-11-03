@@ -15,11 +15,16 @@ import '../../features/budget/presentation/screens/budget_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/categories/presentation/screens/category_form_screen.dart';
 import '../../features/dashboard/presentation/screens/home_screen.dart';
+import '../../features/export/presentation/screens/export_screen.dart';
 import '../../features/onboarding/presentation/screens/initial_sync_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/setup_screen.dart';
 import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import '../../features/reconciliation/presentation/screens/reconcile_screen.dart';
+import '../../features/recurring/domain/recurring_prefill.dart';
+import '../../features/recurring/presentation/screens/recurring_form_screen.dart';
+import '../../features/recurring/presentation/screens/recurring_screen.dart';
+import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/settings/presentation/screens/change_password_screen.dart';
 import '../../features/settings/presentation/screens/delete_account_screen.dart';
 import '../../features/settings/presentation/screens/more_screen.dart';
@@ -30,6 +35,8 @@ import '../../features/settings/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/security_screen.dart';
 import '../../features/settings/presentation/screens/sync_settings_screen.dart';
 import '../../features/settings/presentation/screens/upgrade_required_screen.dart';
+import '../../features/subscription/presentation/screens/paywall_screen.dart';
+import '../../features/subscription/presentation/screens/subscription_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_form_screen.dart';
 import '../../features/transactions/presentation/screens/transactions_screen.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -148,6 +155,41 @@ GoRouter appRouter(Ref ref) {
         path: '/more/categories/:id',
         builder: (context, state) =>
             CategoryFormScreen(categoryId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: RoutePaths.recurring,
+        builder: (context, state) => const RecurringScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.recurringNew,
+        builder: (context, state) => RecurringFormScreen(
+          prefill: state.extra is RecurringPrefill
+              ? state.extra! as RecurringPrefill
+              : null,
+        ),
+      ),
+      GoRoute(
+        path: RoutePaths.recurringEditPattern,
+        builder: (context, state) =>
+            RecurringFormScreen(ruleId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: RoutePaths.export,
+        builder: (context, state) => const ExportScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.reports,
+        builder: (context, state) => const ReportsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.subscription,
+        builder: (context, state) => const SubscriptionScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.paywall,
+        builder: (context, state) => PaywallScreen(
+          restoreOnOpen: state.uri.queryParameters['restore'] == '1',
+        ),
       ),
       GoRoute(
         path: RoutePaths.settingsProfile,

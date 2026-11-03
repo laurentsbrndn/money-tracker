@@ -91,6 +91,7 @@ class Transaction {
     this.toAccountId,
     this.allocation,
     this.categoryId,
+    this.source,
   });
 
   final String id;
@@ -104,6 +105,9 @@ class Transaction {
 
   /// Only set for expenses and income; used by the per-category breakdown.
   final String? categoryId;
+
+  /// "Dari mana" of an income; used by the per-source report.
+  final String? source;
   final bool deleted;
 }
 

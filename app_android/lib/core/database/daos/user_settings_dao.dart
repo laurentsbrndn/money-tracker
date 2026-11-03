@@ -15,10 +15,11 @@ class UserSettingsDao extends DatabaseAccessor<AppDatabase>
       (select(userSettings)..where((t) => t.deletedAt.isNull())).watch();
 
   /// The user's single live row, if it has been pulled.
-  Future<UserSettingsRow?> current() => (select(userSettings)
-        ..where((t) => t.deletedAt.isNull())
-        ..limit(1))
-      .getSingleOrNull();
+  Future<UserSettingsRow?> current() =>
+      (select(userSettings)
+            ..where((t) => t.deletedAt.isNull())
+            ..limit(1))
+          .getSingleOrNull();
 
   Future<UserSettingsRow?> findById(String id) =>
       (select(userSettings)..where((t) => t.id.equals(id))).getSingleOrNull();

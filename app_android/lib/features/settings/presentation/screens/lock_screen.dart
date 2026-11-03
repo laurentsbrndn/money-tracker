@@ -57,12 +57,16 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       return;
     }
     final reason = AppLocalizations.of(context).lockBiometricReason;
-    await ref.read(appLockControllerProvider.notifier).unlockWithBiometric(reason);
+    await ref
+        .read(appLockControllerProvider.notifier)
+        .unlockWithBiometric(reason);
   }
 
   Future<void> _submit(String pin) async {
     setState(() => _checking = true);
-    final result = await ref.read(appLockControllerProvider.notifier).unlock(pin);
+    final result = await ref
+        .read(appLockControllerProvider.notifier)
+        .unlock(pin);
     if (!mounted) {
       return;
     }
@@ -119,9 +123,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
-                  onPressed: () => unawaited(
-                    ref.read(settingsActionsProvider).logout(),
-                  ),
+                  onPressed: () =>
+                      unawaited(ref.read(settingsActionsProvider).logout()),
                   child: Text(l10n.logoutConfirm),
                 ),
                 TextButton(
@@ -143,7 +146,11 @@ class _LockScreenState extends ConsumerState<LockScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.lock_outline, size: 48, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.lock_outline,
+                  size: 48,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(height: 12),
                 Text(l10n.lockTitle, style: theme.textTheme.titleLarge),
                 const SizedBox(height: 4),

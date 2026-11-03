@@ -106,7 +106,9 @@ class NotificationCoordinator {
       return;
     }
     _launchPayloadConsumed = true;
-    final payload = await _ref.read(notificationServiceProvider).launchPayload();
+    final payload = await _ref
+        .read(notificationServiceProvider)
+        .launchPayload();
     if (payload != null) {
       _open(payload);
     }
@@ -133,6 +135,11 @@ class NotificationCoordinator {
         }
       }
       router.go(RoutePaths.budget);
+      return;
+    }
+    if (uri.path == RoutePaths.transactions) {
+      // A tab of the shell, not a screen on top of it.
+      router.go(RoutePaths.transactions);
       return;
     }
     unawaited(router.push<void>(uri.path));

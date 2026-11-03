@@ -80,7 +80,9 @@ class _NotificationSettingsScreenState
     final hh = picked.hour.toString().padLeft(2, '0');
     final mm = picked.minute.toString().padLeft(2, '0');
     await _run(
-      () => ref.read(userSettingsRepositoryProvider).setDailyReminderTime('$hh:$mm'),
+      () => ref
+          .read(userSettingsRepositoryProvider)
+          .setDailyReminderTime('$hh:$mm'),
     );
   }
 
@@ -160,7 +162,10 @@ class _NotificationSettingsScreenState
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 72, right: 16),
                     title: Text(l10n.notifDailyTime),
-                    trailing: Text(reminder, style: theme.textTheme.titleMedium),
+                    trailing: Text(
+                      reminder,
+                      style: theme.textTheme.titleMedium,
+                    ),
                     onTap: () => unawaited(_pickTime(reminder)),
                   ),
                 SwitchListTile(

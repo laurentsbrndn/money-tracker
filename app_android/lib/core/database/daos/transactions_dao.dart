@@ -30,6 +30,21 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
   Future<void> deleteHard(String id) =>
       (delete(transactions)..where((t) => t.id.equals(id))).go();
 
+  /// Live transactions waiting for the user to record or skip them (created by
+  /// a recurring rule in `confirm` mode), oldest first.
+  Stream<List<TransactionRow>> watchPending() =>
+      (select(transactions)
+            ..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.status.equals('pending_confirmation'),
+            )
+            ..orderBy([
+              (t) => OrderingTerm.asc(t.transactionDate),
+              (t) => OrderingTerm.asc(t.createdAt),
+            ]))
+          .watch();
+
   /// Live rows with `from <= transaction_date <= to`, newest first.
   Stream<List<TransactionRow>> watchBetween(CivilDate from, CivilDate to) =>
       (select(transactions)
@@ -44,6 +59,30 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
               (t) => OrderingTerm.desc(t.createdAt),
             ]))
           .watch();
+
+  /// Live, posted rows for the export, oldest first. A null bound is open;
+  /// pending confirmations and tombstones never come back.
+  Future<List<TransactionRow>> postedBetween(CivilDate? from, CivilDate? to) =>
+      (select(transactions)
+            ..where((t) {
+              var condition = t.deletedAt.isNull() & t.status.equals('posted');
+              if (from != null) {
+                condition =
+                    condition &
+                    t.transactionDate.isBiggerOrEqualValue(from.toString());
+              }
+              if (to != null) {
+                condition =
+                    condition &
+                    t.transactionDate.isSmallerOrEqualValue(to.toString());
+              }
+              return condition;
+            })
+            ..orderBy([
+              (t) => OrderingTerm.asc(t.transactionDate),
+              (t) => OrderingTerm.asc(t.createdAt),
+            ]))
+          .get();
 
   /// Whether a live, posted transaction is dated [date] (the daily reminder is
   /// skipped on such a day).
@@ -70,7 +109,8 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
       (select(transactions)..where((t) => t.deletedAt.isNull())).get();
 
   /// Live transactions in the history list, newest first, [limit] rows
-  /// (paged by growing the limit).
+  /// (paged by growing the limit). Transactions waiting for confirmation are
+  /// not in it: they have their own section and do not count yet.
   Stream<List<TransactionRow>> watchFiltered({
     required int limit,
     String? type,
@@ -83,7 +123,9 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
   }) =>
       (select(transactions)
             ..where((t) {
-              Expression<bool> condition = t.deletedAt.isNull();
+              Expression<bool> condition =
+                  t.deletedAt.isNull() &
+                  t.status.equals('pending_confirmation').not();
               if (type != null) {
                 condition = condition & t.type.equals(type);
               }

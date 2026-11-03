@@ -109,10 +109,16 @@ class AccountsScreen extends ConsumerWidget {
                   ),
                 ),
                 for (final type in accountTypeValues)
-                  ..._section(context, accountTypeLabel(l10n, type), [
-                    for (final item in active)
-                      if (item.account.type == type) item,
-                  ], hide, reconcileById),
+                  ..._section(
+                    context,
+                    accountTypeLabel(l10n, type),
+                    [
+                      for (final item in active)
+                        if (item.account.type == type) item,
+                    ],
+                    hide,
+                    reconcileById,
+                  ),
                 ..._section(
                   context,
                   l10n.accountsArchivedSection,

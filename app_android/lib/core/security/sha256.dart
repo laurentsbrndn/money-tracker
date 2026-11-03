@@ -49,7 +49,10 @@ Uint8List sha256(List<int> message) {
     for (var i = 0; i < 16; i++) {
       final j = offset + i * 4;
       w[i] =
-          (data[j] << 24) | (data[j + 1] << 16) | (data[j + 2] << 8) | data[j + 3];
+          (data[j] << 24) |
+          (data[j + 1] << 16) |
+          (data[j + 2] << 8) |
+          data[j + 3];
     }
     for (var i = 16; i < 64; i++) {
       final s0 = _rotr(w[i - 15], 7) ^ _rotr(w[i - 15], 18) ^ (w[i - 15] >> 3);

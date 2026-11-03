@@ -21,8 +21,7 @@ Future<void> showBudgetBreakdownSheet(
   context: context,
   isScrollControlled: true,
   showDragHandle: true,
-  builder: (context) =>
-      _BreakdownSheet(month: month, allocation: allocation),
+  builder: (context) => _BreakdownSheet(month: month, allocation: allocation),
 );
 
 class _BreakdownSheet extends ConsumerWidget {
@@ -35,7 +34,9 @@ class _BreakdownSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final breakdown = ref.watch(allocationBreakdownProvider((month, allocation)));
+    final breakdown = ref.watch(
+      allocationBreakdownProvider((month, allocation)),
+    );
     final categories = ref.watch(categoriesByIdProvider);
     final hide = ref.watch(hideAmountsProvider);
 
@@ -49,8 +50,10 @@ class _BreakdownSheet extends ConsumerWidget {
             height: 160,
             child: Center(child: CircularProgressIndicator()),
           ),
-          error: (error, stackTrace) =>
-              SizedBox(height: 160, child: Center(child: Text(l10n.errorGeneric))),
+          error: (error, stackTrace) => SizedBox(
+            height: 160,
+            child: Center(child: Text(l10n.errorGeneric)),
+          ),
           data: (data) {
             final empty = data.categories.isEmpty && data.transferNet == 0;
             return ListView(
@@ -69,7 +72,12 @@ class _BreakdownSheet extends ConsumerWidget {
                   )
                 else ...[
                   for (final entry in data.categories)
-                    _categoryTile(l10n, categories[entry.categoryId], entry.amount, hide),
+                    _categoryTile(
+                      l10n,
+                      categories[entry.categoryId],
+                      entry.amount,
+                      hide,
+                    ),
                   if (data.transferNet != 0)
                     ListTile(
                       contentPadding: EdgeInsets.zero,

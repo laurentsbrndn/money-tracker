@@ -30,7 +30,10 @@ class ReconcileSummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.reconcileSummaryTitle, style: theme.textTheme.titleMedium),
+            Text(
+              l10n.reconcileSummaryTitle,
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(l10n.reconcileSummaryMatched(matched, total)),
             if (adjustedTotal != 0)

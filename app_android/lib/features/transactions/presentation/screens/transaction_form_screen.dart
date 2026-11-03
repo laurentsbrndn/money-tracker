@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/billing/entitlement_provider.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/money/money_formatter.dart';
 import '../../../../core/network/error_messages.dart';
+import '../../../../core/router/route_paths.dart';
 import '../../../../core/time/civil_date.dart';
 import '../../../../core/time/user_clock.dart';
 import '../../../../core/validation/validation_exception.dart';
@@ -13,6 +15,7 @@ import '../../../../core/widgets/money_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../accounts/application/accounts_providers.dart';
 import '../../../categories/application/categories_providers.dart';
+import '../../../recurring/domain/recurring_prefill.dart';
 import '../../application/transactions_providers.dart';
 import '../../domain/transaction_draft.dart';
 import '../widgets/account_dropdown.dart';
@@ -221,6 +224,31 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen>
     }
   }
 
+  /// "Jadikan berulang" (APP_FLOWS Flow 10): the fields typed so far become
+  /// the template of a recurring rule. Recurring rules are a Premium feature,
+  /// so a free user is taken to the paywall instead.
+  void _makeRecurring() {
+    final premium = ref.read(isPremiumProvider).value ?? false;
+    if (!premium) {
+      context.push(RoutePaths.paywall);
+      return;
+    }
+    context.push(
+      RoutePaths.recurringNew,
+      extra: RecurringPrefill(
+        type: _type,
+        amount: _digits.isEmpty ? null : int.parse(_digits),
+        accountId: _accountId,
+        toAccountId: _type == 'transfer' ? _toAccountId : null,
+        categoryId: _type == 'transfer' ? null : _categoryId,
+        allocation: _type == 'expense' ? _allocation : null,
+        source: _type == 'income' ? _source.text : null,
+        note: _note.text,
+        startDate: _date,
+      ),
+    );
+  }
+
   void _fail(ScaffoldMessengerState messenger, String message) {
     if (mounted) {
       setState(() => _busy = false);
@@ -249,6 +277,14 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEdit ? l10n.txFormEditTitle : l10n.txFormNewTitle),
+        actions: [
+          if (!_isEdit)
+            IconButton(
+              tooltip: l10n.txMakeRecurring,
+              onPressed: _makeRecurring,
+              icon: const Icon(Icons.repeat),
+            ),
+        ],
         bottom: _isEdit
             ? null
             : TabBar(

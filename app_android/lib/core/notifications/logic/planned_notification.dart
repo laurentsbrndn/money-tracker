@@ -1,6 +1,11 @@
 import '../../time/civil_date.dart';
 
-enum NotificationKind { daily, reconcileMonthEnd, reconcileStale, monthEvaluation }
+enum NotificationKind {
+  daily,
+  reconcileMonthEnd,
+  reconcileStale,
+  monthEvaluation,
+}
 
 /// One scheduled notification, as a wall-clock moment in the user's timezone.
 /// The text is added when it is scheduled, so this stays pure.

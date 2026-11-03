@@ -14,6 +14,12 @@ class RecurringRulesDao extends DatabaseAccessor<AppDatabase>
   Stream<List<RecurringRuleRow>> watchActive() =>
       (select(recurringRules)..where((t) => t.deletedAt.isNull())).watch();
 
+  /// Live rows that are not paused: the ones the generator visits.
+  Future<List<RecurringRuleRow>> allRunning() =>
+      (select(recurringRules)
+            ..where((t) => t.deletedAt.isNull() & t.isPaused.equals(false)))
+          .get();
+
   Future<RecurringRuleRow?> findById(String id) =>
       (select(recurringRules)..where((t) => t.id.equals(id))).getSingleOrNull();
 

@@ -12,6 +12,7 @@ import '../../../../core/time/civil_date_format.dart';
 import '../../../../core/time/user_clock.dart';
 import '../../../../core/validation/validation_exception.dart';
 import '../../../../core/widgets/money_field.dart';
+import '../../../../core/widgets/plan_limit_snack_bar.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../application/accounts_providers.dart';
 import '../../domain/account_type_labels.dart';
@@ -134,7 +135,15 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
     } on ValidationException catch (error) {
       _fail(messenger, error.message(l10n));
     } on PlanLimitException {
-      _fail(messenger, l10n.planLimitAccounts);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
+      showPlanLimitSnackBar(
+        messenger,
+        router,
+        l10n,
+        l10n.planLimitAccounts,
+      );
     } on Object catch (error) {
       _fail(messenger, describeError(error, l10n));
     }

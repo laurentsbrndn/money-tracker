@@ -12,6 +12,7 @@ import '../../../../core/time/civil_date_format.dart';
 import '../../../../core/time/user_clock.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../recurring/presentation/widgets/pending_confirmation_section.dart';
 import '../../../settings/application/user_settings_providers.dart';
 import '../../application/transaction_lookups.dart';
 import '../../application/transactions_providers.dart';
@@ -193,6 +194,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               final filtered = !query.filter.isEmpty;
               return ListView(
                 children: [
+                  if (!filtered) const PendingConfirmationSection(),
                   SizedBox(
                     height: 360,
                     child: EmptyState(
@@ -208,14 +210,24 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ],
               );
             }
-            final groups = groupByDay(data, ref.watch(userClockProvider).today());
+            final groups = groupByDay(
+              data,
+              ref.watch(userClockProvider).today(),
+            );
             return ListView.builder(
               controller: _scroll,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 96),
-              itemCount: groups.length,
-              itemBuilder: (context, index) {
-                final group = groups[index];
+              itemCount: groups.length + 1,
+              itemBuilder: (context, position) {
+                // The first item is the section of transactions waiting for
+                // confirmation (only without a filter or a search).
+                if (position == 0) {
+                  return query.filter.isEmpty
+                      ? const PendingConfirmationSection()
+                      : const SizedBox.shrink();
+                }
+                final group = groups[position - 1];
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

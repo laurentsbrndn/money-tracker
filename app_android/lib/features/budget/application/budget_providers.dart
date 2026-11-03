@@ -35,7 +35,9 @@ final monthBudgetProvider = FutureProvider.autoDispose
       final transactions = await ref.watch(allTransactionsProvider.future);
       final goalRows = await ref.watch(budgetGoalsProvider.future);
       final asOf = ref.watch(userClockProvider).today();
-      final goal = effectiveGoal([for (final r in goalRows) r.toDomain()], month);
+      final goal = effectiveGoal([
+        for (final r in goalRows) r.toDomain(),
+      ], month);
       final budget = computeBudget(
         [for (final row in accounts) row.toDomain()],
         [for (final row in transactions) row.toDomain()],
@@ -61,7 +63,9 @@ final allocationBreakdownProvider = FutureProvider.autoDispose
     });
 
 /// The goal that applies to the current month, to prefill the goal form.
-final currentGoalProvider = FutureProvider.autoDispose<BudgetGoal?>((ref) async {
+final currentGoalProvider = FutureProvider.autoDispose<BudgetGoal?>((
+  ref,
+) async {
   final rows = await ref.watch(budgetGoalsProvider.future);
   final month = YearMonth.of(ref.watch(userClockProvider).today());
   return effectiveGoal([for (final r in rows) r.toDomain()], month);

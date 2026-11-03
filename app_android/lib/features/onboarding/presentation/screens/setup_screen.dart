@@ -223,9 +223,7 @@ class _AccountsStep extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             leading: ProviderLogo(providerKey: item.account.providerKey),
             title: Text(item.account.name),
-            trailing: Text(
-              formatRupiah(item.expectedBalance, hidden: hide),
-            ),
+            trailing: Text(formatRupiah(item.expectedBalance, hidden: hide)),
           ),
         const SizedBox(height: 8),
         OutlinedButton.icon(

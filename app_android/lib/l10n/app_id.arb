@@ -6,7 +6,6 @@
   "tabAccounts": "Akun",
   "tabBudget": "Budget",
   "tabMore": "Lainnya",
-  "placeholderComingSoon": "Segera hadir",
   "actionSave": "Simpan",
   "actionCancel": "Batal",
   "actionDelete": "Hapus",
@@ -299,14 +298,6 @@
   "accountArchived": "Akun diarsipkan",
   "accountUnarchived": "Akun diaktifkan lagi",
   "accountDeleted": "Akun dihapus",
-  "accountSnapshotFrom": "Saldo asli {amount}",
-  "@accountSnapshotFrom": {
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
   "categoriesTitle": "Kategori",
   "categoryNew": "Tambah kategori",
   "categoryEdit": "Ubah kategori",
@@ -840,5 +831,344 @@
   "setupLockTitle": "Amankan aplikasi?",
   "setupLockBody": "Pasang PIN 6 digit (dan biometrik) supaya hanya kamu yang bisa membuka aplikasi. Boleh dilewati.",
   "setupLockAction": "Atur PIN",
-  "setupLockActive": "Kunci PIN aktif"
+  "setupLockActive": "Kunci PIN aktif",
+  "moreSubscription": "Langganan",
+  "moreReports": "Laporan",
+  "moreRecurring": "Transaksi berulang",
+  "subscriptionTitle": "Langganan",
+  "subscriptionPremiumActive": "Premium aktif",
+  "subscriptionFree": "Paket gratis",
+  "subscriptionFreeBody": "Tingkatkan ke Premium untuk akun dan kategori tanpa batas, riwayat semua bulan, laporan tren, dan transaksi berulang.",
+  "subscriptionPlan": "Paket: {plan}",
+  "@subscriptionPlan": {
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionPlanMonthly": "Premium bulanan",
+  "subscriptionPlanYearly": "Premium tahunan",
+  "subscriptionPlanOther": "Premium",
+  "subscriptionRenewsOn": "Diperpanjang otomatis pada {date}",
+  "@subscriptionRenewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionEndsOn": "Berakhir pada {date}, tidak diperpanjang",
+  "@subscriptionEndsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionToleranceNote": "Langganan sudah berakhir menurut data terakhir dari server. Fitur Premium tetap terbuka sementara bila tidak ada koneksi.",
+  "subscriptionSeePlans": "Lihat paket Premium",
+  "subscriptionManage": "Kelola langganan di Google Play",
+  "subscriptionManageFailed": "Tidak bisa membuka Google Play.",
+  "subscriptionRestore": "Pulihkan pembelian",
+  "paywallTitle": "Money Tracker Premium",
+  "paywallSubtitle": "Catat tanpa batas dan lihat gambaran keuanganmu lebih jelas.",
+  "paywallBenefitLimits": "Akun dan kategori buatan sendiri tanpa batas",
+  "paywallBenefitHistory": "Riwayat semua bulan",
+  "paywallBenefitReports": "Laporan tren, perbandingan, dan selisih tidak tercatat",
+  "paywallBenefitRecurring": "Transaksi berulang, otomatis atau dengan konfirmasi",
+  "paywallMonthly": "Bulanan",
+  "paywallYearly": "Tahunan",
+  "paywallPerMonth": "{price} / bulan",
+  "@paywallPerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallPerYear": "{price} / tahun",
+  "@paywallPerYear": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallTrialBadge": "Uji coba gratis",
+  "paywallSubscribe": "Berlangganan",
+  "paywallLegal": "Langganan diperpanjang otomatis dan bisa dibatalkan kapan saja di Google Play. Uji coba gratis hanya untuk pengguna yang memenuhi syarat.",
+  "paywallTerms": "Syarat & Ketentuan",
+  "paywallPrivacy": "Kebijakan Privasi",
+  "paywallUnavailableTitle": "Langganan belum tersedia",
+  "paywallUnavailableBody": "Pembelian belum diaktifkan di versi aplikasi ini.",
+  "paywallRetry": "Coba lagi",
+  "paywallProcessingTitle": "Memproses pembelian…",
+  "paywallProcessingBody": "Menunggu server mengaktifkan Premium. Biasanya hanya beberapa detik.",
+  "paywallConfirmedTitle": "Premium aktif",
+  "paywallConfirmedBody": "Terima kasih! Semua fitur Premium sudah terbuka.",
+  "paywallDone": "Selesai",
+  "paywallTimedOutTitle": "Pembayaran diterima, aktivasi belum selesai",
+  "paywallTimedOutBody": "Server belum mengonfirmasi Premium. Ini bisa terjadi bila koneksi lambat. Periksa lagi sebentar lagi; kamu tidak perlu membayar ulang.",
+  "paywallCheckAgain": "Periksa lagi",
+  "paywallCancelled": "Pembelian dibatalkan.",
+  "paywallPending": "Pembayaran menunggu persetujuan. Premium aktif setelah pembayaran selesai.",
+  "paywallRestoreNothing": "Tidak ada pembelian aktif yang bisa dipulihkan untuk akun ini.",
+  "paywallSessionExpired": "Sesi berakhir. Masuk lagi untuk melanjutkan.",
+  "billingErrorNetwork": "Tidak bisa terhubung ke Google Play. Periksa koneksi lalu coba lagi.",
+  "billingErrorNoProducts": "Paket langganan belum tersedia saat ini. Coba lagi nanti.",
+  "billingErrorProduct": "Paket ini tidak bisa dibeli saat ini.",
+  "billingErrorNotAllowed": "Pembelian tidak diizinkan di akun Google Play ini, atau Play Store sedang bermasalah.",
+  "billingErrorBusy": "Masih ada proses pembelian yang berjalan.",
+  "billingErrorAccountLink": "Akunmu belum bisa dihubungkan ke toko. Coba lagi.",
+  "billingErrorUnknown": "Terjadi kesalahan pada pembelian. Coba lagi.",
+  "planLimitRecurring": "Transaksi berulang hanya untuk Premium.",
+  "planLimitSeePremium": "Lihat Premium",
+  "validationRecurringSchedule": "Jadwal belum lengkap atau tidak valid.",
+  "validationRecurringEndBeforeStart": "Tanggal selesai tidak boleh sebelum tanggal mulai.",
+  "validationRecurringInterval": "Interval harus antara 1 dan 366.",
+  "notifRecurringTitle": "Transaksi berulang menunggu konfirmasi",
+  "notifRecurringBody": "Ada {count} transaksi berulang yang perlu kamu catat atau lewati.",
+  "@notifRecurringBody": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringTitle": "Transaksi berulang",
+  "recurringEmptyTitle": "Belum ada transaksi berulang",
+  "recurringEmptyBody": "Buat aturan untuk gaji, tagihan, atau langganan yang datang tiap periode.",
+  "recurringAdd": "Tambah aturan",
+  "recurringNewTitle": "Aturan baru",
+  "recurringEditTitle": "Ubah aturan",
+  "recurringLockedTitle": "Transaksi berulang untuk Premium",
+  "recurringLockedBody": "Dengan Premium, transaksi rutin dicatat otomatis atau menunggu konfirmasimu.",
+  "recurringFieldFrequency": "Frekuensi",
+  "recurringFieldEvery": "Setiap",
+  "recurringFieldWeekday": "Hari",
+  "recurringFieldDay": "Tanggal",
+  "recurringFieldMonth": "Bulan",
+  "recurringFieldStart": "Mulai",
+  "recurringFieldEnd": "Selesai",
+  "recurringHasEnd": "Ada tanggal selesai",
+  "recurringFieldMode": "Cara mencatat",
+  "recurringModeAuto": "Otomatis",
+  "recurringModeConfirm": "Minta konfirmasi",
+  "recurringModeAutoHint": "Transaksi langsung dicatat pada tanggalnya.",
+  "recurringModeConfirmHint": "Transaksi menunggu kamu catat atau lewati di tab Transaksi.",
+  "recurringMonthEndHint": "Di bulan yang lebih pendek, transaksi dicatat pada hari terakhir bulan itu.",
+  "recurringFrequencyDaily": "Harian",
+  "recurringFrequencyWeekly": "Mingguan",
+  "recurringFrequencyMonthly": "Bulanan",
+  "recurringFrequencyYearly": "Tahunan",
+  "recurringUnitDay": "hari",
+  "recurringUnitWeek": "minggu",
+  "recurringUnitMonth": "bulan",
+  "recurringUnitYear": "tahun",
+  "recurringScheduleDaily": "Setiap hari",
+  "recurringScheduleDailyN": "Setiap {n} hari",
+  "@recurringScheduleDailyN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringScheduleWeekly": "Setiap {weekday}",
+  "@recurringScheduleWeekly": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringScheduleWeeklyN": "Setiap {n} minggu pada hari {weekday}",
+  "@recurringScheduleWeeklyN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringScheduleMonthly": "Setiap tanggal {day}",
+  "@recurringScheduleMonthly": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringScheduleMonthlyN": "Setiap {n} bulan pada tanggal {day}",
+  "@recurringScheduleMonthlyN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringScheduleYearly": "Setiap {day} {month}",
+  "@recurringScheduleYearly": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringScheduleYearlyN": "Setiap {n} tahun pada {day} {month}",
+  "@recurringScheduleYearlyN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringStatusActive": "Aktif",
+  "recurringStatusPaused": "Dijeda",
+  "recurringStatusPausedNoPremium": "Dijeda: Premium berakhir",
+  "recurringStatusEnded": "Selesai",
+  "recurringPausedNoPremiumBody": "Aturan ini dijeda otomatis karena Premium berakhir. Aturan lanjut setelah kamu berlangganan Premium lagi.",
+  "recurringNextOn": "Berikutnya {date}",
+  "@recurringNextOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringNoNext": "Tidak ada jadwal berikutnya",
+  "recurringPause": "Jeda",
+  "recurringResume": "Lanjutkan",
+  "recurringResumeNeedsPremium": "Melanjutkan aturan butuh Premium.",
+  "recurringDelete": "Hapus aturan",
+  "recurringDeleteConfirm": "Hapus aturan ini? Transaksi yang sudah dibuat tidak ikut terhapus.",
+  "recurringDeleted": "Aturan dihapus",
+  "recurringSaved": "Aturan disimpan",
+  "txMakeRecurring": "Jadikan berulang",
+  "pendingTitle": "Menunggu konfirmasi",
+  "pendingRecord": "Catat",
+  "pendingSkip": "Lewati",
+  "pendingRecorded": "Transaksi dicatat",
+  "pendingSkipped": "Transaksi dilewati",
+  "reportsTitle": "Laporan",
+  "reportKindCategory": "Per kategori",
+  "reportKindSource": "Sumber income",
+  "reportKindTrend": "Tren",
+  "reportKindComparison": "Perbandingan",
+  "reportKindUnrecorded": "Selisih tidak tercatat",
+  "reportsLockedPremiumTitle": "Laporan Premium",
+  "reportsLockedPremiumBody": "Tren, perbandingan, dan selisih tidak tercatat tersedia untuk Premium.",
+  "reportsLockedMonthTitle": "Bulan ini tidak tersedia",
+  "reportsLockedMonthBody": "Paket gratis melihat bulan berjalan dan 2 bulan sebelumnya.",
+  "reportsEmpty": "Belum ada data untuk periode ini.",
+  "reportsTotal": "Total {amount}",
+  "@reportsTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reportsOthers": "Lainnya",
+  "reportsNoSource": "Tanpa sumber",
+  "reportsRange6": "6 bulan",
+  "reportsRange12": "12 bulan",
+  "reportsTapHint": "Ketuk bagian grafik untuk melihat transaksinya.",
+  "reportsIncome": "Pemasukan",
+  "reportsExpense": "Pengeluaran",
+  "reportsSurplus": "Surplus",
+  "reportsSavings": "Savings",
+  "reportsThisMonth": "Bulan ini",
+  "reportsPreviousMonth": "Bulan sebelumnya",
+  "reportsComparisonCategories": "Pengeluaran per kategori",
+  "reportsUnrecordedBody": "Selisih yang disesuaikan lewat Cocokkan saldo, bertanda. Positif berarti saldo asli lebih besar dari catatan.",
+  "reportsChartLabel": "Grafik {name}",
+  "@reportsChartLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "moreExport": "Export data",
+  "exportTitle": "Export data",
+  "exportLockedTitle": "Export untuk Premium",
+  "exportLockedBody": "Export CSV dan PDF tersedia untuk Premium.",
+  "exportFormat": "Format",
+  "exportPeriod": "Periode",
+  "exportPresetThisMonth": "Bulan ini",
+  "exportPresetLastMonth": "Bulan lalu",
+  "exportPresetLast3Months": "3 bulan terakhir",
+  "exportPresetThisYear": "Tahun ini",
+  "exportPresetAll": "Semua data",
+  "exportFrom": "Dari tanggal",
+  "exportTo": "Sampai tanggal",
+  "exportInvalidRange": "Tanggal awal tidak boleh setelah tanggal akhir.",
+  "exportDelimiter": "Pemisah kolom CSV",
+  "exportDelimiterAuto": "Otomatis",
+  "exportDelimiterComma": "Koma",
+  "exportDelimiterSemicolon": "Titik koma",
+  "exportDelimiterHint": "Otomatis mengikuti bahasa perangkat: titik koma bila pemisah desimalnya koma.",
+  "exportPrivacyNote": "File memuat nominal asli walau Sembunyikan nominal aktif, dan hanya dibuat saat app tidak terkunci.",
+  "exportAction": "Export",
+  "exportWorking": "Menyiapkan file…",
+  "exportEmpty": "Tidak ada transaksi pada periode ini.",
+  "exportError": "File gagal dibuat atau dibagikan. Coba lagi.",
+  "exportLocked": "App terkunci, export dibatalkan.",
+  "exportDone": "Pilih tujuan untuk menyimpan atau mengirim file.",
+  "exportCsvHeaderDate": "Tanggal",
+  "exportCsvHeaderType": "Tipe",
+  "exportCsvHeaderAmount": "Jumlah (Rp)",
+  "exportCsvHeaderAccount": "Akun",
+  "exportCsvHeaderToAccount": "Akun tujuan",
+  "exportCsvHeaderCategory": "Kategori",
+  "exportCsvHeaderNote": "Catatan",
+  "exportTypeIncome": "Pemasukan",
+  "exportTypeExpense": "Pengeluaran",
+  "exportTypeTransfer": "Transfer",
+  "exportTypeAdjustment": "Penyesuaian",
+  "exportPdfTitle": "Laporan Transaksi Money Tracker",
+  "exportPdfPeriod": "Periode",
+  "exportPdfIncome": "Pemasukan",
+  "exportPdfExpense": "Pengeluaran",
+  "exportPdfDifference": "Selisih",
+  "exportPdfCount": "Jumlah transaksi",
+  "exportPdfAllData": "Semua data",
+  "exportPdfRange": "{from} s/d {to}",
+  "@exportPdfRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPdfPage": "Halaman {page} dari {total}",
+  "@exportPdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

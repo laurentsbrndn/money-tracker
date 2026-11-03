@@ -28,9 +28,7 @@ class SecurityScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref
-          .read(userSettingsRepositoryProvider)
-          .setHideAmounts(hide: hide);
+      await ref.read(userSettingsRepositoryProvider).setHideAmounts(hide: hide);
     } on Object catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text(describeError(error, l10n))),
@@ -71,16 +69,19 @@ class SecurityScreen extends ConsumerWidget {
       ),
     );
     if (picked != null) {
-      await ref.read(appLockControllerProvider.notifier).setAutoLockSeconds(picked);
+      await ref
+          .read(appLockControllerProvider.notifier)
+          .setAutoLockSeconds(picked);
     }
   }
 
-  String _autoLockLabel(AppLocalizations l10n, int seconds) => switch (seconds) {
-    0 => l10n.securityAutoLockImmediately,
-    60 => l10n.securityAutoLock1min,
-    300 => l10n.securityAutoLock5min,
-    _ => l10n.securityAutoLock1min,
-  };
+  String _autoLockLabel(AppLocalizations l10n, int seconds) =>
+      switch (seconds) {
+        0 => l10n.securityAutoLockImmediately,
+        60 => l10n.securityAutoLock1min,
+        300 => l10n.securityAutoLock5min,
+        _ => l10n.securityAutoLock1min,
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -135,9 +136,8 @@ class SecurityScreen extends ConsumerWidget {
               leading: const Icon(Icons.timer_outlined),
               title: Text(l10n.securityAutoLock),
               subtitle: Text(_autoLockLabel(l10n, lock.autoLockSeconds)),
-              onTap: () => unawaited(
-                _pickAutoLock(context, ref, lock.autoLockSeconds),
-              ),
+              onTap: () =>
+                  unawaited(_pickAutoLock(context, ref, lock.autoLockSeconds)),
             ),
           ],
           Padding(
@@ -154,8 +154,7 @@ class SecurityScreen extends ConsumerWidget {
             subtitle: Text(l10n.securityHideAmountsSubtitle),
             value: hide,
             onChanged: settingsReady
-                ? (value) =>
-                      unawaited(_toggleHide(context, ref, hide: value))
+                ? (value) => unawaited(_toggleHide(context, ref, hide: value))
                 : null,
           ),
         ],

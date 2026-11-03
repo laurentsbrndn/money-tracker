@@ -27,6 +27,9 @@ enum ValidationError {
   timezoneInvalid,
   reminderTimeInvalid,
   settingsMissing,
+  recurringScheduleInvalid,
+  recurringEndBeforeStart,
+  recurringIntervalRange,
 }
 
 class ValidationException implements Exception {
@@ -59,6 +62,11 @@ class ValidationException implements Exception {
     ValidationError.timezoneInvalid => l10n.validationTimezone,
     ValidationError.reminderTimeInvalid => l10n.validationReminderTime,
     ValidationError.settingsMissing => l10n.validationSettingsMissing,
+    ValidationError.recurringScheduleInvalid =>
+      l10n.validationRecurringSchedule,
+    ValidationError.recurringEndBeforeStart =>
+      l10n.validationRecurringEndBeforeStart,
+    ValidationError.recurringIntervalRange => l10n.validationRecurringInterval,
   };
 }
 

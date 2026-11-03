@@ -148,7 +148,9 @@ class TransactionsRepository {
           serverVersion: existing?.serverVersion,
           syncStatus: 'pending',
           type: draft.type,
-          status: existing?.status ?? 'posted',
+          // Saving a transaction that waits for confirmation records it
+          // (APP_FLOWS Flow 10: amount and date may be changed first).
+          status: 'posted',
           transactionDate: draft.date,
           amount: amount,
           currency: 'IDR',
@@ -215,6 +217,27 @@ class TransactionsRepository {
         categoryId: feeCategory!.id,
         allocation: feeCategory.defaultAllocation ?? 'needs',
         linkedTransactionId: transferId,
+      ),
+    );
+  }
+
+  /// "Catat": records a transaction of a `confirm` rule as it is.
+  Future<void> confirm(String id) async {
+    final row = await _db.transactionsDao.findById(id);
+    if (row == null ||
+        row.deletedAt != null ||
+        row.status != 'pending_confirmation') {
+      return;
+    }
+    await _writer.write(
+      (tx) => tx.upsert(
+        SyncEntities.transactions,
+        id,
+        row.copyWith(
+          status: 'posted',
+          updatedAt: tx.now,
+          syncStatus: 'pending',
+        ),
       ),
     );
   }

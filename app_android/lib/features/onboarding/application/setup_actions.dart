@@ -63,7 +63,10 @@ class SetupActions {
   /// Step 5: turns the daily reminder on at [time] (asking for the notification
   /// permission now, the moment the user opts in). Nothing happens when the
   /// reminder stays off.
-  Future<void> saveReminder({required bool enabled, required String time}) async {
+  Future<void> saveReminder({
+    required bool enabled,
+    required String time,
+  }) async {
     if (!enabled) {
       return;
     }

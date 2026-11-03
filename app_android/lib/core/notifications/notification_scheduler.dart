@@ -59,9 +59,8 @@ class NotificationScheduler {
   });
 
   /// Cancels everything this scheduler may have scheduled (sign-out).
-  Future<void> cancelAll() => _serial(
-    () => _service.cancelPending(allScheduledIds.toSet()),
-  );
+  Future<void> cancelAll() =>
+      _serial(() => _service.cancelPending(allScheduledIds.toSet()));
 
   Future<void> _reschedule() async {
     await _service.cancelPending(allScheduledIds.toSet());
@@ -151,8 +150,7 @@ class NotificationScheduler {
     final month = YearMonth.of(today);
 
     final goals = [
-      for (final row in await _db.budgetGoalsDao.allActive())
-        row.toDomain(),
+      for (final row in await _db.budgetGoalsDao.allActive()) row.toDomain(),
     ];
     final goal = effectiveGoal(goals, month);
     if (goal == null) {
@@ -215,7 +213,6 @@ class NotificationScheduler {
   }
 
   /// Keeps only the current month's keys, so the list cannot grow forever.
-  Future<void> _writeSent(YearMonth month, Set<String> keys) => _db
-      .syncStateDao
+  Future<void> _writeSent(YearMonth month, Set<String> keys) => _db.syncStateDao
       .write(_sentKey, keys.where((k) => k.startsWith('$month|')).join('\n'));
 }

@@ -22,6 +22,8 @@ App Flutter ini **khusus Android**. iOS dibuat terpisah dengan SwiftUI (`FRONTEN
 | Login Google | `google_sign_in` (Credential Manager; `serverClientId` = web client ID) |
 | Subscription | `purchases_flutter` (RevenueCat) |
 | Grafik | `fl_chart` |
+| Export PDF | `pdf` (font bawaan Helvetica, teks Latin) |
+| Berbagi file | `share_plus`; file sementara lewat `path_provider` (CSV ditulis manual, tanpa paket `csv`) |
 | UUID v7/v5 | `uuid` |
 | Format angka/tanggal | `intl` |
 | Info app/device | `package_info_plus`, `device_info_plus` |
@@ -97,15 +99,23 @@ app_android/
     │   │   ├── balance.dart
     │   │   ├── reconciliation.dart
     │   │   ├── budget.dart
-    │   │   └── recurrence.dart
+    │   │   ├── recurrence.dart       # kemunculan berulang + nextOccurrence
+    │   │   └── report.dart           # laporan: per kategori/sumber, tren, perbandingan, selisih tidak tercatat
     │   ├── billing/
-    │   │   ├── billing_service.dart  # RevenueCat logIn/logOut, offerings, purchase, restore
-    │   │   └── entitlement_provider.dart  # dari sync_state.entitlement + toleransi offline 3 hari
+    │   │   ├── billing_service.dart  # satu-satunya pemakai SDK RevenueCat: logIn/logOut, offerings, purchase, restore
+    │   │   ├── billing_failure.dart  # jenis kegagalan toko → pesan Indonesia
+    │   │   ├── paywall_package.dart  # paket yang ditampilkan paywall (tanpa tipe SDK)
+    │   │   ├── billing_providers.dart  # sinkron logIn/logOut dengan sesi + kirim ulang perubahan yang ditolak plan
+    │   │   ├── entitlement_info.dart / entitlement_provider.dart  # sync_state.entitlement + toleransi offline 3 hari
+    │   │   ├── entitlement_repository.dart  # GET /v1/me/entitlements → sync_state.entitlement
+    │   │   └── logic/entitlement_polling.dart  # polling server setelah pembelian (murni)
     │   ├── notifications/
     │   │   ├── notification_service.dart
     │   │   └── notification_scheduler.dart
     │   ├── security/
     │   │   └── app_lock_controller.dart
+    │   ├── platform/
+    │   │   └── external_links.dart   # buka URL/halaman Play lewat method channel MainActivity (tanpa url_launcher)
     │   ├── ids/
     │   │   └── id_generator.dart     # v7 + v5 dengan namespace dari SYNC_PROTOCOL.md §3
     │   ├── money/
@@ -133,6 +143,7 @@ app_android/
         ├── budget/
         ├── categories/
         ├── reports/
+        ├── export/
         ├── recurring/
         ├── subscription/
         └── settings/
@@ -190,6 +201,9 @@ Implementasi persis `SYNC_PROTOCOL.md`. Tambahan khusus Android:
 - Setelah login: `Purchases.logIn(userId)`. Setelah logout: `Purchases.logOut()`.
 - Paywall dibuat sendiri (bukan template RevenueCat) dengan paket dari `Offerings.current`.
 - Setelah pembelian sukses: panggil `GET /v1/me/entitlements`, simpan ke `sync_state.entitlement`, lalu buka fitur. Status premium **tidak** diambil dari `CustomerInfo` RevenueCat untuk logika fitur, karena server adalah sumber kebenaran.
+- Webhook RevenueCat ke server bisa terlambat, jadi setelah pembelian atau pemulihan app menampilkan "memproses" dan memanggil `GET /v1/me/entitlements` berulang (jeda 1, 2, 3, 4 lalu 5 detik) sampai server melaporkan `premium = true` atau 30 detik lewat (restore: 15 detik). Habis waktu → pesan "pembayaran diterima, aktivasi belum selesai" dengan tombol "Periksa lagi"; pembelian tidak perlu diulang.
+- SDK dikonfigurasi di `bootstrap()` dengan `appUserID` = user yang sedang masuk (bila ada), sehingga pembelian tidak dimulai dengan ID anonim. Tanpa `REVENUECAT_ANDROID_KEY` SDK tidak dijalankan dan paywall menampilkan "belum tersedia".
+- Premium dibaca dari `sync_state.entitlement` (pull `meta.entitlement` atau `GET /v1/me/entitlements`): aktif bila `premium = true` dan sekarang belum melewati `expires_at` + 3 hari. User non-premium selalu `expires_at = null`. Saat server mulai melaporkan premium, perubahan yang sebelumnya ditolak `plan_limit` dikirim ulang otomatis.
 
 ### 4.5 Notifikasi
 
@@ -201,6 +215,21 @@ Semua lokal, dijadwalkan ulang setiap app dibuka dan setelah pull: pengingat har
 - Nominal: income hijau, expense merah, transfer abu-abu; dengan `hide_amounts` aktif nominal tampil `Rp •••••`.
 - Input nominal dengan numpad besar di form transaksi.
 - Semua layar punya empty state, loading, dan error state.
+
+### 4.7 Export CSV/PDF
+
+Hanya premium (BUSINESS_RULES §7); layar dan controller sama-sama memeriksa `isPremium`. Data dibaca dari Drift lokal tanpa endpoint; hanya transaksi `posted` yang belum dihapus (pending dan tombstone tidak ikut). Aturan berikut dipakai **identik di iOS**:
+
+| Hal | Aturan |
+| --- | --- |
+| Periode | Pintasan "Bulan ini" (default), "Bulan lalu", "3 bulan terakhir" (bulan berjalan + 2 bulan sebelumnya), "Tahun ini", "Semua data", atau tanggal awal/akhir bebas; awal tidak boleh setelah akhir. Tanggal = tanggal sipil di timezone pengguna (`UserClock`) |
+| Kolom CSV | `Tanggal` (YYYY-MM-DD), `Tipe`, `Jumlah (Rp)` (bilangan bulat; adjustment bertanda), `Akun`, `Akun tujuan`, `Kategori`, `Catatan`; urut tanggal naik. Satu file berapa pun barisnya |
+| Format CSV | UTF-8 dengan BOM, baris akhir CRLF, escaping RFC 4180. Sel teks yang diawali `=`, `+`, `-`, `@`, tab, atau CR diberi awalan `'`; kolom jumlah tidak (tetap angka) |
+| Pemisah CSV | Pilihan "Otomatis / Koma / Titik koma". Otomatis: `;` bila pemisah desimal locale perangkat adalah koma (id-ID, sebagian besar Eropa), `,` bila titik (en-US). Aturan ada di satu fungsi `resolveCsvDelimiter` |
+| PDF | Ringkasan periode (income, expense, selisih, jumlah transaksi) di halaman pertama, tabel transaksi dipaginasi (26 baris di halaman pertama, 36 sesudahnya), `Rp 25.000`. Dibuat halaman demi halaman dengan indikator proses; font bawaan (karakter di luar Latin-1 tampil `?`) |
+| Periode kosong | Pesan "Tidak ada transaksi pada periode ini", file tidak dibuat |
+| Privasi | Nominal asli diexport walau "Sembunyikan nominal" aktif, tetapi tidak saat app terkunci (diperiksa sebelum menulis dan sebelum berbagi) |
+| File sementara | `<temp>/exports/money-tracker_<awal>_<akhir>.<csv atau pdf>` (Semua data: tanggal transaksi pertama dan terakhir). Dihapus saat app mulai dan sebelum export berikutnya; juga segera setelah berbagi bila platform melaporkan hasilnya (di Android hasil berbagi tidak dilaporkan, jadi file menunggu salah satu dari dua kejadian tadi, supaya app tujuan masih sempat membacanya) |
 
 ## 5. Navigasi dan layar
 
@@ -224,8 +253,9 @@ Tab bawah: **Beranda · Transaksi · Akun · Budget · Lainnya**.
 | `/more` | Menu Lainnya | 1 |
 | `/more/categories` | Kelola kategori | 1 |
 | `/more/reports` | Laporan | 3 |
-| `/more/recurring` | Transaksi berulang | 3 |
-| `/more/subscription`, `/paywall` | Langganan & paywall | 3 |
+| `/more/export` | Export CSV/PDF (premium; non-premium melihat ajakan ke paywall) | 3 |
+| `/more/recurring`, `/more/recurring/new`, `/more/recurring/:id` | Transaksi berulang: daftar, aturan baru (bisa diisi dari form transaksi lewat "Jadikan berulang"), ubah | 3 |
+| `/more/subscription`, `/paywall` | Langganan & paywall (`/paywall?restore=1` langsung memulihkan pembelian) | 3 |
 | `/more/settings/*` | Profil, sinkronisasi, data, hapus akun | 1–3 |
 | `/more/settings/preferences` | Preferensi: timezone, hari pertama minggu, tema | 2 |
 | `/more/settings/security` | Keamanan: PIN, biometrik, kunci otomatis, sembunyikan nominal | 2 |
@@ -250,6 +280,8 @@ flutter build appbundle --release --dart-define-from-file=env/prod.json
 {
   "API_BASE_URL": "http://10.0.2.2:8080",
   "REVENUECAT_ANDROID_KEY": "",
+  "TERMS_URL": "",
+  "PRIVACY_URL": "",
   "GOOGLE_SERVER_CLIENT_ID": ""
 }
 ```
@@ -271,3 +303,17 @@ Tujuannya: app lancar di HP Android kelas bawah (RAM 2–3 GB) yang menjalankan 
 ## 8. Testing
 
 Tidak ada file test (lihat `CLAUDE.md`). Verifikasi otomatis cukup `flutter analyze` dan build berhasil.
+
+## 9. Catatan implementasi Fase 3
+
+| Hal | Keputusan |
+| --- | --- |
+| Paket | `purchases_flutter`, `fl_chart`, `pdf`, dan `share_plus` (dijadwalkan di §1); membuka URL (syarat, privasi, kelola langganan Play) lewat method channel kecil di `MainActivity` |
+| `TERMS_URL` / `PRIVACY_URL` | `--dart-define` baru; kosong menyembunyikan tautan di paywall |
+| Laporan | Dihitung **lokal** dari database (`domain_rules/report.dart`), sesuai `API.md` §5 dan `APP_FLOWS.md` Flow 8; endpoint `GET /v1/reports/*` tidak dipakai app. Bulan lebih dari 2 bulan ke belakang, tren, perbandingan, dan selisih tidak tercatat terkunci untuk free (paywall). Ketuk irisan/batang membuka daftar transaksi dengan filter yang sesuai |
+| Grafik dan "Sembunyikan nominal" | Sumbu nilai dan tooltip tidak menampilkan nominal; legenda memperlihatkan persentase, bukan nominal |
+| Transaksi berulang | Occurrence dibuat app saat gate `ready`, saat kembali ke foreground, setelah pull mengubah aturan, dan saat premium menyala; ID = UUIDv5(`rule_id|YYYY-MM-DD`); baris yang sudah ada (juga yang dihapus, juga yang dibuat cron server) dilewati. Aturan yang akun/kategorinya sudah dihapus tidak menghasilkan transaksi tetapi `last_generated_date` tetap dimajukan, seperti server |
+| Pause oleh server | `is_paused = true` dari pull ditampilkan "Dijeda: Premium berakhir" bila server tidak melaporkan premium; melanjutkan aturan butuh premium (`plan_limit` ditolak di client dan server) |
+| Konfirmasi | Transaksi `pending_confirmation` tidak ikut daftar riwayat; tampil di bagian "Menunggu konfirmasi" (Catat / Lewati). Menyimpan form sebuah transaksi pending juga mencatatnya. Notifikasi lokal "menunggu konfirmasi" dikirim saat app membuat yang baru |
+| Export CSV/PDF | Lihat §4.7. Paket `pdf` dan `share_plus` disetujui; `share_plus` menarik `url_launcher_*` sebagai dependensi transitif (bukan dependensi langsung). `path_provider` sudah ada |
+

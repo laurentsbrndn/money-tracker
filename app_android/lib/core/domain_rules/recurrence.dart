@@ -135,3 +135,18 @@ CivilDate _clampedDate(YearMonth month, int day) {
   final lastDay = CivilDate.daysInMonth(month.year, month.month);
   return CivilDate(month.year, month.month, day < lastDay ? day : lastDay);
 }
+
+/// The first date strictly after [after] on which the rule falls, or null when
+/// it has ended (or can never fall again). Used to show "Berikutnya".
+CivilDate? nextOccurrence(RecurrenceRule rule, CivilDate after) {
+  // The search window covers one full step of the rule, with room for a
+  // clamped month end, so a rule that still has a next date always shows it.
+  final windowDays = switch (rule.frequency) {
+    RecurringFrequency.daily => rule.intervalCount + 1,
+    RecurringFrequency.weekly => rule.intervalCount * 7 + 7,
+    RecurringFrequency.monthly => rule.intervalCount * 31 + 31,
+    RecurringFrequency.yearly => rule.intervalCount * 366 + 366,
+  };
+  final due = occurrences(rule, after, after.addDays(windowDays));
+  return due.isEmpty ? null : due.first;
+}

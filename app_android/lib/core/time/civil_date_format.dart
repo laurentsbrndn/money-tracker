@@ -28,6 +28,9 @@ const List<String> _weekdayNames = [
 
 String monthName(int month) => _monthNames[month - 1];
 
+/// ISO weekday (Monday = 1 ... Sunday = 7) in Indonesian.
+String weekdayName(int isoWeekday) => _weekdayNames[isoWeekday - 1];
+
 /// `2 Nov 2026`.
 String formatCivilDateShort(CivilDate date) =>
     '${date.day} ${monthName(date.month).substring(0, 3)} ${date.year}';

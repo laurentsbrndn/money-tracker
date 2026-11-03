@@ -113,7 +113,11 @@ List<PlannedNotification> planNotifications({
 
   if (prefs.reconcileEnabled) {
     final monthEnds = <CivilDate>{};
-    for (var k = 0; k < monthEndHorizon + 1 && monthEnds.length < monthEndHorizon; k++) {
+    for (
+      var k = 0;
+      k < monthEndHorizon + 1 && monthEnds.length < monthEndHorizon;
+      k++
+    ) {
       final end = YearMonth.of(today).addMonths(k).last;
       if (_isFuture(end, reconcileHour * 60, today, nowMinutes)) {
         monthEnds.add(end);
@@ -168,7 +172,11 @@ List<PlannedNotification> planNotifications({
 
   if (prefs.budgetAlertEnabled) {
     var index = 0;
-    for (var k = 0; k < monthEvaluationHorizon + 1 && index < monthEvaluationHorizon; k++) {
+    for (
+      var k = 0;
+      k < monthEvaluationHorizon + 1 && index < monthEvaluationHorizon;
+      k++
+    ) {
       final month = YearMonth.of(today).addMonths(k);
       final date = month.first;
       if (!_isFuture(date, evaluationHour * 60, today, nowMinutes)) {

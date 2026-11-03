@@ -109,7 +109,9 @@ class AppLockController extends _$AppLockController {
     }
     final failures = state.failures + 1;
     final delay = lockoutAfterFailures(failures);
-    final lockedUntil = delay == null ? null : DateTime.now().toUtc().add(delay);
+    final lockedUntil = delay == null
+        ? null
+        : DateTime.now().toUtc().add(delay);
     await _storage.writeAttempts(failures: failures, lockedUntil: lockedUntil);
     state = state.copyWith(
       failures: failures,
@@ -172,7 +174,8 @@ class AppLockController extends _$AppLockController {
     if (!state.pinSet) {
       return false;
     }
-    if (enabled && !await ref.read(biometricServiceProvider).authenticate(reason)) {
+    if (enabled &&
+        !await ref.read(biometricServiceProvider).authenticate(reason)) {
       return false;
     }
     await _storage.writeBiometric(enabled: enabled);

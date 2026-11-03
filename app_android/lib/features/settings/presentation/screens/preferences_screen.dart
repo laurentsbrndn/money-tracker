@@ -89,7 +89,9 @@ class PreferencesScreen extends ConsumerWidget {
                   groupValue: settings.theme,
                   onChanged: (value) {
                     if (value != null) {
-                      unawaited(_run(context, () => repository.setTheme(value)));
+                      unawaited(
+                        _run(context, () => repository.setTheme(value)),
+                      );
                     }
                   },
                   child: Column(

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/auth/session_controller.dart';
+import '../../../../core/billing/entitlement_provider.dart';
 import '../../../../core/router/route_paths.dart';
 import '../../../../core/sync/sync_status_provider.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -15,8 +16,7 @@ final _versionProvider = FutureProvider.autoDispose<String>(
   (ref) async => (await PackageInfo.fromPlatform()).version,
 );
 
-/// "Lainnya" menu (APP_FLOWS Flow 12). Subscription and export arrive with
-/// their phases.
+/// "Lainnya" menu (APP_FLOWS Flow 12).
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
@@ -60,6 +60,7 @@ class MoreScreen extends ConsumerWidget {
     final user = ref.watch(sessionControllerProvider).user;
     final version = ref.watch(_versionProvider).value;
     final attention = ref.watch(failedChangesProvider).value?.length ?? 0;
+    final premium = ref.watch(isPremiumProvider).value ?? false;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabMore)),
       body: ListView(
@@ -72,6 +73,33 @@ class MoreScreen extends ConsumerWidget {
               onTap: () => context.push(RoutePaths.settingsProfile),
             ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.workspace_premium_outlined),
+            title: Text(l10n.moreSubscription),
+            trailing: premium
+                ? Chip(
+                    label: Text(l10n.subscriptionPremiumActive),
+                    visualDensity: VisualDensity.compact,
+                  )
+                : null,
+            onTap: () => context.push(RoutePaths.subscription),
+          ),
+          ListTile(
+            leading: const Icon(Icons.repeat),
+            title: Text(l10n.moreRecurring),
+            onTap: () => context.push(RoutePaths.recurring),
+          ),
+          ListTile(
+            leading: const Icon(Icons.insert_chart_outlined),
+            title: Text(l10n.moreReports),
+            onTap: () => context.push(RoutePaths.reports),
+          ),
+          ListTile(
+            leading: const Icon(Icons.ios_share),
+            title: Text(l10n.moreExport),
+            trailing: premium ? null : const Icon(Icons.lock_outline, size: 18),
+            onTap: () => context.push(RoutePaths.export),
+          ),
           ListTile(
             leading: const Icon(Icons.category_outlined),
             title: Text(l10n.moreCategories),

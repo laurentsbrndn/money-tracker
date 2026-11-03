@@ -107,9 +107,8 @@ class ReconcileSession extends _$ReconcileSession {
   void defer(String accountId) =>
       state = state.copyWith(deferred: {...state.deferred, accountId});
 
-  void undefer(String accountId) => state = state.copyWith(
-    deferred: state.deferred.difference({accountId}),
-  );
+  void undefer(String accountId) =>
+      state = state.copyWith(deferred: state.deferred.difference({accountId}));
 
   /// Books an adjustment for the account's current difference. The amount is
   /// re-read from the database now, so a double tap or a transaction added

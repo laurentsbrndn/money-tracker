@@ -78,8 +78,8 @@ class NotificationService {
     return null;
   }
 
-  AndroidFlutterLocalNotificationsPlugin? get _android =>
-      _plugin.resolvePlatformSpecificImplementation<
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
       >();
 

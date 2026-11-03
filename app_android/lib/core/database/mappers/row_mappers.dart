@@ -26,6 +26,7 @@ extension TransactionRowDomain on TransactionRow {
     toAccountId: toAccountId,
     allocation: allocation == null ? null : Allocation.fromValue(allocation!),
     categoryId: categoryId,
+    source: source,
     deleted: deletedAt != null,
   );
 }

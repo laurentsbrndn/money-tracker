@@ -33,8 +33,7 @@ class SetupLockStep extends ConsumerWidget {
           )
         else
           OutlinedButton.icon(
-            onPressed: () =>
-                context.push('${RoutePaths.settingsPin}?mode=set'),
+            onPressed: () => context.push('${RoutePaths.settingsPin}?mode=set'),
             icon: const Icon(Icons.lock_outline),
             label: Text(l10n.setupLockAction),
           ),

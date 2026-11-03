@@ -33,7 +33,9 @@ bool isValidPinFormat(String pin) => RegExp('^\\d{$pinLength}\$').hasMatch(pin);
 /// Hashes [pin] with a fresh random salt, off the UI isolate.
 Future<PinHash> createPinHash(String pin, {Random? random}) {
   final rng = random ?? Random.secure();
-  final salt = Uint8List.fromList([for (var i = 0; i < 16; i++) rng.nextInt(256)]);
+  final salt = Uint8List.fromList([
+    for (var i = 0; i < 16; i++) rng.nextInt(256),
+  ]);
   return Isolate.run(
     () => PinHash(
       salt: base64Encode(salt),

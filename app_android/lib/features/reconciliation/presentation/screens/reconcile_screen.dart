@@ -187,7 +187,9 @@ class _ReconcileScreenState extends ConsumerState<ReconcileScreen> {
                     deferred: session.deferred.contains(item.account.id),
                     adjustedAmount: session.adjusted[item.account.id],
                     onMissed: () => _recordMissed(item),
-                    onAdjust: _busy ? () {} : () => unawaited(_adjust(item, hide)),
+                    onAdjust: _busy
+                        ? () {}
+                        : () => unawaited(_adjust(item, hide)),
                     onLater: () => ref
                         .read(reconcileSessionProvider.notifier)
                         .defer(item.account.id),

@@ -71,6 +71,7 @@ class _SyncSettingsScreenState extends ConsumerState<SyncSettingsScreen> {
       SyncEntities.accounts => RoutePaths.accountEdit(change.recordId),
       SyncEntities.transactions => RoutePaths.transaction(change.recordId),
       SyncEntities.categories => RoutePaths.categoryEdit(change.recordId),
+      SyncEntities.recurringRules => RoutePaths.recurringEdit(change.recordId),
       _ => null,
     };
     final action = await showModalBottomSheet<String>(

@@ -223,14 +223,15 @@ AllocationBreakdown computeAllocationBreakdown(
         break;
     }
   }
-  final categories = [
-    for (final entry in byCategory.entries)
-      CategoryTotal(categoryId: entry.key, amount: entry.value),
-  ]..sort((a, b) {
-      final byAmount = b.amount.compareTo(a.amount);
-      return byAmount != 0
-          ? byAmount
-          : (a.categoryId ?? '').compareTo(b.categoryId ?? '');
-    });
+  final categories =
+      [
+        for (final entry in byCategory.entries)
+          CategoryTotal(categoryId: entry.key, amount: entry.value),
+      ]..sort((a, b) {
+        final byAmount = b.amount.compareTo(a.amount);
+        return byAmount != 0
+            ? byAmount
+            : (a.categoryId ?? '').compareTo(b.categoryId ?? '');
+      });
   return AllocationBreakdown(categories: categories, transferNet: transferNet);
 }

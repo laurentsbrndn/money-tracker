@@ -20,6 +20,16 @@ abstract final class RoutePaths {
   static const String budget = '/budget';
   static const String budgetGoal = '/budget/goal';
   static const String more = '/more';
+  static const String subscription = '/more/subscription';
+  static const String paywall = '/paywall';
+
+  /// The paywall, starting a restore of past purchases at once.
+  static const String paywallRestore = '/paywall?restore=1';
+  static const String reports = '/more/reports';
+  static const String export = '/more/export';
+  static const String recurring = '/more/recurring';
+  static const String recurringNew = '/more/recurring/new';
+  static const String recurringEditPattern = '/more/recurring/:id';
   static const String categories = '/more/categories';
   static const String categoryNew = '/more/categories/new';
   static const String settingsProfile = '/more/settings/profile';
@@ -41,6 +51,7 @@ abstract final class RoutePaths {
 
   static String transaction(String id) => '/transactions/$id';
   static String account(String id) => '/accounts/$id';
+  static String recurringEdit(String id) => '/more/recurring/$id';
   static String categoryEdit(String id) => '/more/categories/$id';
   static String accountEdit(String id) => '/accounts/$id/edit';
 }

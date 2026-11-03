@@ -13,6 +13,7 @@ import '../../../../core/theme/provider_logos.dart';
 import '../../../../core/time/civil_date_format.dart';
 import '../../../../core/validation/validation_exception.dart';
 import '../../../../core/widgets/amount_text.dart';
+import '../../../../core/widgets/plan_limit_snack_bar.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../settings/application/user_settings_providers.dart';
 import '../../../transactions/application/transaction_lookups.dart';
@@ -44,9 +45,11 @@ class AccountDetailScreen extends ConsumerWidget {
         context: context,
         builder: (context) => AlertDialog(
           title: Text(l10n.accountArchiveBalanceTitle),
-          content: Text(l10n.accountArchiveBalanceBody(
+          content: Text(
+            l10n.accountArchiveBalanceBody(
               formatRupiah(balance, hidden: ref.read(hideAmountsProvider)),
-            )),
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -108,7 +111,15 @@ class AccountDetailScreen extends ConsumerWidget {
           .setArchived(account, archived: false);
       messenger.showSnackBar(SnackBar(content: Text(l10n.accountUnarchived)));
     } on PlanLimitException {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.planLimitAccounts)));
+      if (!context.mounted) {
+        return;
+      }
+      showPlanLimitSnackBar(
+        messenger,
+        GoRouter.of(context),
+        l10n,
+        l10n.planLimitAccounts,
+      );
     } on Object catch (error) {
       messenger.showSnackBar(
         SnackBar(content: Text(describeError(error, l10n))),

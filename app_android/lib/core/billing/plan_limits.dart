@@ -39,4 +39,4 @@ class PlanLimitException implements Exception {
   final PlanLimitKind kind;
 }
 
-enum PlanLimitKind { accounts, categories }
+enum PlanLimitKind { accounts, categories, recurring }

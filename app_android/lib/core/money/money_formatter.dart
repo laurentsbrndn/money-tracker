@@ -38,3 +38,27 @@ int? parseRupiahDigits(String text) {
   }
   return int.parse(digits);
 }
+
+/// A short amount for chart axes: 1500000 → `1,5 jt`, 2300000000 → `2,3 M`,
+/// 4500 → `4,5 rb` (integer math, one decimal, no currency symbol).
+String formatCompact(int amount) {
+  final abs = amount.abs();
+  final sign = amount < 0 ? '-' : '';
+  String scaled(int unit, String suffix) {
+    final tenths = abs * 10 ~/ unit;
+    final whole = tenths ~/ 10;
+    final fraction = tenths % 10;
+    return '$sign$whole${fraction == 0 ? '' : ',$fraction'} $suffix';
+  }
+
+  if (abs >= 1000000000) {
+    return scaled(1000000000, 'M');
+  }
+  if (abs >= 1000000) {
+    return scaled(1000000, 'jt');
+  }
+  if (abs >= 1000) {
+    return scaled(1000, 'rb');
+  }
+  return '$sign$abs';
+}
