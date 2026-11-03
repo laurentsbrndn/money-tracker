@@ -34,11 +34,11 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 - [x] `domain_rules/` sesuai `BUSINESS_RULES.md`
 
 ### iOS
-- [ ] `project.yml` (deployment target iOS 18.0, tanpa target test), xcconfig, struktur folder `FRONTEND_IOS.md` §2, SPM packages
-- [ ] `AppContainer`, `RootView`, `MainTabView` dengan 5 tab placeholder
-- [ ] GRDB `AppDatabase` + `DatabaseMigrations` + semua record
-- [ ] Plugin OpenAPI generator + middleware client info
-- [ ] `DomainRules/` sesuai `BUSINESS_RULES.md`
+- [x] `project.yml` (deployment target iOS 18.0, tanpa target test), xcconfig, struktur folder `FRONTEND_IOS.md` §2, SPM packages
+- [x] `AppContainer`, `RootView`, `MainTabView` dengan 5 tab placeholder
+- [x] GRDB `AppDatabase` + `DatabaseMigrations` + semua record
+- [x] Plugin OpenAPI generator + middleware client info
+- [x] `DomainRules/` sesuai `BUSINESS_RULES.md`
 
 ## Fase 1 — Inti
 
@@ -48,13 +48,16 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 - [ ] Sync handler: `user_settings`, `categories`, `accounts`, `balance_snapshots`, `transactions`, `budget_goals` dengan validasi `BUSINESS_RULES.md` §6
 - [ ] billing: `Entitlements` sementara (semua user free) + batas paket di §7
 - [ ] sync: push (idempotency, advisory lock, savepoint, LWW, clamp) dan pull (cursor, `has_more`, `meta`)
+    - Catatan: terapkan aturan `null` pada `data` push (`SYNC_PROTOCOL.md` §8.1): key nullable yang tidak ada = `null`; field wajib non-null yang tidak ada → `rejected` `validation`.
 - [ ] (manual) User menguji skenario S1–S7 dan S9–S11 (`SYNC_PROTOCOL.md` §13) serta kepemilikan data
+- [ ] (manual) User menguji aturan `null` pada push: tanpa key nullable → tersimpan `null`; tanpa field wajib non-null → `rejected` `validation`
 
 ### Flutter
 - [ ] Session, token storage, auth interceptor (refresh single-flight)
 - [ ] Layar auth: login, daftar, Google, verifikasi email, lupa/reset password
 - [ ] Sync engine lengkap + scheduler + Workmanager + `SyncBadge`
-    - Catatan: tambahkan penanda entri outbox "sedang dikirim" (SYNC_PROTOCOL §6.3.1) di skema Drift. Skema v1 boleh diedit langsung (tanpa migration `onUpgrade`) karena app belum dirilis.
+    - Catatan: tipe field nullable hasil generator sudah berubah (UUID nullable → `String?`, timestamp nullable → `DateTime?`, enum alokasi inline). `EntityCodec` buatan sendiri untuk payload boleh dipakai tetapi tidak wajib.
+    - Catatan: kolom penanda "sedang dikirim" di outbox diputuskan dan ditulis dulu di `SYNC_PROTOCOL.md` sebelum diimplementasi, di Flutter dan iOS. Skema v1 boleh diedit langsung (tanpa migration `onUpgrade`) karena app belum dirilis.
 - [ ] Onboarding, initial sync, setup wizard (Cash, akun, kategori)
 - [ ] Dashboard: ringkasan bulan + transaksi terbaru + pemilih bulan
 - [ ] Transaksi: daftar, filter, cari, form expense/income/transfer + biaya admin, edit, hapus + urungkan, duplikat
@@ -65,6 +68,7 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 
 ### iOS
 - [ ] Semua item Flutter Fase 1 dengan padanan iOS
+    - Catatan sync engine: tipe field nullable hasil generator sudah berubah (UUID nullable → `String?`, timestamp nullable → `Date?`, enum alokasi inline). `EntityCodec` buatan sendiri untuk payload boleh dipakai tetapi tidak wajib.
 - [ ] Sign in with Apple
 
 ## Fase 2 — Uang aktual & budget

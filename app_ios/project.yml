@@ -1,0 +1,64 @@
+name: MoneyTracker
+
+options:
+  bundleIdPrefix: com.brandon
+  deploymentTarget:
+    iOS: "18.0"
+  developmentLanguage: id
+  createIntermediateGroups: true
+
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+# Stable releases only, locked in Package.resolved.
+packages:
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    majorVersion: 7.12.0
+  swift-openapi-generator:
+    url: https://github.com/apple/swift-openapi-generator
+    majorVersion: 1.14.3
+  swift-openapi-runtime:
+    url: https://github.com/apple/swift-openapi-runtime
+    majorVersion: 1.13.3
+  swift-openapi-urlsession:
+    url: https://github.com/apple/swift-openapi-urlsession
+    majorVersion: 1.4.0
+  swift-http-types:
+    url: https://github.com/apple/swift-http-types
+    majorVersion: 1.8.0
+
+targets:
+  MoneyTracker:
+    type: application
+    platform: iOS
+    sources:
+      - path: MoneyTracker
+        excludes:
+          - Resources/Info.plist
+    buildToolPlugins:
+      - plugin: OpenAPIGenerator
+        package: swift-openapi-generator
+    dependencies:
+      - package: GRDB
+      - package: swift-openapi-runtime
+        product: OpenAPIRuntime
+      - package: swift-openapi-urlsession
+        product: OpenAPIURLSession
+      - package: swift-http-types
+        product: HTTPTypes
+    settings:
+      base:
+        INFOPLIST_FILE: MoneyTracker/Resources/Info.plist
+        INFOPLIST_PREPROCESS: YES
+        CODE_SIGN_ENTITLEMENTS: MoneyTracker/Resources/MoneyTracker.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO

@@ -980,9 +980,8 @@ components:
         premium:
           type: boolean
         expires_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
         will_renew:
           type: boolean
         product_id:
@@ -1001,9 +1000,6 @@ components:
     TransactionStatus:
       type: string
       enum: [posted, pending_confirmation]
-    Allocation:
-      type: string
-      enum: [needs, wants, savings]
     AccountType:
       type: string
       enum: [bank, e_wallet, cash, savings]
@@ -1068,9 +1064,8 @@ components:
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     CategoryRow:
       type: object
@@ -1104,9 +1099,8 @@ components:
           type: string
           pattern: '^#[0-9A-Fa-f]{6}$'
         default_allocation:
-          oneOf:
-            - $ref: "#/components/schemas/Allocation"
-            - type: "null"
+          type: ["string", "null"]
+          enum: [needs, wants, savings, null]
           description: Wajib untuk expense, null untuk income
         sort_order:
           type: integer
@@ -1115,17 +1109,15 @@ components:
         is_hidden:
           type: boolean
         archived_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     AccountRow:
       type: object
@@ -1168,17 +1160,15 @@ components:
         sort_order:
           type: integer
         archived_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     BalanceSnapshotRow:
       type: object
@@ -1208,9 +1198,8 @@ components:
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     TransactionRow:
       type: object
@@ -1253,17 +1242,14 @@ components:
         account_id:
           $ref: "#/components/schemas/Uuid"
         to_account_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
         category_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
         allocation:
-          oneOf:
-            - $ref: "#/components/schemas/Allocation"
-            - type: "null"
+          type: ["string", "null"]
+          enum: [needs, wants, savings, null]
         source:
           type: ["string", "null"]
           maxLength: 100
@@ -1271,21 +1257,18 @@ components:
           type: ["string", "null"]
           maxLength: 255
         linked_transaction_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
         recurring_rule_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     RecurringRuleRow:
       type: object
@@ -1323,17 +1306,14 @@ components:
         account_id:
           $ref: "#/components/schemas/Uuid"
         to_account_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
         category_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
         allocation:
-          oneOf:
-            - $ref: "#/components/schemas/Allocation"
-            - type: "null"
+          type: ["string", "null"]
+          enum: [needs, wants, savings, null]
         source:
           type: ["string", "null"]
           maxLength: 100
@@ -1362,25 +1342,22 @@ components:
         start_date:
           $ref: "#/components/schemas/Date"
         end_date:
-          oneOf:
-            - $ref: "#/components/schemas/Date"
-            - type: "null"
+          type: ["string", "null"]
+          format: date
         mode:
           $ref: "#/components/schemas/RecurringMode"
         is_paused:
           type: boolean
         last_generated_date:
-          oneOf:
-            - $ref: "#/components/schemas/Date"
-            - type: "null"
+          type: ["string", "null"]
+          format: date
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     BudgetGoalRow:
       type: object
@@ -1423,17 +1400,18 @@ components:
         updated_at:
           $ref: "#/components/schemas/Timestamp"
         deleted_at:
-          oneOf:
-            - $ref: "#/components/schemas/Timestamp"
-            - type: "null"
+          type: ["string", "null"]
+          format: date-time
 
     # ---------- Sync: push ----------
     PushChange:
       description: |
         Satu perubahan. Varian ditentukan oleh `entity` (discriminator); `data` bertipe baris
         entitas itu. `data` (seluruh baris) wajib untuk `op = upsert` dan tidak ada untuk
-        `op = delete`. Kolom `user_id`, `server_version`, dan `server_updated_at` diabaikan
-        bila dikirim. Nama entitas di luar daftar dijawab server per entri sebagai
+        `op = delete`. `data` adalah seluruh baris. Untuk field nullable, key yang tidak ada
+        diperlakukan sama dengan `null`. Field wajib non-null harus ada, bila tidak entri
+        ditolak dengan `validation`. Kolom `user_id`, `server_version`, dan `server_updated_at`
+        diabaikan bila dikirim. Nama entitas di luar daftar dijawab server per entri sebagai
         `rejected` `unknown_entity` (bukan 422 untuk seluruh request).
       oneOf:
         - $ref: "#/components/schemas/PushChangeUserSettings"
@@ -1880,9 +1858,8 @@ components:
       required: [category_id, amount]
       properties:
         category_id:
-          oneOf:
-            - $ref: "#/components/schemas/Uuid"
-            - type: "null"
+          type: ["string", "null"]
+          format: uuid
           description: Null untuk income tanpa kategori
         amount:
           $ref: "#/components/schemas/Rupiah"

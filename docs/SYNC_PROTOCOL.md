@@ -187,6 +187,8 @@ Header: `Authorization: Bearer <access>`, `Idempotency-Key: <uuid batch>`, `X-De
 
 Batas: maksimal 100 entri per request, body maksimal 1 MB.
 
+Aturan `null` pada `data`: `data` adalah seluruh baris. Untuk field nullable, key yang tidak ada diperlakukan sama dengan `null`. Field wajib non-null harus ada, bila tidak entri ditolak dengan `validation`. Client boleh mengirim `null` eksplisit atau menghilangkan key; hasilnya sama.
+
 ### 8.2 Algoritma server
 
 1. Bila `(user_id, Idempotency-Key)` sudah ada di `sync_idempotency_keys` → kembalikan respons yang tersimpan, selesai.

@@ -1,0 +1,5 @@
+#include "Base.xcconfig"
+// Optional so a fresh checkout still builds; copy Secrets.example.xcconfig to Secrets.xcconfig.
+#include? "Secrets.xcconfig"
+
+INFOPLIST_PREPROCESSOR_DEFINITIONS = DEBUG

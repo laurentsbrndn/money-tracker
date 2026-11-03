@@ -52,6 +52,8 @@ app_ios/
     │   ├── Database/
     │   │   ├── AppDatabase.swift       # buka DatabasePool + file protection
     │   │   ├── DatabaseMigrations.swift  # SATU file migration lokal (DatabaseMigrator)
+    │   │   ├── CivilDate+GRDB.swift    # CivilDate ↔ TEXT "YYYY-MM-DD" (CivilDate sendiri murni Foundation)
+    │   │   ├── UTCMillisDateStrategy.swift  # Date ↔ TEXT RFC 3339 UTC dengan milidetik, lebar tetap
     │   │   ├── Records/                # SATU record per file
     │   │   │   ├── UserSettingsRecord.swift
     │   │   │   ├── AccountRecord.swift
@@ -88,6 +90,7 @@ app_ios/
     │   ├── DomainRules/                # port 1:1 dari BUSINESS_RULES.md, murni Swift
     │   │   ├── Rounding.swift
     │   │   ├── Period.swift
+    │   │   ├── DomainTypes.swift       # struct nilai murni (Account, Transaction, BalanceSnapshot, BudgetGoal, YearMonth), tanpa GRDB
     │   │   ├── Balance.swift
     │   │   ├── Reconciliation.swift
     │   │   ├── Budget.swift

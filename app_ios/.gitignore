@@ -1,0 +1,12 @@
+# XcodeGen output
+*.xcodeproj
+*.xcworkspace
+
+# Build
+.build/
+DerivedData/
+
+# Secrets
+Config/Secrets.xcconfig
+
+.DS_Store
