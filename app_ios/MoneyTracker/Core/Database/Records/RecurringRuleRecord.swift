@@ -22,6 +22,8 @@ struct RecurringRuleRecord: Codable, Identifiable, Hashable, Sendable, Fetchable
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     /// `income`, `expense`, or `transfer`.
     var type: String
     var amount: Int64
@@ -46,4 +48,8 @@ struct RecurringRuleRecord: Codable, Identifiable, Hashable, Sendable, Fetchable
     var mode: String
     var isPaused: Bool
     var lastGeneratedDate: CivilDate?
+}
+
+extension RecurringRuleRecord: SyncRecord {
+    static let entity = SyncEntities.recurringRules
 }

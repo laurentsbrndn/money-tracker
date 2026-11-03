@@ -39,6 +39,14 @@ func BindAndValidate[T any](c fiber.Ctx) (T, error) {
 	return dst, nil
 }
 
+// Validate checks v with its `validate` tags. Failures are returned as a 422 validation AppError.
+func Validate(v any) error {
+	if err := validate.Struct(v); err != nil {
+		return validationFromError(err)
+	}
+	return nil
+}
+
 func validationFromError(err error) *AppError {
 	var verrs validator.ValidationErrors
 	if !errors.As(err, &verrs) {

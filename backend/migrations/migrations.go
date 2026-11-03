@@ -21,7 +21,28 @@ func All() []*gormigrate.Migration {
 			Migrate:  migrateInit,
 			Rollback: rollbackInit,
 		},
+		{
+			ID:       "202611030001_refresh_token_ip",
+			Migrate:  migrateRefreshTokenIP,
+			Rollback: rollbackRefreshTokenIP,
+		},
 	}
+}
+
+// refreshTokenIP is the snapshot used by 202611030001_refresh_token_ip: only the new column.
+type refreshTokenIP struct {
+	IPAddress *string `gorm:"column:ip_address;type:varchar(45)"`
+}
+
+func (refreshTokenIP) TableName() string { return "refresh_tokens" }
+
+// migrateRefreshTokenIP adds the client IP of the session, kept for session audit only.
+func migrateRefreshTokenIP(tx *gorm.DB) error {
+	return tx.Migrator().AddColumn(&refreshTokenIP{}, "ip_address")
+}
+
+func rollbackRefreshTokenIP(tx *gorm.DB) error {
+	return tx.Migrator().DropColumn(&refreshTokenIP{}, "ip_address")
 }
 
 func migrateInit(tx *gorm.DB) error {

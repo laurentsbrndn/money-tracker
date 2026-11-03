@@ -36,7 +36,7 @@ app_ios/
 │   ├── Base.xcconfig
 │   ├── Debug.xcconfig
 │   ├── Release.xcconfig
-│   ├── Secrets.example.xcconfig        # API_BASE_URL, REVENUECAT_IOS_KEY, GOOGLE_IOS_CLIENT_ID
+│   ├── Secrets.example.xcconfig        # API_BASE_URL, REVENUECAT_IOS_KEY, GOOGLE_IOS_CLIENT_ID, GOOGLE_IOS_REVERSED_CLIENT_ID
 │   └── Secrets.xcconfig                # tidak masuk repo
 └── MoneyTracker/
     ├── App/
@@ -210,6 +210,8 @@ Tab: **Beranda · Transaksi · Akun · Budget · Lainnya**. Daftar layar dan fas
 - Nilai rahasia di `Config/Secrets.xcconfig` (tidak masuk repo), di-include oleh `Debug.xcconfig`/`Release.xcconfig`, lalu diteruskan ke `Info.plist` dan dibaca `AppConfig`.
 - Bundle ID dan Team ID diisi user di `project.yml`.
 - Capability: Sign in with Apple, Background Modes (Background fetch), In-App Purchase.
+- `GOOGLE_IOS_REVERSED_CLIENT_ID` (`com.googleusercontent.apps.<angka>-<hash>`) didaftarkan sebagai URL scheme di `Info.plist` supaya Google Sign-In bisa kembali ke app; `GIDClientID` di `Info.plist` memakai `GOOGLE_IOS_CLIENT_ID`. ID token Google ber-`aud` iOS client ID, yang sudah termasuk di `GOOGLE_CLIENT_IDS` server.
+- Build tanpa Simulator yang bisa dijalankan: `xcodebuild -scheme MoneyTracker -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation -skipMacroValidation CODE_SIGNING_ALLOWED=NO build` (plugin OpenAPI generator butuh `-skipPackagePluginValidation`).
 - `API_BASE_URL` lokal untuk simulator: `http://localhost:8080` (origin saja; path API sudah diawali `/v1`) (tambahkan pengecualian ATS hanya di konfigurasi Debug).
 
 ## 7. Target perangkat & performa
@@ -225,3 +227,25 @@ Tab: **Beranda · Transaksi · Akun · Budget · Lainnya**. Daftar layar dan fas
 Tidak ada file test dan tidak ada target test di `project.yml` (lihat `CLAUDE.md`). Verifikasi otomatis cukup build berhasil.
 | `Sync/*` | Coalescing outbox, penerapan push, pull melewati baris yang masih di outbox (GRDB `DatabaseQueue()` in-memory) |
 
+## 9. Catatan implementasi Fase 1 (keputusan dan perbedaan dari Flutter)
+
+Perilaku sync, auth, dan aturan bisnis identik dengan Flutter. Yang berbeda hanya karena platform atau karena pilihan struktur Swift:
+
+| Hal | Keputusan iOS |
+| --- | --- |
+| Jadwal background | `BGAppRefreshTask` tidak menjamin jadwal 30 menit. App hanya mengajukan `earliestBeginDate` = 30 menit; iOS yang memutuskan kapan (dan apakah) jalan, tergantung pemakaian app, baterai, mode hemat daya, dan pengaturan "Background App Refresh". Tidak berjalan di Simulator. Pemicu foreground (`scenePhase == .active`, `NWPathMonitor`, debounce 2 detik) tetap menjadi jalur utama. Task diajukan ulang saat app masuk background dan di awal setiap eksekusi task |
+| Penanda `foreground_since` | Tetap diterapkan (heartbeat 60 detik, hapus saat background, task diam bila lebih baru dari 3 menit) walau task background iOS berjalan di proses yang sama dengan app, supaya perilaku identik dengan Android |
+| Skema lokal | `batch_id` (outbox) dan `sync_error` (tiap tabel entitas) ditambahkan langsung ke migration `v1_init` (app belum dirilis). Instalasi dev yang lebih lama harus dihapus dulu |
+| Klien API | Auth dan `/me` memakai klien hasil generator. Push dan pull memakai `RawAPI` (JSON mentah lewat `EntityCodec`) dengan rantai middleware yang sama: `ClientInfoMiddleware` → `UpgradeRequiredMiddleware` → `AuthMiddleware` → `ProblemMiddleware`. `ProblemMiddleware` melempar `APIError` untuk setiap respons non-2xx, jadi pemanggil hanya menangani kasus sukses. Klien refresh token tidak memakai `AuthMiddleware` |
+| Logika murni sync | `Core/Sync/Logic/` hanya bergantung pada Foundation (coalescing, pemilihan batch, backoff, hasil push, aturan pull, kursor, perbaikan stale). Akses GRDB dan jaringan ada di file lain (`PushApplier`, `PullApplier`, `SyncEngine`, ...) |
+| Keychain dan install ulang | Keychain bertahan setelah app dihapus, sedangkan database tidak. Saat peluncuran pertama setelah instal, item Keychain app dibersihkan supaya sesi lama tidak terbawa ke database kosong |
+| Nonce OAuth | Field `nonce` dikirim berisi nilai yang dimasukkan ke permintaan penyedia: hash SHA-256 (hex) untuk Apple, nilai mentah untuk Google. Server masih mengabaikannya (lihat item hardening di `ROADMAP.md`) |
+| Google Sign-In | URL kembali ditangani `.onOpenURL` di `MoneyTrackerApp`, bukan `AppDelegate` (app memakai siklus hidup scene SwiftUI). `AppDelegate` memiliki `AppContainer` supaya BGTask terdaftar sebelum app selesai diluncurkan, juga saat iOS meluncurkan app hanya untuk menjalankan task |
+| Tanggal "hari ini" | Memakai timezone perangkat sampai Fase 2 (`UserClock`), sama seperti Flutter |
+| Dashboard | Ringkasan bulan memakai `DomainRules.computeMonthlySummary` dengan transaksi bulan terpilih; `opening_total` belum ditampilkan sampai kartu Fase 2 |
+| Verifikasi email | Ditampilkan sebagai sheet dari banner Beranda atau halaman Profil (di Flutter: route yang di-push) |
+| Perlu login | `SyncBadge` "Perlu login" dan "Masuk" di initial sync membuka layar login sebagai sheet di atas app; app tetap dipakai di bawahnya |
+| Setup wizard | "Tambah akun" membuka formulir akun sebagai sheet |
+| Kategori | Urutkan lewat tombol Edit (drag); sembunyikan dan arsipkan lewat swipe |
+| Teks UI | Kunci di `Localizable.xcstrings` adalah teks Indonesia itu sendiri (`sourceLanguage = id`); teks di luar View memakai `String(localized:)` |
+| Tab Budget | Masih placeholder sampai Fase 2 |

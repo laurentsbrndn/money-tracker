@@ -27,6 +27,9 @@ func Open(dsn string, log *slog.Logger) (*gorm.DB, error) {
 		&gorm.Config{
 			PrepareStmt:            false,
 			SkipDefaultTransaction: true,
+			// Unique violations surface as gorm.ErrDuplicatedKey, so services can map them
+			// to domain errors without importing the driver.
+			TranslateError: true,
 			// Do not ping on open: the server must start even when the database is down so that
 			// /healthz can report 503. A malformed DSN still fails here.
 			DisableAutomaticPing: true,

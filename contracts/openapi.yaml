@@ -890,6 +890,12 @@ components:
       properties:
         identity_token:
           type: string
+        nonce:
+          type: string
+          description: |
+            Opsional. Nonce yang client masukkan ke permintaan login ke penyedia (perlindungan
+            replay ID token). Verifikasinya di server diimplementasikan saat OAuth diuji
+            dengan token asli; sampai saat itu server mengabaikan field ini.
         name:
           type: string
           description: Hanya ada saat login Apple pertama
@@ -903,6 +909,12 @@ components:
       properties:
         id_token:
           type: string
+        nonce:
+          type: string
+          description: |
+            Opsional. Nonce yang client masukkan ke permintaan login ke penyedia (perlindungan
+            replay ID token). Verifikasinya di server diimplementasikan saat OAuth diuji
+            dengan token asli; sampai saat itu server mengabaikan field ini.
         timezone:
           type: string
 

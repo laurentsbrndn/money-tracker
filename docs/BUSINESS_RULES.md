@@ -209,7 +209,17 @@ Dicek di client sebelum menyimpan dan **diulang di server** saat push.
 | balance_snapshots | `account_id` milik user; `snapshot_date` ≥ `opening_date` akun dan ≤ hari ini |
 | budget_goals | `needs_pct + wants_pct + savings_pct = 100`, masing-masing 0–100; `effective_month` tanggal 1; `planned_income` ≥ 0 bila diisi |
 | recurring_rules | Field wajib sesuai `frequency`; `end_date` ≥ `start_date`; template lolos validasi transaksi |
-| user_settings | `timezone` nama IANA valid; `daily_reminder_time` format `HH:MM` |
+| user_settings | `timezone` nama IANA valid; `daily_reminder_time` format `HH:MM`; `currency` hanya `IDR`; `week_start` 1 atau 7 |
+
+Catatan penerapan di server:
+
+- **"Hari ini" untuk `opening_date` dan `snapshot_date`** (≤ hari ini): modul tidak membaca timezone user, jadi server memakai tanggal UTC **+ 1 hari**. Tanpa toleransi ini, user di zona yang mendahului UTC (misalnya WIB dini hari) akan ditolak pada tanggalnya sendiri. Transaksi memakai tanggal UTC + 366 hari seperti di tabel.
+- **Batas nominal** ±999.999.999.999 berlaku juga untuk `accounts.opening_balance`, `balance_snapshots.amount`, dan `budget_goals.planned_income` (rumus pembulatan §4.5 bergantung pada batas ini).
+- **Referensi:** akun/kategori/transfer terkait yang tidak ditemukan untuk user itu (belum ada atau milik user lain) → `reference_missing` (retryable); yang sudah dihapus → `validation`.
+- **Kategori:** `is_default` hanya diisi seed server. Baris baru dari client harus `false`, dan baris yang sudah ada tidak boleh mengubahnya.
+- **Id & tombstone:** `data.id` harus sama dengan `id` entri; upsert tidak boleh membawa `deleted_at` (gunakan `op = delete`); upsert pada baris yang sudah tombstone menghidupkannya kembali. `budget_goals.id` harus UUIDv5 dari user dan bulan efektif; `user_settings.id` harus sama dengan id user dan barisnya tidak dapat dihapus.
+- **Hapus akun/kategori** (`op = delete`) ditolak bila masih dipakai transaksi aktif; mengarsipkan (`archived_at`) tidak diperiksa.
+- **Batas paket** (§7) diperiksa hanya saat baris menjadi aktif: baris baru, hidup lagi dari tombstone, atau akun yang di-unarchive. Update biasa tidak dicek. Kategori custom yang diarsipkan tetap dihitung.
 
 ## 7. Batas paket
 

@@ -11,6 +11,8 @@ import (
 type Existing struct {
 	UserID    uuid.UUID
 	UpdatedAt time.Time
+	// ServerVersion is reported for stale results (docs/SYNC_PROTOCOL.md §8.3).
+	ServerVersion int64
 }
 
 // Handler implements sync for one entity. Each owning module registers one per entity.

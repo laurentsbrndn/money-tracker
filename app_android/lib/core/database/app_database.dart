@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../time/civil_date.dart';
 import 'converters/civil_date_converter.dart';
@@ -23,11 +22,6 @@ import 'tables/transactions_table.dart';
 import 'tables/user_settings_table.dart';
 
 part 'app_database.g.dart';
-
-/// Overridden in `bootstrap()` with the opened (encrypted) database.
-final appDatabaseProvider = Provider<AppDatabase>(
-  (ref) => throw StateError('appDatabaseProvider must be overridden'),
-);
 
 @DriftDatabase(
   tables: [

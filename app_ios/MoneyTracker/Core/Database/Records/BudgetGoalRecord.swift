@@ -23,10 +23,16 @@ struct BudgetGoalRecord: Codable, Identifiable, Hashable, Sendable, FetchableRec
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     /// Always the first day of the month.
     var effectiveMonth: CivilDate
     var needsPct: Int
     var wantsPct: Int
     var savingsPct: Int
     var plannedIncome: Int64?
+}
+
+extension BudgetGoalRecord: SyncRecord {
+    static let entity = SyncEntities.budgetGoals
 }

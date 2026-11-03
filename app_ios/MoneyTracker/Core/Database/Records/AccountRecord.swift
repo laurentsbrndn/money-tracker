@@ -21,6 +21,8 @@ struct AccountRecord: Codable, Identifiable, Hashable, Sendable, FetchableRecord
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     var name: String
     /// `bank`, `e_wallet`, `cash`, or `savings`.
     var type: String
@@ -32,4 +34,8 @@ struct AccountRecord: Codable, Identifiable, Hashable, Sendable, FetchableRecord
     var includeInTotal: Bool
     var sortOrder: Int
     var archivedAt: Date?
+}
+
+extension AccountRecord: SyncRecord {
+    static let entity = SyncEntities.accounts
 }

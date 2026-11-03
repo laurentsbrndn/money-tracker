@@ -25,4 +25,13 @@ class SyncStateDao extends DatabaseAccessor<AppDatabase>
   Future<void> write(String key, String value) => into(
     syncState,
   ).insertOnConflictUpdate(SyncStateCompanion.insert(key: key, value: value));
+
+  Future<void> remove(String key) =>
+      (delete(syncState)..where((t) => t.key.equals(key))).go();
+
+  /// Every key-value pair, re-emitted on change.
+  Stream<Map<String, String>> watchAll() =>
+      select(syncState)
+          .watch()
+          .map((rows) => {for (final row in rows) row.key: row.value});
 }

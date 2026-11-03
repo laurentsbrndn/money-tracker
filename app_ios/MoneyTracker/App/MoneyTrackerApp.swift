@@ -1,13 +1,18 @@
+import GoogleSignIn
 import SwiftUI
 
 @main
 struct MoneyTrackerApp: App {
-    @State private var container = AppContainer()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environment(container)
+                .environment(delegate.container)
+                .onOpenURL { url in
+                    // Google Sign-In returns to the app through its reversed client ID scheme.
+                    _ = GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

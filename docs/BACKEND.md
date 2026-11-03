@@ -246,10 +246,13 @@ type Handler interface {
 }
 
 type Existing struct {
-    UserID    uuid.UUID
-    UpdatedAt time.Time
+    UserID        uuid.UUID
+    UpdatedAt     time.Time
+    ServerVersion int64 // dilaporkan pada hasil stale
 }
 ```
+
+Implementasinya tidak ditulis ulang per entitas: `syncbase.Repository[T]` (lookup tanpa filter user, upsert seluruh baris, tombstone, paging kursor, purge) dan `syncbase.EntityHandler[T]` menyusun `Handler` dari repository dan fungsi `Upsert`/`Delete` milik service entitas. `syncbase.Decode[T]` mengurai dan memvalidasi `data` (field wajib non-null bertipe pointer dengan `validate:"required"`), dan service menolak perubahan dengan `syncbase.Invalid`/`ReferenceMissing`/`PlanLimit`. Kolom waktu memakai `syncbase.Time` (milidetik tetap, UTC).
 
 `server_version` dan `server_updated_at` diisi oleh helper bersama di `syncbase` (memanggil `database.NextSyncVersion`), bukan oleh masing-masing handler.
 
@@ -285,10 +288,10 @@ Config dibagi dua kelompok:
 
 | Variabel | Wajib saat modul aktif | Contoh / keterangan |
 | --- | --- | --- |
-| `APPLE_BUNDLE_ID` | identity OAuth (Fase 1) | `aud` token Apple |
-| `GOOGLE_CLIENT_IDS` | identity OAuth (Fase 1) | Daftar dipisah koma (web client ID untuk Android Credential Manager + iOS client ID) |
-| `RESEND_API_KEY` | identity, production (Fase 1) | Kosong di lokal → `log_mailer` |
-| `EMAIL_FROM` | identity (Fase 1) | `Money Tracker <no-reply@domain>` |
+| `APPLE_BUNDLE_ID` | identity OAuth, `preview` dan `production` | `aud` token Apple. Kosong di `local` → endpoint OAuth Apple menjawab `500 internal` "OAuth belum dikonfigurasi" dan server tetap start |
+| `GOOGLE_CLIENT_IDS` | identity OAuth, `preview` dan `production` | Daftar dipisah koma (web client ID untuk Android Credential Manager + iOS client ID). Kosong di `local` → sama seperti Apple |
+| `RESEND_API_KEY` | identity, hanya `production` | Kosong di `local`/`preview` → `log_mailer` (kode ditulis ke log) |
+| `EMAIL_FROM` | identity, **semua environment** | `Money Tracker <no-reply@domain>` |
 | `REVENUECAT_WEBHOOK_SECRET` | billing (Fase 3) | Nilai header Authorization webhook |
 | `REVENUECAT_SECRET_API_KEY` | billing (Fase 3) | Untuk mengambil status subscriber terbaru |
 
@@ -327,6 +330,7 @@ Di luar itu, gunakan query builder GORM. `db.Raw` / `db.Exec` dengan string SQL 
 | `/v1/internal/cron/*` | `cron_auth` (tanpa `client_info`) |
 | `/v1/billing/webhooks/revenuecat` | `webhook_auth` (tanpa `client_info`) |
 | `/healthz` | – (cek database dengan timeout maksimal 2 detik; respons `200 {"status":"ok"}` atau `503 {"status":"unavailable"}` tanpa detail error, detail hanya di log) |
+- **IP klien** (log akses dan kolom `refresh_tokens.ip_address`) dibaca dari header `X-Forwarded-For`. Alasan: dokumentasi Vercel (Request headers) menyatakan Vercel menimpa `X-Forwarded-For` dan tidak meneruskan IP eksternal untuk mencegah spoofing; untuk `X-Real-IP` dan `X-Vercel-Forwarded-For` tidak ada pernyataan serupa. Di `preview` dan `production`: `ProxyHeader = X-Forwarded-For`, `TrustProxy = true` dengan `Proxies = ["0.0.0.0/0", "::/0"]` (Vercel tidak menerbitkan daftar IP proxy dan fungsi hanya dapat dijangkau lewat Vercel), `EnableIPValidation = true`. Di `local`, `TrustProxy` mati dan header diabaikan, sehingga `c.IP()` adalah IP koneksi TCP. IP hanya untuk audit sesi dan log, tidak dipakai untuk keputusan keamanan.
 - Semua error dikembalikan sebagai `*httpx.AppError`; error lain dipetakan ke `500 internal` dan dilog dengan `request_id`.
 - Handler mengambil `context.Context` dari request Fiber dan meneruskannya ke service.
 

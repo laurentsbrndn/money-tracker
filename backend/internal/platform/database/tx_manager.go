@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"gorm.io/gorm"
 )
@@ -36,4 +37,17 @@ func (m *TxManager) DB(ctx context.Context) *gorm.DB {
 		return tx.WithContext(ctx)
 	}
 	return m.db.WithContext(ctx)
+}
+
+// WithReadSnapshot runs fn in a read-only REPEATABLE READ transaction, so every query in fn
+// sees one consistent snapshot. Pull relies on it: rows read from different tables must not
+// straddle a concurrent commit (docs/SYNC_PROTOCOL.md §10).
+func (m *TxManager) WithReadSnapshot(ctx context.Context, fn func(ctx context.Context) error) error {
+	if _, ok := ctx.Value(txKey{}).(*gorm.DB); ok {
+		return fn(ctx)
+	}
+	opts := &sql.TxOptions{Isolation: sql.LevelRepeatableRead, ReadOnly: true}
+	return m.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return fn(context.WithValue(ctx, txKey{}, tx))
+	}, opts)
 }

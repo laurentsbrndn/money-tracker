@@ -42,6 +42,12 @@ func (a *App) registerRoutes(jwt middleware.AccessTokenVerifier) {
 	a.web.Use("/v1", skipFor(clientInfo, cronPrefix, webhookPrefix))
 	a.web.Use("/v1", skipFor(authGuard, cronPrefix, webhookPrefix, authPrefix))
 
+	// Module routes. /v1/auth has no global guard; the identity routes that need a user carry
+	// authGuard themselves.
+	v1 := a.web.Group("/v1")
+	a.identity.RegisterRoutes(v1.Group("/auth"), v1, authGuard)
+	a.sync.RegisterRoutes(v1)
+
 	// Vercel Cron and RevenueCat: shared-secret Bearer, no client headers.
 	a.web.Use(cronPrefix, middleware.CronAuth(a.cfg.CronSecret))
 	a.web.Use(webhookPrefix, middleware.WebhookAuth(a.cfg.RevenueCat.WebhookSecret))

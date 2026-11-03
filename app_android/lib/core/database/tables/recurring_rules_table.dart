@@ -8,7 +8,7 @@ class RecurringRules extends Table with SyncColumns {
   /// `income`, `expense`, or `transfer`.
   TextColumn get type => text()();
 
-  Int64Column get amount => int64()();
+  IntColumn get amount => integer()();
 
   TextColumn get accountId => text()();
 

@@ -180,6 +180,7 @@ features/<fitur>/
 
 Implementasi persis `SYNC_PROTOCOL.md`. Tambahan khusus Android:
 
+- Penanda "sedang dikirim" outbox = kolom `batch_id` (`SYNC_PROTOCOL.md` §5.2.1). Task background dilewati selama `sync_state.foreground_since` segar (lebih baru dari 3 menit): app menulis ulang nilainya tiap 60 detik (heartbeat) selama foreground dan menghapusnya saat pause, jadi crash atau force-stop paling lama memblokir task 3 menit. Tujuannya supaya dua isolate tidak me-refresh token bersamaan.
 - `Workmanager().registerPeriodicTask` 30 menit, constraint `NetworkType.connected`. Callback background membuka database sendiri (isolate terpisah) lalu menjalankan `SyncEngine.runOnce()`.
 - Pemicu foreground: `AppLifecycleListener.onResume`, `connectivity_plus`, debounce 2 detik setelah tulis.
 - `SyncBadge` di header Dashboard membaca `sync_status_provider`: `Tersinkron`, `Menunggu sync (n)`, `Offline`, `Perlu login`, `Perlu perhatian (n)`.

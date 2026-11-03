@@ -21,7 +21,7 @@ class Transactions extends Table with SyncColumns {
   TextColumn get transactionDate => text().map(const CivilDateConverter())();
 
   /// Positive, except for `adjustment` which is signed and non-zero.
-  Int64Column get amount => int64()();
+  IntColumn get amount => integer()();
 
   TextColumn get currency => text().withDefault(const Constant('IDR'))();
 

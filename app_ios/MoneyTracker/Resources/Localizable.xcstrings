@@ -1,17 +1,855 @@
 {
   "sourceLanguage" : "id",
   "strings" : {
+    "" : {
+
+    },
+    "(dihapus)" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld data diterima" : {
+
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Ada %lld perubahan yang belum tersinkron. Jika keluar sekarang, perubahan itu hilang dari perangkat dan tidak pernah sampai ke server.\n\nSemua data di perangkat ini akan dihapus. Datamu tetap aman di server dan kembali setelah kamu masuk lagi." : {
+
+    },
+    "Aktifkan lagi" : {
+
+    },
     "Akun" : {
+
+    },
+    "Akun asal dan tujuan harus berbeda" : {
+
+    },
+    "Akun dan seluruh datamu akan dihapus dan tidak bisa dikembalikan. Penghapusan permanen dilakukan setelah 30 hari." : {
+
+    },
+    "Akun diaktifkan lagi" : {
+
+    },
+    "Akun diarsipkan" : {
+
+    },
+    "Akun ini diarsipkan: tidak muncul di form transaksi baru." : {
+
+    },
+    "Akun ini masih punya transaksi. Arsipkan saja." : {
+
+    },
+    "Alokasi" : {
+
+    },
+    "Alokasi default" : {
+
+    },
+    "Apple" : {
+
+    },
+    "Arsipkan" : {
+
+    },
+    "Arsipkan saja" : {
+
+    },
+    "atau" : {
+
+    },
+    "Atur awal" : {
+
+    },
+    "Atur needs, wants & savings" : {
+
+    },
+    "Bagi penghasilan ke kebutuhan, keinginan, dan tabungan, lalu pantau budget tiap bulan." : {
+
+    },
+    "Bandingkan catatanmu dengan saldo rekening dan dompet, lalu temukan selisihnya." : {
+
+    },
+    "Bank" : {
+
+    },
+    "Batal" : {
+
+    },
+    "Bawaan" : {
+
+    },
+    "Belum ada akun" : {
+
+    },
+    "Belum ada akun. Tambahkan akun dulu." : {
+
+    },
+    "Belum ada data" : {
+
+    },
+    "Belum ada kategori" : {
+
+    },
+    "Belum ada kategori yang tampil." : {
+
+    },
+    "Belum ada riwayat saldo." : {
+
+    },
+    "Belum ada transaksi" : {
+
+    },
+    "Belum ada transaksi di akun ini." : {
+
+    },
+    "Belum bisa terhubung ke server. Periksa internetmu lalu coba lagi." : {
+
+    },
+    "Belum pernah" : {
+
+    },
+    "Belum punya akun? Daftar" : {
+
+    },
+    "Belum tersinkron" : {
+
+    },
+    "Belum terverifikasi" : {
+
     },
     "Beranda" : {
+
+    },
+    "Berapa uang tunai yang kamu pegang sekarang?" : {
+
+    },
+    "Biaya admin (opsional)" : {
+
+    },
+    "Buang perubahan" : {
+
+    },
+    "Buang perubahan ini dan ambil versi dari server?" : {
+
+    },
+    "Buat akun" : {
+
+    },
+    "Buat apa?" : {
+
     },
     "Budget" : {
+
+    },
+    "Bulan berikutnya" : {
+
+    },
+    "Bulan sebelumnya" : {
+
+    },
+    "Cari catatan atau sumber" : {
+
+    },
+    "Catat pemasukan & pengeluaran" : {
+
+    },
+    "Catat transaksi" : {
+
+    },
+    "Catat transaksi pertama" : {
+
+    },
+    "Catat uang masuk dan keluar dalam hitungan detik, bahkan tanpa internet." : {
+
+    },
+    "Catatan" : {
+
+    },
+    "Catatan maksimal 255 karakter" : {
+
+    },
+    "Coba lagi" : {
+
+    },
+    "Coba ubah atau hapus filter pencarian." : {
+
+    },
+    "Cocokkan dengan saldo asli" : {
+
+    },
+    "Daftar" : {
+
+    },
+    "Dari" : {
+
+    },
+    "Dari akun" : {
+
+    },
+    "Dari mana?" : {
+
+    },
+    "Data terkait belum ada di server." : {
+
+    },
+    "Data tidak valid." : {
+
+    },
+    "Defisit" : {
+
+    },
+    "Diarsipkan" : {
+
+    },
+    "Dikirim ulang." : {
+
+    },
+    "Disembunyikan" : {
+
+    },
+    "Ditolak server." : {
+
+    },
+    "Duplikat" : {
+
+    },
+    "E-wallet" : {
+
+    },
+    "Email" : {
+
+    },
+    "Email & password" : {
+
+    },
+    "Email atau password salah." : {
+
+    },
+    "Email ini sudah terdaftar. Silakan masuk." : {
+
+    },
+    "Expense" : {
+
+    },
+    "Filter" : {
+
+    },
+    "Filter transaksi" : {
+
+    },
+    "Format email tidak valid" : {
+
+    },
+    "Gagal masuk dengan Apple. Coba lagi." : {
+
+    },
+    "Gagal menyiapkan data. Coba lagi." : {
+
+    },
+    "Gagal tersinkron" : {
+
+    },
+    "Ganti akun?" : {
+
+    },
+    "Geser untuk menyembunyikan atau mengarsipkan. Tahan dan geser untuk mengurutkan." : {
+
+    },
+    "Google" : {
+
+    },
+    "Gratis. Datamu tersimpan di perangkat dan tersinkron ke server." : {
+
+    },
+    "Hanya berlaku untuk transaksi baru." : {
+
+    },
+    "Hapus" : {
+
+    },
+    "Hapus akun" : {
+
+    },
+    "Hapus akun ini permanen?" : {
+
+    },
+    "Hapus akun saya" : {
+
+    },
+    "Hapus data & masuk" : {
+
+    },
+    "Hapus digit" : {
+
+    },
+    "Hapus filter" : {
+
+    },
+    "Hapus kategori ini permanen?" : {
+
+    },
+    "Hitung di total" : {
+
+    },
+    "Ikon" : {
+
+    },
+    "Income" : {
+
+    },
+    "Ini mengisi saldo awal akun Cash. Kosongkan bila belum mau mengisi." : {
+
+    },
+    "Jika kamu berlangganan Premium, batalkan langganan di pengaturan App Store. Menghapus akun tidak menghentikan tagihan." : {
+
+    },
+    "Kami mengirim kode 6 digit ke %@. Masukkan kode itu di bawah." : {
+
+    },
+    "Kamu tidak punya akses untuk ini." : {
+
+    },
+    "Kategori" : {
+
+    },
+    "Kategori ini masih dipakai transaksi. Arsipkan saja." : {
+
+    },
+    "Kategori tersembunyi tidak muncul di form transaksi. Bisa diubah lagi di Lainnya → Kategori." : {
+
+    },
+    "Ke akun" : {
+
+    },
+    "Keluar" : {
+
+    },
+    "Keluar dari akun?" : {
+
+    },
+    "Kembali" : {
+
+    },
+    "Ketik HAPUS dengan huruf besar." : {
+
+    },
+    "Ketik HAPUS untuk konfirmasi" : {
+
+    },
+    "Kirim kode" : {
+
+    },
+    "Kirim ulang" : {
+
+    },
+    "Kirim ulang kode" : {
+
+    },
+    "Kode 6 digit" : {
+
+    },
+    "Kode baru dikirim." : {
+
+    },
+    "Kode salah." : {
+
+    },
+    "Kode sudah kedaluwarsa. Minta kode baru." : {
+
     },
     "Lainnya" : {
+
+    },
+    "Lanjut" : {
+
+    },
+    "Lanjutkan dengan Google" : {
+
+    },
+    "Lewati" : {
+
+    },
+    "Lewati semua" : {
+
+    },
+    "Lihat semua" : {
+
+    },
+    "Login Google belum dikonfigurasi di build ini." : {
+
+    },
+    "Logo" : {
+
+    },
+    "Lupa password" : {
+
+    },
+    "Lupa password?" : {
+
+    },
+    "Masuk" : {
+
+    },
+    "Masuk lagi untuk menyinkronkan." : {
+
+    },
+    "Masuk untuk melanjutkan mencatat keuanganmu." : {
+
+    },
+    "Masukkan 6 digit kode" : {
+
+    },
+    "Masukkan email akunmu. Kami kirim kode 6 digit untuk membuat password baru." : {
+
+    },
+    "Masukkan kode yang dikirim ke emailmu dan password baru." : {
+
+    },
+    "Masukkan password untuk konfirmasi" : {
+
+    },
+    "Masukkan saldo tiap akun saat ini. Kamu bisa menambah lagi nanti." : {
+
+    },
+    "Melewati batas paket gratis." : {
+
+    },
+    "Menunggu dikirim" : {
+
+    },
+    "Menunggu sync (%lld)" : {
+
+    },
+    "Menyiapkan data…" : {
+
+    },
+    "Menyinkronkan…" : {
+
+    },
+    "Metode masuk" : {
+
+    },
+    "Mulai" : {
+
+    },
+    "Nama" : {
+
+    },
+    "Nama akun" : {
+
+    },
+    "Nama ini sudah dipakai" : {
+
+    },
+    "Nama kategori" : {
+
+    },
+    "Nama maksimal 50 karakter" : {
+
+    },
+    "Nama wajib diisi" : {
+
+    },
+    "Nanti saja" : {
+
+    },
+    "Needs" : {
+
+    },
+    "Nominal terlalu besar" : {
+
+    },
+    "Nominal tidak boleh 0" : {
+
+    },
+    "Nominal wajib diisi" : {
+
+    },
+    "Offline" : {
+
+    },
+    "OK" : {
+
+    },
+    "Paket gratis dibatasi 4 akun aktif. Arsipkan akun lain atau tingkatkan ke Premium." : {
+
+    },
+    "Paket gratis dibatasi 5 kategori buatan sendiri. Hapus salah satu atau tingkatkan ke Premium." : {
+
+    },
+    "Password" : {
+
+    },
+    "Password baru" : {
+
+    },
+    "Password diubah." : {
+
+    },
+    "Password diubah. Silakan masuk dengan password baru." : {
+
+    },
+    "Password maksimal 72 karakter" : {
+
+    },
+    "Password minimal 8 karakter" : {
+
+    },
+    "Password saat ini" : {
+
+    },
+    "Pemasukan" : {
+
+    },
+    "Pemasukan dan pengeluaranmu akan muncul di sini." : {
+
+    },
+    "Pengaturan" : {
+
+    },
+    "Pengeluaran" : {
+
+    },
+    "Penyesuaian" : {
+
+    },
+    "Perangkat ini masih berisi data akun lain. Masuk dengan akun ini akan menghapus data itu dari perangkat." : {
+
+    },
+    "Perangkat ini masih berisi data akun lain. Masuk dengan akun ini akan menghapus data itu dari perangkat. Ada %lld perubahan yang belum tersinkron dan akan hilang." : {
+
+    },
+    "Perangkat lain akan diminta masuk lagi." : {
+
+    },
+    "Perbaiki" : {
+
+    },
+    "Perbarui aplikasi" : {
+
+    },
+    "Perlu login" : {
+
+    },
+    "Perlu perhatian" : {
+
+    },
+    "Perlu perhatian (%lld)" : {
+
+    },
+    "Perubahan dibuang." : {
+
+    },
+    "Pilih akun" : {
+
+    },
+    "Pilih akun tujuan" : {
+
+    },
+    "Pilih alokasi" : {
+
+    },
+    "Pilih kategori" : {
+
+    },
+    "Profil" : {
+
+    },
+    "Profil disimpan" : {
+
+    },
+    "Rentang tanggal" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Riwayat lebih dari 3 bulan tersedia di Premium" : {
+
+    },
+    "Riwayat saldo" : {
+
+    },
+    "Rp" : {
+
+    },
+    "Saldo akun ini %@. Transfer sisa saldo ke akun lain sebelum diarsipkan?" : {
+
+    },
+    "Saldo asli" : {
+
+    },
+    "Saldo awal" : {
+
+    },
+    "Saldo ini menjadi saldo awal akun; transaksi sebelum tanggal ini tidak bisa dicatat." : {
+
+    },
+    "Saldo masih tersisa" : {
+
+    },
+    "Saldo menurut catatan" : {
+
+    },
+    "Saldo saat ini" : {
+
+    },
+    "Sampai" : {
+
+    },
+    "Savings" : {
+
     },
     "Segera hadir" : {
+
+    },
+    "Selesai" : {
+
+    },
+    "Sembunyikan" : {
+
+    },
+    "Sembunyikan kategori yang tidak relevan" : {
+
+    },
+    "Sembunyikan password" : {
+
+    },
+    "Semua" : {
+
+    },
+    "Semua data di perangkat ini akan dihapus. Datamu tetap aman di server dan kembali setelah kamu masuk lagi." : {
+
+    },
+    "Semua perubahan sudah diterima server." : {
+
+    },
+    "Semua tanggal" : {
+
+    },
+    "Server menolak perubahan ini. Perbaiki lalu kirim ulang, atau buang perubahan dan ambil versi dari server." : {
+
+    },
+    "Server sedang bermasalah. Coba lagi nanti." : {
+
+    },
+    "Sesi tidak valid. Silakan masuk lagi." : {
+
+    },
+    "Sesimu berakhir. Masuk lagi untuk melanjutkan sinkronisasi; data di perangkat ini tetap aman." : {
+
+    },
+    "Sesimu berakhir. Masuk lagi untuk melanjutkan." : {
+
+    },
+    "Simpan" : {
+
+    },
+    "Sinkronisasi" : {
+
+    },
+    "Sinkronisasi gagal. Akan dicoba lagi." : {
+
+    },
+    "Sinkronisasi selesai." : {
+
+    },
+    "Status email" : {
+
+    },
+    "Sudah punya akun? Masuk" : {
+
+    },
+    "Sumber maksimal 100 karakter" : {
+
+    },
+    "Surplus" : {
+
+    },
+    "Sync sekarang" : {
+
+    },
+    "Tabungan" : {
+
+    },
+    "Tambah akun" : {
+
+    },
+    "Tambah kategori" : {
+
+    },
+    "Tambahkan rekening & e-wallet" : {
+
+    },
+    "Tambahkan rekening, e-wallet, atau dompet tunai." : {
+
+    },
+    "Tampilkan" : {
+
+    },
+    "Tampilkan password" : {
+
+    },
+    "Tanggal" : {
+
+    },
+    "Tanggal lebih awal dari tanggal saldo awal akun" : {
+
+    },
+    "Tanggal saldo awal" : {
+
+    },
+    "Tanggal saldo awal tidak boleh di masa depan" : {
+
+    },
+    "Tanggal terlalu jauh di depan" : {
+
+    },
+    "Tanpa kategori" : {
+
+    },
+    "Terakhir sinkron" : {
+
+    },
+    "Terapkan" : {
+
+    },
+    "Tercatat sebagai savings bulan ini" : {
+
+    },
+    "Terjadi kesalahan" : {
+
+    },
+    "Terjadi kesalahan. Coba lagi." : {
+
+    },
+    "Terlalu banyak percobaan salah. Minta kode baru." : {
+
+    },
+    "Terlalu banyak percobaan. Coba lagi dalam %lld menit." : {
+
+    },
+    "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi." : {
+
+    },
+    "Tersinkron" : {
+
+    },
+    "Terverifikasi" : {
+
+    },
+    "Tidak ada email" : {
+
+    },
+    "Tidak ada hasil" : {
+
+    },
+    "Tidak ada koneksi internet. Periksa jaringanmu lalu coba lagi." : {
+
+    },
+    "Tidak ada koneksi." : {
+
+    },
+    "Tidak dihitung di total" : {
+
+    },
+    "Tidak diizinkan." : {
+
+    },
+    "Tipe" : {
+
+    },
+    "Tipe akun" : {
+
+    },
+    "Total saldo tercatat" : {
+
     },
     "Transaksi" : {
+
+    },
+    "Transaksi akun" : {
+
+    },
+    "Transaksi berulang" : {
+
+    },
+    "Transaksi diduplikat dengan tanggal hari ini" : {
+
+    },
+    "Transaksi dihapus" : {
+
+    },
+    "Transaksi terakhir" : {
+
+    },
+    "Transaksi yang kamu catat muncul di sini." : {
+
+    },
+    "Transfer" : {
+
+    },
+    "Transfer sisa saldo" : {
+
+    },
+    "Tunai" : {
+
+    },
+    "Tutup" : {
+
+    },
+    "Ubah" : {
+
+    },
+    "Ubah akun" : {
+
+    },
+    "Ubah kategori" : {
+
+    },
+    "Ubah password" : {
+
+    },
+    "Ubah transaksi" : {
+
+    },
+    "Urungkan" : {
+
+    },
+    "Verifikasi" : {
+
+    },
+    "Verifikasi email" : {
+
+    },
+    "Verifikasi emailmu" : {
+
+    },
+    "Versi %@" : {
+
+    },
+    "Versi aplikasi ini sudah terlalu lama. Perbarui lewat App Store untuk melanjutkan." : {
+
+    },
+    "Wajib diisi" : {
+
+    },
+    "Wants" : {
+
+    },
+    "Warna" : {
+
     }
   },
   "version" : "1.0"

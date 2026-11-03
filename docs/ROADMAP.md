@@ -43,33 +43,44 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 ## Fase 1 — Inti
 
 ### Backend
-- [ ] identity: register, login + lockout, OAuth Apple & Google, refresh rotation + reuse detection, logout, verifikasi email (kode), lupa/reset/ubah password, `GET/PATCH/DELETE /me`
-- [ ] Onboarding seed dalam satu transaksi (`DATA_MODEL.md` §9)
-- [ ] Sync handler: `user_settings`, `categories`, `accounts`, `balance_snapshots`, `transactions`, `budget_goals` dengan validasi `BUSINESS_RULES.md` §6
-- [ ] billing: `Entitlements` sementara (semua user free) + batas paket di §7
-- [ ] sync: push (idempotency, advisory lock, savepoint, LWW, clamp) dan pull (cursor, `has_more`, `meta`)
+- [x] identity: register, login + lockout, OAuth Apple & Google, refresh rotation + reuse detection, logout, verifikasi email (kode), lupa/reset/ubah password, `GET/PATCH/DELETE /me`
+- [x] Onboarding seed dalam satu transaksi (`DATA_MODEL.md` §9)
+- [x] Sync handler: `user_settings`, `categories`, `accounts`, `balance_snapshots`, `transactions`, `budget_goals` dengan validasi `BUSINESS_RULES.md` §6
+- [x] billing: `Entitlements` sementara (semua user free) + batas paket di §7
+- [ ] (hardening) identity OAuth: verifikasi `nonce` (klaim `nonce` di ID token Apple/Google dibandingkan dengan field `nonce` request) setelah OAuth diuji dengan token asli; field sudah ada di kontrak
+- [x] sync: push (idempotency, advisory lock, savepoint, LWW, clamp) dan pull (cursor, `has_more`, `meta`)
     - Catatan: terapkan aturan `null` pada `data` push (`SYNC_PROTOCOL.md` §8.1): key nullable yang tidak ada = `null`; field wajib non-null yang tidak ada → `rejected` `validation`.
 - [ ] (manual) User menguji skenario S1–S7 dan S9–S11 (`SYNC_PROTOCOL.md` §13) serta kepemilikan data
 - [ ] (manual) User menguji aturan `null` pada push: tanpa key nullable → tersimpan `null`; tanpa field wajib non-null → `rejected` `validation`
 
 ### Flutter
-- [ ] Session, token storage, auth interceptor (refresh single-flight)
-- [ ] Layar auth: login, daftar, Google, verifikasi email, lupa/reset password
-- [ ] Sync engine lengkap + scheduler + Workmanager + `SyncBadge`
+- [x] Session, token storage, auth interceptor (refresh single-flight)
+- [x] Layar auth: login, daftar, Google, verifikasi email, lupa/reset password
+- [x] Sync engine lengkap + scheduler + Workmanager + `SyncBadge`
     - Catatan: tipe field nullable hasil generator sudah berubah (UUID nullable → `String?`, timestamp nullable → `DateTime?`, enum alokasi inline). `EntityCodec` buatan sendiri untuk payload boleh dipakai tetapi tidak wajib.
     - Catatan: kolom penanda "sedang dikirim" di outbox diputuskan dan ditulis dulu di `SYNC_PROTOCOL.md` sebelum diimplementasi, di Flutter dan iOS. Skema v1 boleh diedit langsung (tanpa migration `onUpgrade`) karena app belum dirilis.
-- [ ] Onboarding, initial sync, setup wizard (Cash, akun, kategori)
-- [ ] Dashboard: ringkasan bulan + transaksi terbaru + pemilih bulan
-- [ ] Transaksi: daftar, filter, cari, form expense/income/transfer + biaya admin, edit, hapus + urungkan, duplikat
-- [ ] Akun: daftar, form, detail, arsip
-- [ ] Kategori: kelola
-- [ ] Pengaturan: profil, ubah password, sinkronisasi + "Perlu perhatian", keluar, hapus akun
-- [ ] Layar `upgrade_required`
+- [x] Onboarding, initial sync, setup wizard (Cash, akun, kategori)
+- [x] Dashboard: ringkasan bulan + transaksi terbaru + pemilih bulan
+- [x] Transaksi: daftar, filter, cari, form expense/income/transfer + biaya admin, edit, hapus + urungkan, duplikat
+- [x] Akun: daftar, form, detail, arsip
+- [x] Kategori: kelola
+- [x] Pengaturan: profil, ubah password, sinkronisasi + "Perlu perhatian", keluar, hapus akun
+- [x] Layar `upgrade_required`
 
 ### iOS
-- [ ] Semua item Flutter Fase 1 dengan padanan iOS
+- [x] Semua item Flutter Fase 1 dengan padanan iOS
+    - [x] Fondasi: skema lokal (`batch_id`, `sync_error`), Keychain, token, session, auth middleware (refresh single-flight)
+    - [x] Sync engine lengkap + `SyncScheduler` + `BGAppRefreshTask` + `SyncBadge`
+    - [x] Layar auth: login, daftar, Google, verifikasi email, lupa/reset password
+    - [x] Onboarding, initial sync, setup wizard (Cash, akun, kategori)
+    - [x] Akun: daftar, form, detail, arsip
+    - [x] Kategori: kelola
+    - [x] Transaksi: daftar, filter, cari, form expense/income/transfer + biaya admin, edit, hapus + urungkan, duplikat
+    - [x] Dashboard: ringkasan bulan + transaksi terbaru + pemilih bulan
+    - [x] Pengaturan: profil, ubah password, sinkronisasi + "Perlu perhatian", keluar, hapus akun
+    - [x] Layar `upgrade_required`
     - Catatan sync engine: tipe field nullable hasil generator sudah berubah (UUID nullable → `String?`, timestamp nullable → `Date?`, enum alokasi inline). `EntityCodec` buatan sendiri untuk payload boleh dipakai tetapi tidak wajib.
-- [ ] Sign in with Apple
+- [x] Sign in with Apple
 
 ## Fase 2 — Uang aktual & budget
 

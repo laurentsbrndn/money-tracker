@@ -91,6 +91,7 @@ Index: unique `(provider, provider_subject)`, `(user_id)`.
 | `token_hash` | char(64) | tidak | SHA-256 hex dari token. Unique |
 | `device_id` | varchar(64) | tidak | ID instalasi app |
 | `device_name` | varchar(100) | ya | Contoh "iPhone 15" |
+| `ip_address` | varchar(45) | ya | IP klien saat sesi dibuat (dari header proxy). Hanya untuk audit sesi, tidak dipakai untuk keputusan keamanan. Ditambahkan oleh migration `202611030001_refresh_token_ip` |
 | `expires_at` | timestamptz | tidak | Dibuat + 60 hari |
 | `rotated_at` | timestamptz | ya | Diisi saat token ini ditukar dengan token baru |
 | `revoked_at` | timestamptz | ya | Logout atau deteksi reuse |
@@ -303,3 +304,24 @@ Dibuat dalam satu transaksi database saat register (lihat `BUSINESS_RULES.md` §
 4. `budget_goals` 50/30/20 untuk bulan berjalan.
 
 Semua baris seed mendapat `server_version` sehingga ikut terkirim di initial pull.
+
+Rincian seed:
+
+- `user_settings`: `timezone` dari request register, `currency = IDR`, `week_start = 1`, `theme = system`, `daily_reminder_time` null, pengingat rekonsiliasi dan peringatan budget aktif, `hide_amounts = false`.
+- Kategori: `is_default = true`, `is_hidden = false`, `sort_order` = urutan di dalam tipenya (tabel `BUSINESS_RULES.md` §2.1), warna di bawah. Kedua client membaca warna dari baris yang disinkron, jadi nilai ini adalah satu-satunya sumber.
+- Akun `Cash`: `sort_order = 0`, `opening_date` = hari ini di timezone request, plus satu `balance_snapshots` (`snapshot_date = opening_date`, `amount = 0`).
+- `budget_goals`: 50/30/20, `effective_month` = tanggal 1 bulan berjalan di timezone request, `planned_income` null, id UUIDv5.
+
+Palet warna kategori default:
+
+| Ikon | Warna | Ikon | Warna |
+| --- | --- | --- | --- |
+| `food` | `#F59E0B` | `investment` | `#14B8A6` |
+| `transport` | `#3B82F6` | `other` | `#9CA3AF` |
+| `home` | `#8B5CF6` | `salary` | `#22C55E` |
+| `bill` | `#EF4444` | `freelance` | `#0EA5E9` |
+| `health` | `#10B981` | `bonus` | `#84CC16` |
+| `education` | `#06B6D4` | `gift` | `#D946EF` (expense dan income) |
+| `fee` | `#6B7280` | `shopping` | `#EC4899` |
+| `entertainment` | `#F97316` | `subscription` | `#6366F1` |
+| `snack` | `#EAB308` | | |

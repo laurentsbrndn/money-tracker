@@ -13,7 +13,7 @@ class BalanceSnapshots extends Table with SyncColumns {
 
   TextColumn get snapshotDate => text().map(const CivilDateConverter())();
 
-  Int64Column get amount => int64()();
+  IntColumn get amount => integer()();
 
   TextColumn get note => text().nullable()();
 

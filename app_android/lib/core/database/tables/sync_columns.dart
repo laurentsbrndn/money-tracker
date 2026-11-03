@@ -15,4 +15,8 @@ mixin SyncColumns on Table {
 
   /// `synced`, `pending`, or `failed`.
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
+
+  /// Why the server refused the row (`code: message`) while [syncStatus] is
+  /// `failed`; shown under "Perlu perhatian".
+  TextColumn get syncError => text().nullable()();
 }

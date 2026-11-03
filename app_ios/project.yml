@@ -35,6 +35,9 @@ packages:
   swift-http-types:
     url: https://github.com/apple/swift-http-types
     majorVersion: 1.8.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    majorVersion: 9.2.0
 
 targets:
   MoneyTracker:
@@ -55,6 +58,8 @@ targets:
         product: OpenAPIURLSession
       - package: swift-http-types
         product: HTTPTypes
+      - package: GoogleSignIn
+        product: GoogleSignIn
     settings:
       base:
         INFOPLIST_FILE: MoneyTracker/Resources/Info.plist
@@ -62,3 +67,6 @@ targets:
         CODE_SIGN_ENTITLEMENTS: MoneyTracker/Resources/MoneyTracker.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
+        # Lets Xcode keep Localizable.xcstrings in sync with the strings used in code.
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES

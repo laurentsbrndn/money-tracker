@@ -15,7 +15,7 @@ class Accounts extends Table with SyncColumns {
   TextColumn get currency => text().withDefault(const Constant('IDR'))();
 
   /// May be negative.
-  Int64Column get openingBalance => int64()();
+  IntColumn get openingBalance => integer()();
 
   TextColumn get openingDate => text().map(const CivilDateConverter())();
 

@@ -16,15 +16,21 @@ import (
 //
 // created_at and updated_at come from the client, so GORM's automatic timestamps are off.
 // DeletedAt is a plain tombstone column, not gorm.DeletedAt: tombstones must stay visible to pull.
+// Timestamps use Time so that they always serialize with exactly three fractional digits.
 // The JSON tags match the wire format: user_id, server_version and server_updated_at are never sent.
 type Columns struct {
-	ID              uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	UserID          uuid.UUID  `gorm:"type:uuid;not null" json:"-"`
-	CreatedAt       time.Time  `gorm:"not null;autoCreateTime:false" json:"created_at"`
-	UpdatedAt       time.Time  `gorm:"not null;autoUpdateTime:false" json:"updated_at"`
-	DeletedAt       *time.Time `json:"deleted_at"`
-	ServerVersion   int64      `gorm:"not null" json:"-"`
-	ServerUpdatedAt time.Time  `gorm:"not null" json:"-"`
+	ID              uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	UserID          uuid.UUID `gorm:"type:uuid;not null" json:"-"`
+	CreatedAt       Time      `gorm:"type:timestamptz;not null;autoCreateTime:false" json:"created_at"`
+	UpdatedAt       Time      `gorm:"type:timestamptz;not null;autoUpdateTime:false" json:"updated_at"`
+	DeletedAt       *Time     `gorm:"type:timestamptz" json:"deleted_at"`
+	ServerVersion   int64     `gorm:"not null" json:"-"`
+	ServerUpdatedAt Time      `gorm:"type:timestamptz;not null;autoUpdateTime:false" json:"-"`
+}
+
+// Sync returns the columns themselves; models embed Columns, so *Model satisfies Row.
+func (c *Columns) Sync() *Columns {
+	return c
 }
 
 // Stamp sets ServerVersion from sync_version_seq and ServerUpdatedAt to now.
@@ -35,6 +41,6 @@ func (c *Columns) Stamp(ctx context.Context, tx *gorm.DB, now time.Time) error {
 		return fmt.Errorf("stamp sync columns: %w", err)
 	}
 	c.ServerVersion = version
-	c.ServerUpdatedAt = now
+	c.ServerUpdatedAt = NewTime(now)
 	return nil
 }

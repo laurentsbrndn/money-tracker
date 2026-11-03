@@ -16,7 +16,7 @@ class BudgetGoals extends Table with SyncColumns {
 
   IntColumn get savingsPct => integer()();
 
-  Int64Column get plannedIncome => int64().nullable()();
+  IntColumn get plannedIncome => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

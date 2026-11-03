@@ -22,6 +22,8 @@ struct UserSettingsRecord: Codable, Identifiable, Hashable, Sendable, FetchableR
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     var timezone: String
     var currency: String
     /// 1 = Monday, 7 = Sunday.
@@ -33,4 +35,8 @@ struct UserSettingsRecord: Codable, Identifiable, Hashable, Sendable, FetchableR
     var reconcileReminderEnabled: Bool
     var budgetAlertEnabled: Bool
     var hideAmounts: Bool
+}
+
+extension UserSettingsRecord: SyncRecord {
+    static let entity = SyncEntities.userSettings
 }

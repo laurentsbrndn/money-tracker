@@ -124,11 +124,14 @@ enum DatabaseMigrations {
                 t.column("op", .text).notNull()
                 t.column("payload", .text).notNull().defaults(to: "")
                 t.column("updated_at", .text).notNull()
+                // In-flight marker and Idempotency-Key of the batch (SYNC_PROTOCOL §5.2.1).
+                t.column("batch_id", .text)
                 t.column("attempts", .integer).notNull().defaults(to: 0)
                 t.column("next_attempt_at", .text)
                 t.column("last_error", .text)
                 t.column("created_at", .text).notNull()
             }
+            try db.create(index: "outbox_record", on: "outbox", columns: ["entity", "record_id"])
 
             try db.create(table: "sync_state") { t in
                 t.primaryKey("key", .text)
@@ -148,5 +151,6 @@ enum DatabaseMigrations {
         t.column("deleted_at", .text)
         t.column("server_version", .integer)
         t.column("sync_status", .text).notNull().defaults(to: "pending")
+        t.column("sync_error", .text)
     }
 }

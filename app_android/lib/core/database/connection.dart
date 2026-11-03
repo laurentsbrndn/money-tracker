@@ -28,6 +28,10 @@ Future<AppDatabase> openAppDatabase() async {
             throw StateError('Encrypted SQLite build is not available');
           }
           rawDb.execute("PRAGMA key = '$key';");
+          // The background sync task opens its own connection (Workmanager
+          // isolate), so wait for a locked database instead of failing.
+          rawDb.execute('PRAGMA busy_timeout = 5000;');
+          rawDb.execute('PRAGMA journal_mode = WAL;');
         },
       ),
     ),

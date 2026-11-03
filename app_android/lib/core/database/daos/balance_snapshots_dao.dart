@@ -30,6 +30,16 @@ class BalanceSnapshotsDao extends DatabaseAccessor<AppDatabase>
   Future<void> deleteHard(String id) =>
       (delete(balanceSnapshots)..where((t) => t.id.equals(id))).go();
 
+  /// Every live snapshot of one account, oldest date first.
+  Future<List<BalanceSnapshotRow>> allByAccount(String accountId) =>
+      (select(balanceSnapshots)
+            ..where((t) => t.deletedAt.isNull() & t.accountId.equals(accountId))
+            ..orderBy([
+              (t) => OrderingTerm.asc(t.snapshotDate),
+              (t) => OrderingTerm.asc(t.createdAt),
+            ]))
+          .get();
+
   Stream<List<BalanceSnapshotRow>> watchByAccount(String accountId) =>
       (select(balanceSnapshots)
             ..where((t) => t.deletedAt.isNull() & t.accountId.equals(accountId))

@@ -9,7 +9,7 @@
 | Base URL | Origin `https://<project>.vercel.app` (production), `http://localhost:8080` (lokal). Semua path di dokumen ini dan di OpenAPI sudah diawali `/v1` (kecuali `/healthz`), jadi `API_BASE_URL` di client berisi origin saja |
 | Format | JSON UTF-8, field `snake_case` |
 | Auth | `Authorization: Bearer <access_token>` kecuali endpoint bertanda **publik** |
-| Waktu | Timestamp RFC 3339 UTC; tanggal `YYYY-MM-DD`; bulan `YYYY-MM` |
+| Waktu | Timestamp RFC 3339 UTC dengan tepat tiga digit milidetik dan akhiran `Z` (`2026-11-02T14:05:00.123Z`, dipotong ke milidetik) untuk data sync, `server_time`, dan token; tanggal `YYYY-MM-DD`; bulan `YYYY-MM` |
 | Uang | Integer rupiah |
 | Request ID | Server selalu mengembalikan `X-Request-ID` (memakai nilai dari client bila dikirim) |
 | Identitas client | Header `X-Device-ID`, `X-Platform` (`android`/`ios`), `X-App-Version` (semver) wajib di semua request dari app |

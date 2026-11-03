@@ -21,6 +21,8 @@ struct CategoryRecord: Codable, Identifiable, Hashable, Sendable, FetchableRecor
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     /// `expense` or `income`.
     var type: String
     var name: String
@@ -33,4 +35,8 @@ struct CategoryRecord: Codable, Identifiable, Hashable, Sendable, FetchableRecor
     var isDefault: Bool
     var isHidden: Bool
     var archivedAt: Date?
+}
+
+extension CategoryRecord: SyncRecord {
+    static let entity = SyncEntities.categories
 }

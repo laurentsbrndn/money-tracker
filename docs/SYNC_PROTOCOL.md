@@ -52,7 +52,7 @@ ID deterministik membuat dua device (atau device dan server) yang membuat record
 - Payload memakai nama kolom `snake_case` persis seperti `DATA_MODEL.md`.
 - Kolom yang **tidak** dikirim client: `user_id`, `server_version`, `server_updated_at` (diisi server, diabaikan bila dikirim).
 - Tanggal kalender: `"2026-11-02"`.
-- Timestamp: RFC 3339 UTC dengan milidetik, `"2026-11-02T14:05:00.123Z"`.
+- Timestamp: RFC 3339 UTC dengan **tepat tiga digit milidetik** dan akhiran `Z`, `"2026-11-02T14:05:00.123Z"`. Server memotong (truncate, bukan membulatkan) ke milidetik saat menerima, menyimpan, dan mengirim, sehingga nilai yang dikirim client kembali persis sama di pull. Berlaku untuk `created_at`, `updated_at`, `deleted_at`, kolom `*_at` lain, `server_time`, dan `meta.server_time`. Saat menerima, server menerima RFC 3339 dengan presisi pecahan dan zona apa pun.
 - Uang: integer JSON (`25000`), bukan string, bukan desimal.
 - Upsert selalu mengirim **seluruh baris** (bukan patch).
 
@@ -66,6 +66,7 @@ Mirror dari tabel [sync] server (tanpa `user_id`), ditambah:
 | --- | --- | --- |
 | `server_version` | integer, nullable | Null bila belum pernah diterima server |
 | `sync_status` | text | `synced`, `pending`, `failed` |
+| `sync_error` | text, nullable | Alasan penolakan server (`code: message`) saat `sync_status = failed`; kosong untuk status lain |
 
 ### 5.2 `outbox`
 
@@ -77,10 +78,22 @@ Mirror dari tabel [sync] server (tanpa `user_id`), ditambah:
 | `op` | text | `upsert` atau `delete` |
 | `payload` | text (JSON) | Seluruh baris untuk `upsert`; kosong untuk `delete` |
 | `updated_at` | text | `updated_at` record saat dimasukkan |
+| `batch_id` | text, nullable | Penanda "sedang dikirim": `Idempotency-Key` batch yang memuat entri ini. Null = belum dikirim (lihat §5.2.1) |
 | `attempts` | integer | Jumlah percobaan gagal yang retryable |
 | `next_attempt_at` | text, nullable | Untuk backoff |
 | `last_error` | text, nullable | Kode + pesan error terakhir |
 | `created_at` | text | |
+
+#### 5.2.1 Penanda "sedang dikirim" (`batch_id`)
+
+Sebuah entri **sedang dikirim** bila `batch_id` terisi. Aturannya (identik di semua client):
+
+1. Sebelum mengirim, client memilih ≤ 100 entri (§7), membuat satu UUID baru, lalu mengisi `batch_id` semua entri itu dalam satu transaksi lokal. UUID itu dipakai sebagai header `Idempotency-Key`. Selama `batch_id` terisi, `payload`, `op`, dan `updated_at` entri tidak pernah diubah.
+2. Hasil per entri diterapkan (§8.4) menurut `seq` entri; entri yang hasilnya `applied`/`stale`/`rejected` dihapus atau dikembalikan ke `batch_id = null` (kasus retryable, bersama `attempts`/`next_attempt_at`).
+3. Bila request gagal total (jaringan, timeout, 5xx) atau app mati sebelum hasil diterapkan, `batch_id` dibiarkan. Siklus sync berikutnya **mengirim ulang batch yang sama lebih dulu** (semua entri dengan `batch_id` yang sama, urut `seq`, dengan `Idempotency-Key` yang sama) sebelum memilih batch baru. Idempotensi server (§8.2) membuat pengiriman ulang aman: respons tersimpan dikembalikan bila batch sudah pernah diproses.
+4. Hasil request level 4xx selain 401 (misal 413/422 untuk seluruh batch): `batch_id` dikosongkan dan `attempts += 1` dengan backoff; setelah 10 kali entri diperlakukan sebagai non-retryable (§8.4).
+
+Dampak pada penulisan lokal (§6): entri yang sedang dikirim **tidak boleh ditimpa** (aturan 6.3.1) dan penghapusan record yang punya entri sedang dikirim tidak boleh memakai jalan pintas 6.3.2 (server mungkin sudah menerimanya).
 
 ### 5.3 `sync_state` (key-value)
 
@@ -90,6 +103,10 @@ Mirror dari tabel [sync] server (tanpa `user_id`), ditambah:
 | `pull_cursor` | `server_version` terakhir yang sudah diterapkan, default `0` |
 | `last_sync_at` | Timestamp sync sukses terakhir |
 | `entitlement` | JSON `meta.entitlement` terakhir |
+| `user_id` | ID user pemilik database ini (untuk mendeteksi login sebagai user lain, §11) |
+| `initial_sync_done` | `true` setelah initial pull selesai (§12) |
+| `setup_pending` | `true` untuk user baru sampai setup wizard selesai/dilewati |
+| `foreground_since` | Timestamp app dibuka (foreground); kosong saat app di background. Dibaca task background supaya tidak refresh token bersamaan dengan app (§7) |
 
 ## 6. Menulis data di client
 
@@ -98,9 +115,9 @@ Dalam **satu transaksi lokal**:
 1. Set `updated_at = now()` (UTC). Untuk record baru, `created_at = updated_at`.
 2. Tulis baris dengan `sync_status = pending`.
 3. Masukkan ke outbox dengan aturan coalescing:
-    1. Bila sudah ada entri outbox untuk `(entity, record_id)` yang **belum sedang dikirim**, timpa `op`, `payload`, dan `updated_at`-nya (tidak menambah entri baru).
-    2. Delete pada record yang belum pernah diterima server (`server_version` null): hapus entri outbox-nya dan hapus barisnya secara permanen di lokal. Tidak ada yang dikirim.
-    3. Selain itu, tambahkan entri baru.
+    1. Bila sudah ada entri outbox untuk `(entity, record_id)` yang **belum sedang dikirim** (`batch_id` null), timpa `op`, `payload`, dan `updated_at`-nya, serta kosongkan `attempts`, `next_attempt_at`, `last_error` (tidak menambah entri baru).
+    2. Delete pada record yang belum pernah diterima server (`server_version` null) **dan tidak punya entri yang sedang dikirim**: hapus entri outbox-nya dan hapus barisnya secara permanen di lokal. Tidak ada yang dikirim.
+    3. Selain itu, tambahkan entri baru (termasuk bila entri lama untuk record itu sedang dikirim).
 4. Setelah commit, jadwalkan sync (debounce 2 detik).
 
 Soft delete lokal: isi `deleted_at`, dan semua query UI wajib memfilter `deleted_at IS NULL`.
@@ -113,9 +130,11 @@ sync():
   if offline → return
   pastikan access token valid (refresh bila perlu; gagal refresh → status needs_login, return)
   loop push:
-     ambil ≤ 100 entri outbox yang next_attempt_at ≤ now, urut seq
+     bila ada entri ber-batch_id → batch itu dikirim ulang lebih dulu (§5.2.1)
+     selain itu ambil ≤ 100 entri outbox yang next_attempt_at ≤ now, urut seq,
+       beri batch_id baru (satu UUID)
      if kosong → break
-     kirim POST /v1/sync/push
+     kirim POST /v1/sync/push (Idempotency-Key = batch_id)
      terapkan hasil per entri (§8.4)
      if ada error jaringan/5xx → backoff, return
   loop pull:
@@ -133,7 +152,7 @@ sync():
 - App kembali ke foreground.
 - Koneksi kembali (Android `connectivity_plus`, iOS `NWPathMonitor`).
 - Pull-to-refresh di Dashboard dan daftar transaksi.
-- Background: WorkManager (Android, periodik 30 menit, butuh jaringan) dan `BGAppRefreshTask` (iOS, dijadwalkan sistem).
+- Background: WorkManager (Android, periodik 30 menit, butuh jaringan) dan `BGAppRefreshTask` (iOS, dijadwalkan sistem). Task background tidak berjalan bila `sync_state.foreground_since` masih segar, yaitu lebih baru dari 3 menit (app sedang dibuka; app menulis ulang nilainya tiap 60 detik selama foreground dan menghapusnya saat ke background) agar dua proses tidak me-refresh token bersamaan (rotasi refresh token mendeteksi reuse).
 
 ### Backoff
 
@@ -187,12 +206,19 @@ Header: `Authorization: Bearer <access>`, `Idempotency-Key: <uuid batch>`, `X-De
 
 Batas: maksimal 100 entri per request, body maksimal 1 MB.
 
+Aturan `data` untuk `upsert` yang diterapkan handler entitas:
+
+- `data.id` harus sama dengan `id` entri. `updated_at` yang disimpan adalah `updated_at` entri (setelah clamp), bukan `data.updated_at`.
+- `data.deleted_at` harus null/tidak ada. Penghapusan memakai `op = delete`. Upsert pada baris yang sudah tombstone menghidupkannya kembali (skenario S6).
+- Referensi (akun, kategori, transfer terkait) yang tidak ditemukan untuk user itu → `reference_missing` (retryable). Yang sudah dihapus → `validation`.
+- Batas paket gratis dihitung saat baris menjadi aktif (baru, hidup lagi, atau akun di-unarchive), termasuk baris yang ditulis entri sebelumnya dalam batch yang sama.
+
 Aturan `null` pada `data`: `data` adalah seluruh baris. Untuk field nullable, key yang tidak ada diperlakukan sama dengan `null`. Field wajib non-null harus ada, bila tidak entri ditolak dengan `validation`. Client boleh mengirim `null` eksplisit atau menghilangkan key; hasilnya sama.
 
 ### 8.2 Algoritma server
 
 1. Bila `(user_id, Idempotency-Key)` sudah ada di `sync_idempotency_keys` → kembalikan respons yang tersimpan, selesai.
-2. Mulai satu transaksi database dan ambil **advisory lock per user** (`pg_advisory_xact_lock`) — lihat §10.
+2. Mulai satu transaksi database dan ambil **advisory lock per user** (`pg_advisory_xact_lock`) — lihat §10. Cek langkah 1 diulang setelah lock didapat, karena request dengan key yang sama bisa selesai selagi menunggu lock.
 3. Untuk setiap entri, berurutan, dalam **savepoint** masing-masing (`tx.SavePoint` / `tx.RollbackTo` GORM):
     1. Cari `SyncHandler` untuk `entity` di registry. Tidak ada → `rejected` `unknown_entity`.
     2. Clamp: bila `updated_at` > waktu server + 5 menit, pakai waktu server.
@@ -220,6 +246,8 @@ Aturan `null` pada `data`: `data` adalah seluruh baris. Untuk field nullable, ke
 }
 ```
 
+Hasil `stale` membawa `server_version` baris yang tersimpan di server. Hasil `rejected` tidak membawa `server_version`.
+
 `server_version` pada hasil `applied` bersifat nullable: `null` untuk `delete` no-op (baris memang tidak ada di server). Client tidak boleh menganggap `server_version` selalu terisi.
 
 Kode `rejected`:
@@ -238,8 +266,8 @@ Error di level request (bukan per entri) memakai format problem+json (`API.md`):
 
 | Status | Tindakan |
 | --- | --- |
-| `applied` | Hapus entri outbox. Bila baris lokal tidak berubah sejak dikirim (`updated_at` sama), set `server_version` dan `sync_status = synced` |
-| `stale` | Hapus entri outbox. Baris tetap `pending` sampai pull menimpanya dengan versi server |
+| `applied` | Hapus entri outbox (yang bersangkutan saja, berdasarkan `seq`). Bila baris lokal tidak berubah sejak dikirim (`updated_at` sama), set `server_version` dan `sync_status = synced` |
+| `stale` | Hapus entri outbox. Baris tetap `pending` sampai pull menimpanya dengan versi server. Bila `server_version` hasil itu kosong atau ≤ `pull_cursor` lokal (sebelum pull siklus ini), pull biasa tidak akan pernah membawanya lagi: tandai record untuk **pull perbaikan** (§9.5) |
 | `rejected` + `retryable` | `attempts += 1`, set `next_attempt_at` (backoff). Setelah 10 kali → perlakukan sebagai non-retryable |
 | `rejected` non-retryable | Hapus dari outbox, set `sync_status = failed`, simpan `last_error`. Tampil di "Perlu perhatian"; user bisa memperbaiki (membuat upsert baru) atau membuang perubahan (ambil ulang versi server lewat pull penuh entitas itu) |
 
@@ -251,7 +279,7 @@ Error di level request (bukan per entri) memakai format problem+json (`API.md`):
 
 ### 9.2 Algoritma server
 
-1. Untuk setiap tabel [sync]: ambil baris `user_id = me AND server_version > since ORDER BY server_version LIMIT n`.
+1. Untuk setiap tabel [sync]: ambil baris `user_id = me AND server_version > since ORDER BY server_version LIMIT n`. Semua tabel dibaca dalam **satu transaksi snapshot** (`REPEATABLE READ`, read-only). Tanpa itu, push yang commit di antara dua pembacaan tabel bisa membuat kursor melompati baris yang terlewat pada pembacaan pertama (lihat §10).
 2. Gabungkan semua hasil, urutkan berdasarkan `server_version`, potong menjadi `n` baris pertama.
 3. `next_cursor` = `server_version` baris terakhir yang dikembalikan (atau `since` bila kosong).
 4. `has_more` = true bila ada baris lain dengan `server_version > next_cursor` di salah satu tabel.
@@ -288,6 +316,15 @@ Dalam satu transaksi lokal per halaman:
     1. Bila masih ada entri outbox untuk `(entity, id)` itu → **lewati** (perubahan lokal menunggu push dan akan diputuskan LWW di server). Yang menentukan adalah keberadaan entri outbox, bukan nilai `sync_status`.
     2. Selain itu → upsert seluruh baris, set `server_version`, `sync_status = synced`.
 2. Simpan `pull_cursor = next_cursor`.
+
+### 9.5 Pull perbaikan (stale yang tersangkut)
+
+Pull melewati baris yang punya entri outbox (§9.4) tetapi kursor tetap maju. Bila entri itu kemudian dijawab `stale` dengan `server_version` ≤ kursor (atau tanpa `server_version`), baris server itu tidak akan ditarik lagi dan baris lokal tertinggal `pending` dengan data lama. Aturannya, identik di semua client:
+
+1. Selama fase push, kumpulkan kunci `(entity, id)` dari hasil `stale` yang memenuhi syarat di atas, dengan kursor yang dibaca sebelum pull siklus itu.
+2. Setelah pull biasa selesai, bila himpunan itu tidak kosong, lakukan **satu** pull dari `since=0` (limit 1000, halaman demi halaman) per siklus sync, berapa pun jumlah record-nya. Berhenti begitu semua kunci ditemukan atau `has_more = false`.
+3. Hanya baris yang kuncinya ada di himpunan dan **tidak** punya entri outbox saat itu yang ditimpa (set `server_version`, `sync_status = synced`); aturan §9.4 tetap berlaku. `pull_cursor` tidak diubah.
+4. Hasil `rejected` non-retryable tidak memicu ini: barisnya `failed` dan keluar lewat "Perlu perhatian" (kirim ulang atau buang, yang memakai mekanisme pull-dari-awal yang sama untuk satu record).
 
 ## 10. Konsistensi cursor (wajib di server)
 

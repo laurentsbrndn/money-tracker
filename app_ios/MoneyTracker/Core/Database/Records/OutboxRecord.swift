@@ -25,6 +25,8 @@ struct OutboxRecord: Codable, Identifiable, Hashable, Sendable, FetchableRecord,
     /// Whole row as JSON for `upsert`; empty for `delete`.
     var payload: String
     var updatedAt: Date
+    /// Non-nil while the entry is in flight; also the `Idempotency-Key` of its batch.
+    var batchId: String?
     var attempts: Int
     var nextAttemptAt: Date?
     var lastError: String?

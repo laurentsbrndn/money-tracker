@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/golang-jwt/jwt/v5"
@@ -27,6 +28,8 @@ type OIDCIdentity struct {
 	Subject       string
 	Email         string
 	EmailVerified bool
+	// Name is the display name claim; Google sends it, Apple does not.
+	Name string
 }
 
 // OIDCVerifier verifies ID tokens (signature via JWKS, iss, aud, exp).
@@ -81,10 +84,12 @@ func (v *OIDCVerifier) Verify(ctx context.Context, idToken string) (OIDCIdentity
 	}
 
 	email, _ := claims["email"].(string)
+	name, _ := claims["name"].(string)
 	return OIDCIdentity{
 		Subject:       subject,
 		Email:         email,
 		EmailVerified: claimBool(claims["email_verified"]),
+		Name:          name,
 	}, nil
 }
 
@@ -94,7 +99,7 @@ func claimBool(v any) bool {
 	case bool:
 		return b
 	case string:
-		return b == "true"
+		return strings.EqualFold(b, "true")
 	default:
 		return false
 	}

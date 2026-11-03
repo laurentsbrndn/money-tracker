@@ -22,8 +22,14 @@ struct BalanceSnapshotRecord: Codable, Identifiable, Hashable, Sendable, Fetchab
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     var accountId: String
     var snapshotDate: CivilDate
     var amount: Int64
     var note: String?
+}
+
+extension BalanceSnapshotRecord: SyncRecord {
+    static let entity = SyncEntities.balanceSnapshots
 }

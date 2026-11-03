@@ -22,6 +22,8 @@ struct TransactionRecord: Codable, Identifiable, Hashable, Sendable, FetchableRe
     var deletedAt: Date?
     var serverVersion: Int64?
     var syncStatus: String
+    /// `code: message` from the server when `syncStatus` is `failed`.
+    var syncError: String?
     /// `income`, `expense`, `transfer`, or `adjustment`.
     var type: String
     /// `posted` or `pending_confirmation`.
@@ -39,4 +41,8 @@ struct TransactionRecord: Codable, Identifiable, Hashable, Sendable, FetchableRe
     var note: String?
     var linkedTransactionId: String?
     var recurringRuleId: String?
+}
+
+extension TransactionRecord: SyncRecord {
+    static let entity = SyncEntities.transactions
 }

@@ -16,6 +16,10 @@ class Outbox extends Table {
 
   DateTimeColumn get updatedAt => dateTime()();
 
+  /// "In flight" marker (SYNC_PROTOCOL §5.2.1): the `Idempotency-Key` of the
+  /// batch carrying this entry; null while the entry has not been sent.
+  TextColumn get batchId => text().nullable()();
+
   IntColumn get attempts => integer().withDefault(const Constant(0))();
 
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
