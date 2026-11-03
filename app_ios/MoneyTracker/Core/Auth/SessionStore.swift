@@ -49,6 +49,14 @@ final class SessionStore {
         self.client = client
     }
 
+    #if DEBUG
+        /// Previews only: sets the state `load()` would have read from the Keychain.
+        func applyPreview(status: Status, user: SessionUser?) {
+            self.status = status
+            self.user = user
+        }
+    #endif
+
     /// Reads the stored session. Called once at launch.
     func load() {
         guard (try? tokenStore.readTokens()) != nil, let stored = try? tokenStore.readUser()

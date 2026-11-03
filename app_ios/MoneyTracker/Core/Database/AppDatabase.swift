@@ -9,18 +9,28 @@ import Synchronization
 /// The pool can be swapped (`wipeAndReopen`) when the user logs out, so everything that holds an
 /// `AppDatabase` keeps working without being rebuilt.
 final class AppDatabase: Sendable {
-    private let current: Mutex<DatabasePool>
-    private let directory: URL
+    private let current: Mutex<any DatabaseWriter>
+    /// Nil for a database that has no files to wipe (the in-memory one used by previews).
+    private let directory: URL?
 
     private static let fileName = "money_tracker.sqlite"
 
-    var pool: DatabasePool { current.withLock { $0 } }
+    var pool: any DatabaseWriter { current.withLock { $0 } }
 
     init(directory: URL) throws {
         try Self.prepareDirectory(directory)
         self.current = Mutex(try Self.openPool(directory))
         self.directory = directory
     }
+
+    #if DEBUG
+        /// A database on any writer (previews use an in-memory queue). It owns no files, so
+        /// `wipeAndReopen` has nothing to delete.
+        init(writer: any DatabaseWriter) {
+            self.current = Mutex(writer)
+            self.directory = nil
+        }
+    #endif
 
     /// Opens the database in `Application Support/Database`.
     static func openDefault() throws -> AppDatabase {
@@ -34,6 +44,7 @@ final class AppDatabase: Sendable {
     /// Logout: closes the pool, deletes the database files (main, `-wal`, `-shm`), and opens a
     /// fresh empty database in their place.
     func wipeAndReopen() throws {
+        guard let directory else { return }
         try? pool.close()
         let fileManager = FileManager.default
         for suffix in ["", "-wal", "-shm"] {

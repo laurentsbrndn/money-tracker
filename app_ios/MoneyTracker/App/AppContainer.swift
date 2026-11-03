@@ -123,6 +123,86 @@ final class AppContainer {
         lookups.start()
     }
 
+    #if DEBUG
+        /// Previews only (see `Core/Preview`): the same wiring over an in-memory database, an API
+        /// whose transport always fails, an in-memory token store, and a fixed connectivity
+        /// state. It never touches the network, the Keychain, or `BGTaskScheduler`.
+        init(
+            preview database: AppDatabase, config: AppConfig, router: AppRouter,
+            sessionStatus: SessionStore.Status, user: SessionUser?, online: Bool,
+            upgradeRequired: Bool
+        ) {
+            self.config = config
+            self.router = router
+            self.database = database
+
+            let tokenStore = TokenStore(
+                keychain: KeychainStore(service: "preview", memory: .init()))
+            let session = SessionStore(tokenStore: tokenStore, database: database)
+            session.applyPreview(status: sessionStatus, user: user)
+            let upgrade = UpgradeRequiredStore()
+            if upgradeRequired { upgrade.flag() }
+            self.session = session
+            self.upgrade = upgrade
+
+            let refresher = TokenRefresher(
+                store: tokenStore,
+                requestRefresh: { _ in throw URLError(.notConnectedToInternet) },
+                onSessionExpired: {})
+            let transport = PreviewOfflineTransport()
+            let api = APIEnvironment(
+                client: Client(serverURL: config.apiBaseURL, transport: transport),
+                raw: RawAPI(baseURL: config.apiBaseURL, transport: transport, middlewares: []))
+            self.api = api
+            session.configure(refresher: refresher, client: api.client)
+
+            let connectivity = ConnectivityMonitor(previewOnline: online)
+            let runStore = SyncRunStore()
+            let stores = EntityStores()
+            let engine = SyncEngine(
+                database: database, stores: stores, remote: SyncRemote(api: api.raw),
+                refresher: refresher, connectivity: connectivity, runStore: runStore,
+                isAuthenticated: { false }, markNeedsLogin: {})
+            let background = SyncBackgroundTask(
+                bundleID: config.bundleID, engine: engine, database: database, session: session)
+            let scheduler = SyncScheduler(
+                engine: engine, database: database, connectivity: connectivity, session: session,
+                background: background)
+            self.connectivity = connectivity
+            self.runStore = runStore
+            self.stores = stores
+            self.engine = engine
+            self.background = background
+            self.scheduler = scheduler
+            // Preview writes stay local: nothing asks the scheduler to sync.
+            let writer = OutboxWriter(database: database, stores: stores, onCommitted: {})
+            let entitlement = EntitlementStore(database: database)
+            self.writer = writer
+            self.entitlement = entitlement
+            self.accounts = AccountsRepository(
+                database: database, writer: writer, entitlement: entitlement)
+            self.categories = CategoriesRepository(
+                database: database, writer: writer, entitlement: entitlement)
+            self.transactions = TransactionsRepository(database: database, writer: writer)
+            self.settings = SettingsRepository(client: api.client)
+            self.setup = SetupRepository(database: database)
+            self.failedChanges = FailedChangesService(
+                database: database, stores: stores, writer: writer, remote: SyncRemote(api: api.raw)
+            )
+            self.syncStatus = SyncStatusStore(
+                database: database, connectivity: connectivity, session: session,
+                runStore: runStore)
+            self.gate = AppGateStore(database: database, session: session)
+            self.preferences = PreferencesStore(database: database)
+            self.lookups = LookupStore(database: database)
+
+            syncStatus.start()
+            gate.start()
+            preferences.start()
+            lookups.start()
+        }
+    #endif
+
     /// The Keychain outlives an uninstall; a fresh install must not inherit the old session while
     /// its database is gone.
     private static func resetKeychainOnFreshInstall(_ keychain: KeychainStore) {

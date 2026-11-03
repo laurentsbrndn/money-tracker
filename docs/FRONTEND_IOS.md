@@ -214,6 +214,19 @@ Tab: **Beranda · Transaksi · Akun · Budget · Lainnya**. Daftar layar dan fas
 - Build tanpa Simulator yang bisa dijalankan: `xcodebuild -scheme MoneyTracker -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation -skipMacroValidation CODE_SIGNING_ALLOWED=NO build` (plugin OpenAPI generator butuh `-skipPackagePluginValidation`).
 - `API_BASE_URL` lokal untuk simulator: `http://localhost:8080` (origin saja; path API sudah diawali `/v1`) (tambahkan pengecualian ATS hanya di konfigurasi Debug).
 
+## 6.1 SwiftUI Preview dan galeri layar (khusus Debug)
+
+Layar bisa dilihat dan diubah di Canvas Xcode tanpa menjalankan app dan tanpa server.
+
+- **Hanya DEBUG.** Semua kode preview dibungkus `#if DEBUG` dan tidak ikut build Release. Bukan file test.
+- **Membuka Canvas:** buka file view atau `ContentView.swift`, lalu menu **Editor → Canvas** (⌥⌘↩). Pilih blok `#Preview` bernama di kiri bawah Canvas.
+- **`ContentView.swift`** (di `MoneyTracker/`, sejajar `App/`) adalah galeri semua layar dengan pemilih varian. App sungguhan tetap mulai dari `RootView`; `ContentView` tidak dipakai di runtime.
+- **`Core/Preview/`**: `PreviewSupport.swift` (`PreviewVariant`, `AppContainer.preview(_:)`, `PreviewHost`, `PreviewStack`) dan `PreviewSampleData.swift` (data contoh).
+- **Container preview** memakai `DatabaseQueue` in-memory dengan migrasi yang sama, transport API yang selalu gagal, token store di memori (tanpa Keychain), status konektivitas tetap, dan tidak mendaftarkan BGTask. Tidak ada panggilan jaringan.
+- **Data contoh varian "Berisi"** sama dengan `contracts/fixtures/business_rules/01_monthly_basic.json` (hari ini dipatok ke 2026-11-30), sehingga Dashboard menampilkan pemasukan 8.000.000, pengeluaran 1.852.500, dan surplus 6.147.500. Angka tetap dihitung `DomainRules` dari database contoh.
+- **Varian:** Kosong, Berisi, Nominal disembunyikan, Menyinkronkan, Menunggu sync, Offline, Perlu login, Perlu perhatian, Mode gelap.
+- Celah injeksi di kode produksi (semuanya `#if DEBUG`): `AppDatabase.init(writer:)`, `AppContainer.init(preview:...)`, `SessionStore.applyPreview`, `KeychainStore.memory`, `ConnectivityMonitor.init(previewOnline:)`, `UserClock.pinTodayForPreviews`. `AppDatabase.pool` bertipe `any DatabaseWriter`; jalur produksi tetap `DatabasePool` dan `wipeAndReopen` tetap bekerja.
+
 ## 7. Target perangkat & performa
 
 - Deployment target iOS 18.0: berjalan di iPhone XS/XR (2018) ke atas.

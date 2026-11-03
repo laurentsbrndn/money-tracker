@@ -16,6 +16,13 @@ final class ConnectivityMonitor: Sendable {
         monitor.start(queue: DispatchQueue(label: "moneytracker.connectivity"))
     }
 
+    #if DEBUG
+        /// Previews only: a fixed state; the system monitor is never started.
+        init(previewOnline: Bool) {
+            online.withLock { $0 = previewOnline }
+        }
+    #endif
+
     deinit {
         monitor.cancel()
     }
