@@ -30,6 +30,13 @@ final class AppContainer {
     let transactions: TransactionsRepository
     let settings: SettingsRepository
     let setup: SetupRepository
+    let userSettings: UserSettingsRepository
+    let reconciliation: ReconciliationRepository
+    let budget: BudgetRepository
+    let lock: AppLockController
+    let shield = ScreenShield()
+    let notificationService: NotificationService
+    let notifications: NotificationCoordinator
     let failedChanges: FailedChangesService
 
     init(config: AppConfig = .load(), router: AppRouter = AppRouter()) {
@@ -108,6 +115,21 @@ final class AppContainer {
         self.transactions = TransactionsRepository(database: database, writer: writer)
         self.settings = SettingsRepository(client: api.client)
         self.setup = SetupRepository(database: database)
+        self.userSettings = UserSettingsRepository(database: database, writer: writer)
+        self.reconciliation = ReconciliationRepository(database: database, writer: writer)
+        self.budget = BudgetRepository(database: database, writer: writer)
+        self.lock = AppLockController(
+            storage: LockStorage(keychain: KeychainStore(service: config.bundleID + ".lock")))
+        let notificationService = NotificationService()
+        self.notificationService = notificationService
+        self.notifications = NotificationCoordinator(
+            database: database, service: notificationService,
+            scheduler: NotificationScheduler(
+                database: database, service: notificationService,
+                isSignedIn: {
+                    let status = await session.status
+                    return status == .authenticated || status == .needsLogin
+                }))
         self.failedChanges = FailedChangesService(
             database: database, stores: stores, writer: writer, remote: SyncRemote(api: api.raw))
         self.syncStatus = SyncStatusStore(
@@ -117,10 +139,14 @@ final class AppContainer {
         self.lookups = LookupStore(database: database)
 
         session.onEstablished = { scheduler.sessionEstablished() }
+        lock.load()
+        notificationService.install { [router] payload in router.receive(payload: payload) }
+        background.afterRun = { [notifications] in await notifications.refreshNow() }
         syncStatus.start()
         gate.start()
         preferences.start()
         lookups.start()
+        notifications.start()
     }
 
     #if DEBUG
@@ -186,6 +212,20 @@ final class AppContainer {
             self.transactions = TransactionsRepository(database: database, writer: writer)
             self.settings = SettingsRepository(client: api.client)
             self.setup = SetupRepository(database: database)
+            self.userSettings = UserSettingsRepository(database: database, writer: writer)
+            self.reconciliation = ReconciliationRepository(database: database, writer: writer)
+            self.budget = BudgetRepository(database: database, writer: writer)
+            self.lock = AppLockController(
+                storage: LockStorage(
+                    keychain: KeychainStore(service: "preview.lock", memory: .init()),
+                    defaults: UserDefaults(suiteName: "moneytracker.preview") ?? .standard))
+            let notificationService = NotificationService()
+            self.notificationService = notificationService
+            // Previews never schedule: nobody is signed in as far as the scheduler can tell.
+            self.notifications = NotificationCoordinator(
+                database: database, service: notificationService,
+                scheduler: NotificationScheduler(
+                    database: database, service: notificationService, isSignedIn: { false }))
             self.failedChanges = FailedChangesService(
                 database: database, stores: stores, writer: writer, remote: SyncRemote(api: api.raw)
             )

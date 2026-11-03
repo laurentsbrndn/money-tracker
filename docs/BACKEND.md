@@ -292,8 +292,9 @@ Config dibagi dua kelompok:
 | `GOOGLE_CLIENT_IDS` | identity OAuth, `preview` dan `production` | Daftar dipisah koma (web client ID untuk Android Credential Manager + iOS client ID). Kosong di `local` → sama seperti Apple |
 | `RESEND_API_KEY` | identity, hanya `production` | Kosong di `local`/`preview` → `log_mailer` (kode ditulis ke log) |
 | `EMAIL_FROM` | identity, **semua environment** | `Money Tracker <no-reply@domain>` |
-| `REVENUECAT_WEBHOOK_SECRET` | billing (Fase 3) | Nilai header Authorization webhook |
-| `REVENUECAT_SECRET_API_KEY` | billing (Fase 3) | Untuk mengambil status subscriber terbaru |
+| `REVENUECAT_WEBHOOK_SECRET` | billing, `preview` dan `production` | Rahasia webhook. Di dashboard RevenueCat isi "Authorization header value" dengan `Bearer <nilai ini>`. Kosong di `local` → webhook menolak semua panggilan (401) |
+| `REVENUECAT_SECRET_API_KEY` | billing, `preview` dan `production` | Secret API key RevenueCat (REST v1) untuk mengambil status subscriber terbaru. Kosong di `local` → status hanya dari isi event |
+| `REVENUECAT_API_BASE_URL` | tidak | Default `https://api.revenuecat.com`; hanya diubah untuk RevenueCat palsu saat verifikasi lokal |
 
 **Migrate**: `DATABASE_URL_DIRECT` (wajib untuk `cmd/migrate`, tidak dibaca oleh API).
 
@@ -311,7 +312,7 @@ Raw SQL **hanya** diizinkan di tempat berikut, masing-masing dibungkus satu fung
 | Lokasi | SQL | Alasan |
 | --- | --- | --- |
 | `migrations/migrations.go` | `CREATE SEQUENCE sync_version_seq` / `DROP SEQUENCE` | GORM Migrator tidak punya API sequence |
-| `platform/database/version.go` | `SELECT nextval('sync_version_seq')` | Ambil versi sync |
+| `platform/database/version.go` | `SELECT nextval('sync_version_seq')` dan `SELECT nextval('sync_version_seq') FROM generate_series(1, n)` | Ambil satu versi sync, atau n versi sekaligus dalam satu query (seed onboarding, `NextSyncVersions`) |
 | `platform/database/user_lock.go` | `SELECT pg_advisory_xact_lock(hashtextextended(?, 0))` | Advisory lock per user (`SYNC_PROTOCOL.md` §10) |
 | Repository agregat | Ekspresi di `Select(...)` seperti `COALESCE(SUM(amount), 0)` | Agregat lewat query builder GORM, bukan `db.Raw` |
 
@@ -391,13 +392,19 @@ Di luar itu, gunakan query builder GORM. `db.Raw` / `db.Exec` dengan string SQL 
 
 - Validasi transaksi memakai `wallet.Accounts` dan `category.Categories` untuk kepemilikan referensi. Referensi belum ada → error `reference_missing`.
 - Recurring hanya bisa dibuat/diaktifkan bila premium.
-- `Aggregates` menyediakan jumlah per tipe, per alokasi, per kategori, dan arus per akun untuk rentang tanggal (dipakai report).
-- Cron recurring: iterasi user yang punya rule aktif dan premium, per user dalam tx terpisah dengan `LockUser`, memakai `domainrules.Recurrence`.
+- `Aggregates(userID, {AsOf, Month})` mengembalikan transaksi yang dihitung (hidup, `posted`, tanggal ≤ `AsOf`) yang dijumlahkan per hari/tipe/akun/alokasi dalam bentuk masukan `domainrules`, ditambah total per kategori untuk bulan itu (expense dan income, nominal menurun). Penjumlahan ini tidak mengubah hasil rumus apa pun karena semua rumus bersifat aditif.
+- `PurgeUser` menghapus `transactions` lalu `recurring_rules` milik user, dalam satu tx dengan `LockUser`.
+- **Sync `recurring_rules`** (`recurring_rule_service.go`): validasi bentuk template seperti transaksi (tipe, nominal, kategori/alokasi/source per tipe), field jadwal sesuai `frequency` (daily: tanpa field jadwal; weekly: `day_of_week` 1–7; monthly: `day_of_month` 1–31; yearly: `month_of_year` + `day_of_month` yang ada di bulan itu, 29 Feb boleh), `interval_count` 1–366, `end_date` ≥ `start_date`; akun/kategori harus ada (`reference_missing` bila belum) dan `start_date` tidak boleh sebelum `opening_date` akun. Membuat, menghidupkan dari tombstone, atau meng-unpause rule butuh premium (`plan_limit`); update biasa dan hapus tidak dicek.
+- **Cron recurring** (`recurring_generator.go`, `GET /v1/internal/cron/recurring`): menangani **maksimal 50 user per run**, seperti maintenance. Antrean dibentuk hanya dengan pembacaan (tanpa transaksi, tanpa lock) dari jadwal semua rule hidup yang tidak di-pause: kandidat adalah user yang punya kemunculan sampai tanggal UTC + 1 hari (batas terjauh timezone mana pun), lalu timezone tiap kandidat memberi "hari ini" yang tepat sehingga user yang kemunculan berikutnya baru besok tidak tinggal di antrean dan memakan jatah tiap run. Urutan: tanggal jatuh tempo paling tua dulu, lalu user id; yang tersisa dilanjutkan run berikutnya (tanpa state baru: user yang selesai tidak jatuh tempo lagi, dan ID kemunculan deterministik membuat pengulangan tidak menggandakan). Respons: `{"status":"ok","processed":<user ditangani>,"has_more":<masih ada sisa>}` (kolom tambahan di atas `CronResult`). Untuk setiap user di antrean: satu tx dengan `LockUser`. User yang tidak premium (termasuk `expires_at` yang sudah lewat tanpa webhook `EXPIRATION`) tidak digenerate; rule-nya di-pause (jaring pengaman). Untuk user premium: kemunculan dihitung `domainrules.Occurrences` (hari ini di timezone user), ID = UUIDv5(`NS_RECURRING_OCCURRENCE`, `rule_id|YYYY-MM-DD`); baris yang sudah ada (termasuk tombstone) dilewati; `status` = `posted` (auto) atau `pending_confirmation` (confirm); kemunculan sebelum `opening_date` akun dilewati; rule yang akun/kategorinya sudah dihapus tidak menghasilkan transaksi, tetapi `last_generated_date`-nya tetap dimajukan agar tidak jatuh tempo selamanya dan menempati antrean terdepan. Lalu `last_generated_date` dan `updated_at` rule diperbarui (stamp baru supaya sampai ke device lewat pull). Kegagalan satu user di-log dan tidak menghentikan user lain; job menjawab 500 bila ada yang gagal (user itu tetap di antrean berikutnya). Jaring pengaman pause untuk user non-premium hanya berlaku bagi user yang punya kemunculan jatuh tempo.
+- `PauseRules(userID)` mem-pause semua rule hidup (`is_paused = true`, stamp baru per baris dengan satu query versi), dipanggil billing lewat `PremiumEndedHandler`.
 
 ### 6.4 report
 
-- Mengambil data dari `ledger.Aggregates`, `wallet` (akun + snapshot terbaru), `budget.EffectiveFor`, lalu menghitung dengan `domainrules`.
-- Batas riwayat dan fitur premium ditegakkan di sini (`history_limit`, `premium_required`).
+- Mengambil data dari `ledger.Aggregates`, `wallet` (`Accounts.ForRules` + `Snapshots.Latest`), `budget.EffectiveFor`, lalu menghitung dengan `domainrules` (`ComputeMonthlySummary`, `Reconcile`, `ComputeBudget`). Semua pembacaan dalam satu transaksi `REPEATABLE READ` read-only supaya konsisten.
+- "Hari ini" dan bulan berjalan memakai timezone user (`BUSINESS_RULES.md` §1). report tidak boleh meng-import identity, jadi timezone dibaca lewat interface `report.Timezones` yang disambungkan composition root ke `identity.Settings.Timezone`.
+- Tanggal acuan (`as_of`) = hari terakhir bulan yang diminta, atau hari ini bila bulan itu belum berakhir (transaksi bertanggal setelahnya tidak dihitung, `BUSINESS_RULES.md` §3). Bulan setelah bulan berjalan diterima dan menghasilkan laporan dengan `as_of` = hari ini.
+- Batas riwayat dan fitur premium ditegakkan di sini (`history_limit`, `premium_required`) lewat `billing.HistoryMonthAllowed` dan `billing.AdvancedReportsAllowed`.
+- **Tren** (`trend_service.go`, `GET /reports/trend?months=6|12`): premium saja. Satu snapshot `REPEATABLE READ`; arus transaksi dibaca sekali sampai hari ini (`ledger.Flows`), lalu tiap bulan dihitung dengan `domainrules` (`ComputeMonthlySummary`, `ComputeBudget`) memakai `as_of` bulan itu (hari terakhir, atau hari ini untuk bulan berjalan). `savings` = `savings.actual` budget bulan itu; `adjustments` = Σ adjustment bertanda di bulan itu. Urutan array: bulan terlama dulu, diakhiri bulan berjalan.
 
 ### 6.5 sync
 
@@ -409,10 +416,26 @@ Di luar itu, gunakan query builder GORM. `db.Raw` / `db.Exec` dengan string SQL 
 ### 6.6 billing
 
 - App memanggil `Purchases.logIn(<user_id>)` sehingga `app_user_id` RevenueCat = user ID server.
-- Webhook: verifikasi header → simpan `billing_events` (insert dengan PK event ID; duplikat → balas 200 tanpa proses) → ambil status subscriber terbaru dari RevenueCat REST API memakai `REVENUECAT_SECRET_API_KEY` (webhook bisa datang tidak berurutan) → perbarui `subscriptions` dan `entitlements`.
-- Event dengan `app_user_id` anonim (`$RCAnonymousID:…`) disimpan, tidak diproses.
-- Entitlement berubah dari aktif ke tidak aktif → panggil `PremiumEndedHandler` (interface di `billing/api.go`) dalam tx dengan `LockUser`. Composition root (`internal/app/app.go`) mengimplementasikannya dengan `ledger.PauseRules`, karena billing tidak boleh meng-import ledger.
+- **Webhook** (`POST /v1/billing/webhooks/revenuecat`, `webhook_auth`): body divalidasi (`event.id`, `event.type`, `event.event_timestamp_ms` wajib) → event disimpan di `billing_events` (insert dengan PK event ID; bila ID sudah ada dan sudah `processed_at` → balas 200 tanpa proses; bila ada tetapi belum diproses, mis. gagal sebelumnya, diproses lagi) → diproses → balas 200. Hasil **permanen** dibalas 200: user tidak dikenal, event diabaikan, duplikat yang sudah diproses, dan state `TRANSFER` yang tidak bisa diturunkan tanpa API key (alasannya tersimpan di `error`). Kegagalan **sementara atau tak terduga** (error DB, antrean lock user yang melewati batas waktu, panic yang dipulihkan, pembacaan REST yang gagal untuk `TRANSFER`/`PURCHASE_REDEEMED` yang tidak punya cadangan) disimpan di `billing_events.error` lalu dibalas **500** supaya RevenueCat mengirim ulang; event dengan `error` terisi dan tanpa `processed_at` diproses lagi saat dikirim ulang (idempoten, karena status dibaca ulang dari RevenueCat), dan sukses menghapus `error`. Pemrosesan satu event dibatasi 20 detik (termasuk menunggu lock user); mencatat hasil memakai batas waktu sendiri (5 detik). Kegagalan REST yang ditangani cadangan dari field event **bukan** kegagalan sementara. Kegagalan menyimpan event juga 500.
+- **User yang dimaksud event**: `app_user_id` bila UUID server; bila anonim (`$RCAnonymousID:…`), `original_app_user_id` atau alias pertama yang UUID; kalau tidak ada, event disimpan dan tidak diproses (`processed_at` kosong). `TRANSFER` dan `PURCHASE_REDEEMED` memproses semua user yang disebut (`transferred_from`/`transferred_to`, `redeemed_from`/`redeemed_by`).
+- **Sumber kebenaran status = REST API RevenueCat** (`GET /v1/subscribers/{app_user_id}`, `client/revenuecat_client.go`; batas waktu 5 detik lewat context deadline, jadi transaksi yang memegang lock user dan koneksi DB paling lama menunggu 5 detik). Webhook hanya pemicu: ia bisa datang dua kali, terlambat, atau tidak berurutan, jadi setiap event membaca status subscriber terbaru lalu menulisnya. Pembacaan dilakukan **di dalam tx dengan `LockUser`**, sehingga urutan baca = urutan tulis dan event lama yang diproses belakangan tidak bisa mengembalikan status lama. Status turunan (`entitlement_state.go`): entitlement `premium` aktif bila `expires_date` (atau `grace_period_expires_date`, mana yang lebih akhir) belum lewat; `refunded_at` mengakhiri akses seketika; status langganan `active` / `cancelled` (`unsubscribe_detected_at`) / `in_grace_period` / `in_billing_retry` (`billing_issues_detected_at`) / `expired` / `refunded`.
+- **Cadangan bila REST tidak terjangkau atau `REVENUECAT_SECRET_API_KEY` kosong**: status diturunkan dari field event itu sendiri (INITIAL_PURCHASE, RENEWAL, UNCANCELLATION, REFUND_REVERSED, SUBSCRIPTION_EXTENDED, PRODUCT_CHANGE → aktif; CANCELLATION → `cancelled`, `CUSTOMER_SUPPORT` = refund → akses berakhir, `BILLING_ERROR` → `in_billing_retry`; BILLING_ISSUE → grace period bila `grace_period_expiration_at_ms` di masa depan; SUBSCRIPTION_PAUSED tidak mencabut akses; EXPIRATION → berakhir; TEMPORARY_ENTITLEMENT_GRANT → 24 jam bila belum premium). Jalur ini **mengabaikan event yang lebih tua dari event bertipe-status lain yang sudah diproses untuk user itu** (`event_timestamp_ms`), dan mengabaikan event untuk entitlement selain `premium`. `TRANSFER` tidak bisa diturunkan tanpa REST: event dicatat dengan `error`.
+- Event yang tidak mengubah entitlement (`TEST`, `EXPERIMENT_ENROLLMENT`, `VIRTUAL_CURRENCY_TRANSACTION`, `INVOICE_ISSUANCE`, `SUBSCRIBER_ALIAS`, `PRICE_INCREASE_*`) hanya ditandai diproses.
+- **Penulisan**: `subscriptions` di-upsert berdasarkan `(store, original_transaction_id)` (ID asli dari event bila event menyangkut produk itu, kalau tidak dari baris langganan user, kalau tidak dari asal transfer, kalau tidak `store_transaction_id`), sehingga setiap perpanjangan memperbarui satu baris dan transfer memindahkan pemilik baris yang sama. `entitlements` (`premium`) menyimpan `is_active` dan `expires_at` (akhir akses; akhir grace period saat grace). Store selain `app_store`/`play_store` (mis. promosional) memberi entitlement tanpa baris `subscriptions`.
+- **Premium berakhir** (`is_active` aktif → tidak aktif) → `PremiumEndedHandler` (interface di `billing/api.go`) dipanggil di tx yang sama; composition root mengimplementasikannya dengan `ledger.PauseRules` (billing tidak boleh meng-import ledger; diikat lewat `latePremiumEnded` di `internal/app/late_bindings.go`).
+- **Pembacaan**: `IsPremium` ketat: `is_active` dan `expires_at` belum lewat (jaring pengaman bila webhook `EXPIRATION` terlambat); toleransi offline 3 hari hanya di app. `GET /me/entitlements`, `GET /me`, dan `meta.entitlement` di pull memakai `Get`; untuk user non-premium `expires_at` = `null` supaya app tidak memperpanjang entitlement yang sudah habis dengan toleransinya.
 - `plan_limits.go` berisi konstanta batas paket (`BUSINESS_RULES.md` §7).
+- `PurgeUser` menghapus `entitlements`, lalu `subscriptions`, lalu `billing_events` milik user dalam satu transaksi.
+
+### 6.7 Cron maintenance
+
+`GET /v1/internal/cron/maintenance` (`internal/app/maintenance.go`), berurutan dan idempoten:
+
+1. Hapus `sync_idempotency_keys` dengan `created_at` > 24 jam.
+2. Hapus `refresh_tokens` dan `verification_tokens` dengan `expires_at` lebih tua dari 7 hari.
+3. Purge permanen user `pending_deletion` dengan `deletion_requested_at` > 30 hari: maksimal 50 user per run (sisanya diambil run berikutnya). Tiap user dipurge dalam **satu transaksi** yang menjalankan `PurgeUser` semua modul berurutan (ledger → budget → wallet → category → sync → billing → identity; di wallet `balance_snapshots` dihapus sebelum `accounts`; identity terakhir karena menghapus baris `users` dan men-cascade identitas serta token). Gagal pada satu user melakukan rollback user itu saja; job lanjut ke user berikutnya.
+
+Satu tugas yang gagal tidak menghentikan tugas lain; bila ada yang gagal job menjawab `500 internal` supaya terlihat di log cron.
 
 ## 7. Vercel
 

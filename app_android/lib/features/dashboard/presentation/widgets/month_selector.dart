@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/domain_rules/period.dart';
 import '../../../../core/time/civil_date_format.dart';
-import '../../../../core/time/today.dart';
+import '../../../../core/time/user_clock.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../application/dashboard_providers.dart';
 
@@ -18,7 +18,7 @@ class MonthSelector extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final month = ref.watch(selectedMonthProvider);
     final notifier = ref.read(selectedMonthProvider.notifier);
-    final current = YearMonth.of(todayCivil());
+    final current = YearMonth.of(ref.watch(userClockProvider).today());
     final canGoBack = ref.watch(canViewMonthProvider(month.addMonths(-1)));
     return Row(
       mainAxisSize: MainAxisSize.min,

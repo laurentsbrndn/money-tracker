@@ -14,6 +14,9 @@ class BudgetGoalsDao extends DatabaseAccessor<AppDatabase>
   Stream<List<BudgetGoalRow>> watchActive() =>
       (select(budgetGoals)..where((t) => t.deletedAt.isNull())).watch();
 
+  Future<List<BudgetGoalRow>> allActive() =>
+      (select(budgetGoals)..where((t) => t.deletedAt.isNull())).get();
+
   Future<BudgetGoalRow?> findById(String id) =>
       (select(budgetGoals)..where((t) => t.id.equals(id))).getSingleOrNull();
 

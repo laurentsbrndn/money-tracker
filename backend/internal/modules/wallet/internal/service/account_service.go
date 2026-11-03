@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"moneytracker/internal/domainrules"
 	"moneytracker/internal/modules/billing"
 	"moneytracker/internal/modules/wallet/internal/dto"
 	"moneytracker/internal/modules/wallet/internal/model"
@@ -167,6 +168,26 @@ func (s *AccountService) List(ctx context.Context, userID uuid.UUID) ([]Account,
 	return out, nil
 }
 
+// ForRules returns the user's live accounts in the shape of domainrules, archived ones
+// included (they still count in totals, docs/BUSINESS_RULES.md §4.2), in display order.
+func (s *AccountService) ForRules(ctx context.Context, userID uuid.UUID) ([]domainrules.Account, error) {
+	rows, err := s.accounts.List(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]domainrules.Account, 0, len(rows))
+	for i := range rows {
+		out = append(out, domainrules.Account{
+			ID:             rows[i].ID.String(),
+			Type:           domainrules.AccountType(rows[i].Type),
+			OpeningBalance: rows[i].OpeningBalance,
+			OpeningDate:    rows[i].OpeningDate,
+			IncludeInTotal: rows[i].IncludeInTotal,
+		})
+	}
+	return out, nil
+}
+
 // CountActive returns the number of accounts that are neither deleted nor archived.
 func (s *AccountService) CountActive(ctx context.Context, userID uuid.UUID) (int, error) {
 	return s.accounts.CountActive(ctx, userID, uuid.Nil)
@@ -196,9 +217,6 @@ func (s *AccountService) CreateCash(ctx context.Context, userID uuid.UUID, openi
 		IncludeInTotal: true,
 		SortOrder:      0,
 	}
-	if err := s.accounts.Save(ctx, account, now); err != nil {
-		return err
-	}
 	snapshot := &model.BalanceSnapshot{
 		Columns: syncbase.Columns{
 			ID: snapshotID, UserID: userID, CreatedAt: syncbase.NewTime(now), UpdatedAt: syncbase.NewTime(now),
@@ -207,7 +225,14 @@ func (s *AccountService) CreateCash(ctx context.Context, userID uuid.UUID, openi
 		SnapshotDate: openingDate,
 		Amount:       0,
 	}
-	return s.snapshots.Save(ctx, snapshot, now)
+	// One version query for both rows (account first), then one INSERT per table.
+	if err := syncbase.StampAll(ctx, s.accounts.DB(ctx), now, &account.Columns, &snapshot.Columns); err != nil {
+		return err
+	}
+	if err := s.accounts.Write(ctx, account); err != nil {
+		return err
+	}
+	return s.snapshots.Write(ctx, snapshot)
 }
 
 // PurgeUser deletes the user's snapshots, then accounts (snapshots reference accounts).

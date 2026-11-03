@@ -2,10 +2,25 @@ import Foundation
 import Security
 import Synchronization
 
-/// Thin wrapper over generic-password Keychain items (FRONTEND_IOS §1: no library). Items are
-/// readable after the first unlock so a background sync can use them, and never leave the device.
+/// Thin wrapper over generic-password Keychain items (FRONTEND_IOS §1: no library). Items never
+/// leave the device; `accessibility` says when they can be read.
 struct KeychainStore: Sendable {
+    /// When an item may be read. Sessions need `afterFirstUnlock` (background sync); the app
+    /// lock's PIN data uses `whenUnlocked`.
+    enum Accessibility: Sendable {
+        case afterFirstUnlock
+        case whenUnlocked
+
+        fileprivate var value: CFString {
+            switch self {
+            case .afterFirstUnlock: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            case .whenUnlocked: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            }
+        }
+    }
+
     let service: String
+    var accessibility: Accessibility = .afterFirstUnlock
 
     #if DEBUG
         /// Previews only: items live in this dictionary instead of the Keychain.
@@ -49,7 +64,7 @@ struct KeychainStore: Sendable {
         guard update == errSecItemNotFound else { throw KeychainError.unexpectedStatus(update) }
         var add = baseQuery(key)
         add[kSecValueData as String] = data
-        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        add[kSecAttrAccessible as String] = accessibility.value
         let status = SecItemAdd(add as CFDictionary, nil)
         guard status == errSecSuccess else { throw KeychainError.unexpectedStatus(status) }
     }

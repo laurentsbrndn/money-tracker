@@ -93,6 +93,8 @@ Callback yang ada saat ini:
 | `identity.UserPurger` | `PurgeUser(ctx, userID)` | tiap modul | Hapus data user |
 | `wallet.ReferenceChecker` | `HasActiveReferences(ctx, userID, id)` | ledger | Akun tidak boleh dihapus bila masih dirujuk transaksi aktif |
 | `category.ReferenceChecker` | `HasActiveReferences(ctx, userID, id)` | ledger | Kategori tidak boleh dihapus bila masih dirujuk transaksi aktif |
+| `report.Timezones` | `Timezone(ctx, userID)` | `identity.Settings` (diadaptasi `internal/app/app.go`) | report menentukan "hari ini" di timezone user tanpa meng-import identity |
+| `ledger.Timezones` | `Timezone(ctx, userID)` | `identity.Settings` (diikat lambat, `internal/app/late_bindings.go`) | Cron recurring menentukan "hari ini" di timezone user |
 
 wallet dan category tidak boleh meng-import ledger (ledger sudah bergantung ke keduanya). Karena itu masing-masing mendefinisikan interface `ReferenceChecker` kecil di `api.go`, ledger mengimplementasikannya, dan composition root menyambungkannya.
 

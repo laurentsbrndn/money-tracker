@@ -54,6 +54,9 @@ func (c EmailConfig) Validate(production bool) error {
 type RevenueCatConfig struct {
 	WebhookSecret string `env:"REVENUECAT_WEBHOOK_SECRET"`
 	SecretAPIKey  string `env:"REVENUECAT_SECRET_API_KEY"`
+	// APIBaseURL overrides the REST API origin (default https://api.revenuecat.com); it exists
+	// so a fake RevenueCat can stand in locally.
+	APIBaseURL string `env:"REVENUECAT_API_BASE_URL"`
 }
 
 // Validate checks the fields required once billing is wired.

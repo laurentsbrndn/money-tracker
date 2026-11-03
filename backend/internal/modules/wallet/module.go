@@ -25,9 +25,10 @@ type Deps struct {
 
 // Module wires the wallet module.
 type Module struct {
-	db       *database.TxManager
-	accounts *service.AccountService
-	syncs    []syncbase.Handler
+	db        *database.TxManager
+	accounts  *service.AccountService
+	snapshots *service.BalanceSnapshotService
+	syncs     []syncbase.Handler
 }
 
 // New builds the module.
@@ -37,8 +38,9 @@ func New(d Deps) *Module {
 	accounts := service.NewAccountService(accountRepo, snapshotRepo, d.Billing, d.References, d.Clock)
 	snapshots := service.NewBalanceSnapshotService(snapshotRepo, accountRepo, d.Clock)
 	return &Module{
-		db:       d.DB,
-		accounts: accounts,
+		db:        d.DB,
+		accounts:  accounts,
+		snapshots: snapshots,
 		syncs: []syncbase.Handler{
 			synchandler.NewAccountHandler(accountRepo, accounts),
 			synchandler.NewBalanceSnapshotHandler(snapshotRepo, snapshots),
@@ -49,6 +51,11 @@ func New(d Deps) *Module {
 // API returns the public interface of the module.
 func (m *Module) API() Accounts {
 	return m.accounts
+}
+
+// Snapshots returns the snapshot reading interface.
+func (m *Module) Snapshots() Snapshots {
+	return m.snapshots
 }
 
 // RegisterSyncHandlers registers the accounts and balance_snapshots sync handlers.

@@ -141,6 +141,10 @@
                 NavigationStack(path: $router.accountsPath) {
                     content().routeDestinations(container)
                 }
+            case .budget:
+                NavigationStack(path: $router.budgetPath) {
+                    content().routeDestinations(container)
+                }
             case .more:
                 NavigationStack(path: $router.morePath) {
                     content().routeDestinations(container)

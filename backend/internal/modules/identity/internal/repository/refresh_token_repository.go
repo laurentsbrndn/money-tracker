@@ -90,3 +90,12 @@ func (r *RefreshTokenRepository) RevokeFamily(ctx context.Context, familyID uuid
 	}
 	return nil
 }
+
+// DeleteExpiredBefore removes tokens whose expires_at is before cutoff and returns how many.
+func (r *RefreshTokenRepository) DeleteExpiredBefore(ctx context.Context, cutoff time.Time) (int64, error) {
+	res := r.db.DB(ctx).Where("expires_at < ?", cutoff).Delete(&model.RefreshToken{})
+	if res.Error != nil {
+		return 0, fmt.Errorf("delete expired refresh tokens: %w", res.Error)
+	}
+	return res.RowsAffected, nil
+}

@@ -63,6 +63,8 @@ struct Transaction: Sendable {
     var accountID: String
     var toAccountID: String?
     var allocation: Allocation?
+    /// Only expenses have a category.
+    var categoryID: String?
     var isDeleted: Bool
 }
 
@@ -76,7 +78,7 @@ struct BalanceSnapshot: Sendable {
 }
 
 /// The needs/wants/savings split effective from a month.
-struct BudgetGoal: Sendable {
+struct BudgetGoal: Sendable, Equatable {
     var effectiveMonth: YearMonth
     var needsPct: Int64
     var wantsPct: Int64

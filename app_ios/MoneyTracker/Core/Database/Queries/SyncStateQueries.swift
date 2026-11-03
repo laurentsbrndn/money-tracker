@@ -10,6 +10,8 @@ enum SyncStateKey {
     static let initialSyncDone = "initial_sync_done"
     static let setupPending = "setup_pending"
     static let foregroundSince = "foreground_since"
+    /// Budget thresholds already announced this month (local only, never synced).
+    static let budgetAlertsSent = "budget_alerts_sent"
 }
 
 extension Database {

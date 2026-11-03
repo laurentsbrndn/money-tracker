@@ -85,30 +85,38 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 ## Fase 2 — Uang aktual & budget
 
 ### Backend
-- [ ] report: `GET /v1/reports/monthly` (batas riwayat paket gratis)
-- [ ] Cron maintenance `GET /v1/internal/cron/maintenance` + `PurgeUser` di setiap modul
+- [x] Optimasi seed onboarding: versi sync diambil sekaligus (`NextSyncVersions`) dan insert massal per tabel, tetap satu transaksi (±46 query seed → 10)
+- [x] report: `GET /v1/reports/monthly` (batas riwayat paket gratis)
+- [x] Cron maintenance `GET /v1/internal/cron/maintenance` + `PurgeUser` di setiap modul
 
 ### Flutter
-- [ ] Cocokkan saldo (snapshot, selisih per akun, catat yang terlewat, adjustment)
-- [ ] Dashboard: kartu uang aktual, selisih, budget
-- [ ] Budget: atur goal (+ rencana income), halaman budget, rincian per kategori
-- [ ] Notifikasi lokal: harian, cocokkan saldo, peringatan budget, evaluasi bulan
-- [ ] Kunci app (PIN/biometrik), sembunyikan nominal, preferensi (timezone, tema)
-- [ ] `core/time/user_clock.dart` ("hari ini" di timezone user, port `Today` dari `domainrules/period.go`; pasang `timezone` dan `flutter_timezone`)
+- [x] Cocokkan saldo (snapshot, selisih per akun, catat yang terlewat, adjustment)
+- [x] Dashboard: kartu uang aktual, selisih, budget
+- [x] Budget: atur goal (+ rencana income), halaman budget, rincian per kategori
+- [x] Notifikasi lokal: harian, cocokkan saldo, peringatan budget, evaluasi bulan
+- [x] Kunci app (PIN/biometrik), sembunyikan nominal, preferensi (timezone, tema)
+- [x] `core/time/user_clock.dart` ("hari ini" di timezone user, port `Today` dari `domainrules/period.go`; pasang `timezone` dan `flutter_timezone`)
 
 ### iOS
-- [ ] Semua item Flutter Fase 2 dengan padanan iOS
+- [x] Semua item Flutter Fase 2 dengan padanan iOS
+    - [x] `UserClock` dengan timezone IANA pengguna (`TimeZone(identifier:)`), registrasi mengirim timezone perangkat
+    - [x] Cocokkan saldo (snapshot, selisih per akun, catat yang terlewat, adjustment)
+    - [x] Dashboard: kartu uang aktual, selisih, budget (`openingTotal` benar: seluruh transaksi diberikan ke `computeMonthlySummary`)
+    - [x] Budget: atur goal (+ rencana income, 3 preset), halaman budget, rincian per kategori, kartu evaluasi; wizard 6 langkah
+    - [x] Notifikasi lokal: harian, cocokkan saldo, peringatan budget (80% dan 100%), evaluasi bulan
+    - [x] Kunci app (PIN/biometrik, overlay window), sembunyikan nominal, preferensi (timezone dengan pencarian, hari pertama minggu, tema)
 
 ## Fase 3 — Monetisasi
 
 ### Backend
-- [ ] billing: webhook RevenueCat (idempoten), ambil status subscriber, `subscriptions` + `entitlements`, `GET /v1/me/entitlements`, `meta.entitlement` di pull
-- [ ] Pause recurring saat premium berakhir
-- [ ] Sync handler `recurring_rules` (premium) + cron `GET /v1/internal/cron/recurring`
-- [ ] `GET /v1/reports/trend` (premium)
+- [x] billing: webhook RevenueCat (idempoten), ambil status subscriber, `subscriptions` + `entitlements`, `GET /v1/me/entitlements`, `meta.entitlement` di pull
+- [x] Pause recurring saat premium berakhir
+- [x] Sync handler `recurring_rules` (premium) + cron `GET /v1/internal/cron/recurring`
+- [x] `GET /v1/reports/trend` (premium)
 - [ ] (manual) User menguji skenario S8 dan S12
 
 ### Flutter
+- [ ] Catatan: perbaiki `openingTotal` pada `monthlySummary` dashboard Flutter sebelum laporan tren (hanya transaksi bulan terpilih yang diberikan ke `computeMonthlySummary`, sehingga `openingTotal` salah). iOS sudah benar sejak Fase 2
 - [ ] RevenueCat (`logIn`/`logOut`), paywall, layar langganan, pulihkan pembelian
 - [ ] Entitlement provider + toleransi offline 3 hari + UX batas paket (`plan_limit`)
 - [ ] Transaksi berulang: kelola aturan, generator lokal, konfirmasi pending

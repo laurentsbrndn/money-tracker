@@ -219,7 +219,8 @@ Catatan penerapan di server:
 - **Kategori:** `is_default` hanya diisi seed server. Baris baru dari client harus `false`, dan baris yang sudah ada tidak boleh mengubahnya.
 - **Id & tombstone:** `data.id` harus sama dengan `id` entri; upsert tidak boleh membawa `deleted_at` (gunakan `op = delete`); upsert pada baris yang sudah tombstone menghidupkannya kembali. `budget_goals.id` harus UUIDv5 dari user dan bulan efektif; `user_settings.id` harus sama dengan id user dan barisnya tidak dapat dihapus.
 - **Hapus akun/kategori** (`op = delete`) ditolak bila masih dipakai transaksi aktif; mengarsipkan (`archived_at`) tidak diperiksa.
-- **Batas paket** (§7) diperiksa hanya saat baris menjadi aktif: baris baru, hidup lagi dari tombstone, atau akun yang di-unarchive. Update biasa tidak dicek. Kategori custom yang diarsipkan tetap dihitung.
+- **Batas paket** (§7) diperiksa hanya saat baris menjadi aktif: baris baru, hidup lagi dari tombstone, atau akun yang di-unarchive (untuk `recurring_rules`: baru, hidup lagi, atau di-unpause). Update biasa dan hapus tidak dicek. Kategori custom yang diarsipkan tetap dihitung.
+- **recurring_rules:** `interval_count` 1–366; field jadwal sesuai `frequency` (daily tidak punya field jadwal; weekly `day_of_week` 1–7; monthly `day_of_month` 1–31; yearly `month_of_year` dan `day_of_month` yang ada di bulan itu, 29 Feb boleh) dan yang lain null; `start_date` tidak boleh sebelum `opening_date` akun asal dan tujuan.
 
 ## 7. Batas paket
 

@@ -6,6 +6,20 @@ enum MoneyFormatter {
         return (amount < 0 ? "-" : "") + "Rp " + grouped(amount.magnitude)
     }
 
+    /// With an explicit sign: 50000 → `+Rp 50.000`, -50000 → `-Rp 50.000`, 0 → `Rp 0`.
+    static func signedRupiah(_ amount: Int64, hidden: Bool = false) -> String {
+        if hidden { return "Rp •••••" }
+        return (amount > 0 ? "+" : "") + rupiah(amount)
+    }
+
+    /// Basis points with one decimal and a decimal comma: 1941 → `19,4%`, -250 → `-2,5%`
+    /// (BUSINESS_RULES §4.5: one decimal only in the UI).
+    static func percent(basisPoints bp: Int64) -> String {
+        let sign = bp < 0 ? "-" : ""
+        let tenths = (bp.magnitude + 5) / 10
+        return "\(sign)\(tenths / 10),\(tenths % 10)%"
+    }
+
     /// `1234567` → `1.234.567` (no currency symbol).
     static func grouped(_ value: UInt64) -> String {
         let digits = Array(String(value))

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -50,4 +51,13 @@ func (r *IdempotencyKeyRepository) DeleteByUser(ctx context.Context, userID uuid
 		return fmt.Errorf("delete idempotency keys: %w", err)
 	}
 	return nil
+}
+
+// DeleteCreatedBefore removes keys created before cutoff and returns how many.
+func (r *IdempotencyKeyRepository) DeleteCreatedBefore(ctx context.Context, cutoff time.Time) (int64, error) {
+	res := r.db.DB(ctx).Where("created_at < ?", cutoff).Delete(&model.IdempotencyKey{})
+	if res.Error != nil {
+		return 0, fmt.Errorf("delete old idempotency keys: %w", res.Error)
+	}
+	return res.RowsAffected, nil
 }

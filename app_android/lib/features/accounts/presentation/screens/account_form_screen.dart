@@ -9,7 +9,7 @@ import '../../../../core/network/error_messages.dart';
 import '../../../../core/theme/provider_logos.dart';
 import '../../../../core/time/civil_date.dart';
 import '../../../../core/time/civil_date_format.dart';
-import '../../../../core/time/today.dart';
+import '../../../../core/time/user_clock.dart';
 import '../../../../core/validation/validation_exception.dart';
 import '../../../../core/widgets/money_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -32,7 +32,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
   final _balance = TextEditingController();
   String _type = 'bank';
   String? _providerKey;
-  CivilDate _openingDate = todayCivil();
+  late CivilDate _openingDate;
   bool _includeInTotal = true;
   bool _busy = false;
   bool _loaded = false;
@@ -43,6 +43,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
   @override
   void initState() {
     super.initState();
+    _openingDate = ref.read(userClockProvider).today();
     if (_isEdit) {
       _load();
     } else {

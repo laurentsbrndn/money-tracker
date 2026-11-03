@@ -21,8 +21,19 @@ struct HomeView: View {
                         isLocked: !model.canView(model.month), onPrevious: model.previousMonth,
                         onNext: model.nextMonth)
                     if model.canView(model.month) {
-                        SummaryCard(
-                            summary: model.summary, hidden: container.preferences.hideAmounts)
+                        let hidden = container.preferences.hideAmounts
+                        SummaryCard(summary: model.summary, hidden: hidden)
+                        ActualMoneyCard(
+                            overview: model.overview, hidden: hidden,
+                            onTap: { container.router.selectedTab = .accounts })
+                        DifferenceCard(
+                            overview: model.overview, hidden: hidden,
+                            onReconcile: {
+                                container.router.dashboardPath.append(AppRoute.reconcile)
+                            })
+                        BudgetCard(
+                            month: model.monthBudget, hidden: hidden,
+                            onTap: { container.router.selectedTab = .budget })
                     } else {
                         Label("Riwayat lebih dari 3 bulan tersedia di Premium", systemImage: "lock")
                             .foregroundStyle(.secondary)
@@ -63,6 +74,5 @@ struct HomeView: View {
         .refreshable { await container.scheduler.syncNow() }
         .overlay(alignment: .bottomTrailing) { AddTransactionButton() }
         .task { await model.observeStatic() }
-        .task(id: model.month) { await model.observeMonth() }
     }
 }

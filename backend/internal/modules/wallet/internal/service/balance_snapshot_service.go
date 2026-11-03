@@ -5,9 +5,11 @@ import (
 
 	"github.com/google/uuid"
 
+	"moneytracker/internal/domainrules"
 	"moneytracker/internal/modules/wallet/internal/dto"
 	"moneytracker/internal/modules/wallet/internal/model"
 	"moneytracker/internal/modules/wallet/internal/repository"
+	"moneytracker/internal/platform/civil"
 	"moneytracker/internal/platform/clock"
 	"moneytracker/internal/platform/syncbase"
 )
@@ -81,4 +83,23 @@ func (s *BalanceSnapshotService) Upsert(ctx context.Context, userID uuid.UUID, c
 // Delete tombstones a snapshot.
 func (s *BalanceSnapshotService) Delete(ctx context.Context, userID uuid.UUID, c syncbase.Change) error {
 	return s.snapshots.Tombstone(ctx, userID, c.ID, syncbase.NewTime(c.UpdatedAt), s.clock.Now())
+}
+
+// Latest returns each account's newest live snapshot rows on or before asOf in the shape of
+// domainrules (docs/BUSINESS_RULES.md §4.3). Accounts without a snapshot are absent.
+func (s *BalanceSnapshotService) Latest(ctx context.Context, userID uuid.UUID, asOf civil.Date) ([]domainrules.BalanceSnapshot, error) {
+	rows, err := s.snapshots.Latest(ctx, userID, asOf)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]domainrules.BalanceSnapshot, 0, len(rows))
+	for i := range rows {
+		out = append(out, domainrules.BalanceSnapshot{
+			AccountID: rows[i].AccountID.String(),
+			Date:      rows[i].SnapshotDate,
+			Amount:    rows[i].Amount,
+			UpdatedAt: rows[i].UpdatedAt.Std(),
+		})
+	}
+	return out, nil
 }

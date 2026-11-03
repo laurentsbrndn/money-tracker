@@ -116,10 +116,12 @@ Pengaturan (`user_settings`) diubah lewat sync, bukan endpoint ini.
 
 Dipakai untuk verifikasi server dan versi web nanti. App menghitung laporan sendiri dari database lokal.
 
+Tanggal acuan (`as_of`) laporan = hari terakhir bulan yang diminta, atau hari ini (timezone user) bila bulan itu belum berakhir. Paket gratis: bulan berjalan + 2 bulan sebelumnya, selain itu `403 history_limit`. Bulan tanpa data menghasilkan laporan kosong yang valid. `month` yang bukan `YYYY-MM` → `422 validation`.
+
 | Method & path | Akses | Respons |
 | --- | --- | --- |
 | `GET /reports/monthly?month=YYYY-MM` | Free dalam batas riwayat, premium semua | `monthly_summary`, `accounts`, `totals`, `budget` (struktur sama dengan `expected` di contoh perhitungan `BUSINESS_RULES.md` §9.1) + `expense_by_category` + `income_by_category` |
-| `GET /reports/trend?months=6` | Premium | Array per bulan: `month`, `income`, `expense`, `surplus`, `savings`, `adjustments` |
+| `GET /reports/trend?months=6` | Premium | Array per bulan, terlama dulu, diakhiri bulan berjalan: `month`, `income`, `expense`, `surplus`, `savings`, `adjustments`. `months` hanya `6` (default) atau `12`, selain itu `422 validation`. User free: `403 premium_required` |
 
 ## 6. Billing
 
@@ -127,8 +129,8 @@ Dipakai untuk verifikasi server dan versi web nanti. App menghitung laporan send
 | --- | --- | --- |
 | `GET /me/entitlements` | user | Skema `Entitlement`: `{ "premium": true, "expires_at": "…", "will_renew": true, "product_id": "premium_monthly", "store": "app_store" }` |
 
-Skema `Entitlement` satu untuk semua tempat (`GET /me`, `GET /me/entitlements`, `meta.entitlement` di pull): `premium`, `expires_at`, `will_renew` selalu ada; `product_id` dan `store` opsional (hanya bila ada langganan; pull boleh menghilangkannya).
-| `POST /billing/webhooks/revenuecat` | `Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>` | Simpan event (idempoten via `event.id`), proses, balas 200. Event yang gagal diproses tetap dibalas 200 setelah tersimpan, dengan `error` terisi untuk diinvestigasi |
+Skema `Entitlement` satu untuk semua tempat (`GET /me`, `GET /me/entitlements`, `meta.entitlement` di pull): `premium`, `expires_at`, `will_renew` selalu ada; `product_id` dan `store` opsional (hanya bila ada langganan; pull boleh menghilangkannya). Untuk user yang tidak premium: `premium = false`, `expires_at = null`, `will_renew = false`. Server ketat pada `expires_at` (toleransi 3 hari hanya di app).
+| `POST /billing/webhooks/revenuecat` | `Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>` | Simpan event (idempoten via `event.id`), proses, balas 200. Event yang gagal diproses tetap dibalas 200 setelah tersimpan, dengan `error` terisi untuk diinvestigasi. Body tidak valid (JSON rusak, `event.id`/`type`/`event_timestamp_ms` kosong) → 422. Di dashboard RevenueCat, "Authorization header value" diisi `Bearer <secret>`. Cara kerja pemrosesan: `BACKEND.md` §6.6 |
 
 ## 7. Internal (Vercel Cron)
 
@@ -136,7 +138,7 @@ Vercel Cron memanggil dengan **GET** dan header `Authorization: Bearer <CRON_SEC
 
 | Method & path | Jadwal (UTC) | Tugas |
 | --- | --- | --- |
-| `GET /internal/cron/recurring` | `0 18 * * *` (01.00 WIB) | Buat kemunculan transaksi berulang yang jatuh tempo (`BUSINESS_RULES.md` §5) per user, dengan advisory lock per user |
+| `GET /internal/cron/recurring` | `0 18 * * *` (01.00 WIB) | Buat kemunculan transaksi berulang yang jatuh tempo (`BUSINESS_RULES.md` §5) per user, dengan advisory lock per user. User yang tidak lagi premium: rule-nya di-pause (jaring pengaman). Menjawab 500 bila ada user yang gagal |
 | `GET /internal/cron/maintenance` | `30 18 * * *` (01.30 WIB) | Hapus `sync_idempotency_keys` > 24 jam, refresh/verification token kedaluwarsa > 7 hari, dan hapus permanen user `pending_deletion` > 30 hari |
 
 ## 8. Lain-lain

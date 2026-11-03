@@ -44,3 +44,17 @@ func (c *Columns) Stamp(ctx context.Context, tx *gorm.DB, now time.Time) error {
 	c.ServerUpdatedAt = NewTime(now)
 	return nil
 }
+
+// StampAll stamps several rows, possibly of different tables, with one version query. The rows
+// get ascending versions in the order given, and all share the same ServerUpdatedAt.
+func StampAll(ctx context.Context, tx *gorm.DB, now time.Time, cols ...*Columns) error {
+	versions, err := database.NextSyncVersions(ctx, tx, len(cols))
+	if err != nil {
+		return fmt.Errorf("stamp sync columns: %w", err)
+	}
+	for i, c := range cols {
+		c.ServerVersion = versions[i]
+		c.ServerUpdatedAt = NewTime(now)
+	}
+	return nil
+}

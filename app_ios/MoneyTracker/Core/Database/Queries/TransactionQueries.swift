@@ -35,6 +35,20 @@ extension Database {
             .order(Column("created_at").desc).fetchOne(self)?.accountId
     }
 
+    /// Whether a posted transaction dated `date` exists (the daily reminder is skipped then).
+    func hasPostedTransaction(on date: CivilDate) throws -> Bool {
+        try TransactionRecord
+            .filter(
+                Column("deleted_at") == nil && Column("status") == "posted"
+                    && Column("transaction_date") == date
+            ).fetchCount(self) > 0
+    }
+
+    /// Every live transaction; the balance formulas need the full history.
+    func allTransactions() throws -> [TransactionRecord] {
+        try TransactionRecord.filter(Column("deleted_at") == nil).fetchAll(self)
+    }
+
     /// Recent distinct income sources, for suggestions.
     func recentSources(limit: Int = 8) throws -> [String] {
         let rows =

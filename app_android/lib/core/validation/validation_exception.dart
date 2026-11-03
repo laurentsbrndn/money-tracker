@@ -19,6 +19,14 @@ enum ValidationError {
   sameAccount,
   categoryRequired,
   allocationRequired,
+  snapshotDateInvalid,
+  adjustmentZero,
+  goalPercentRange,
+  goalTotal,
+  plannedIncomeRange,
+  timezoneInvalid,
+  reminderTimeInvalid,
+  settingsMissing,
 }
 
 class ValidationException implements Exception {
@@ -43,6 +51,14 @@ class ValidationException implements Exception {
     ValidationError.sameAccount => l10n.validationSameAccount,
     ValidationError.categoryRequired => l10n.validationCategoryRequired,
     ValidationError.allocationRequired => l10n.validationAllocationRequired,
+    ValidationError.snapshotDateInvalid => l10n.validationSnapshotDate,
+    ValidationError.adjustmentZero => l10n.validationAdjustmentZero,
+    ValidationError.goalPercentRange => l10n.validationGoalPercentRange,
+    ValidationError.goalTotal => l10n.validationGoalTotal,
+    ValidationError.plannedIncomeRange => l10n.validationPlannedIncome,
+    ValidationError.timezoneInvalid => l10n.validationTimezone,
+    ValidationError.reminderTimeInvalid => l10n.validationReminderTime,
+    ValidationError.settingsMissing => l10n.validationSettingsMissing,
   };
 }
 

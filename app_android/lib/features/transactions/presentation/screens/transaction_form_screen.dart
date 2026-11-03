@@ -6,7 +6,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/money/money_formatter.dart';
 import '../../../../core/network/error_messages.dart';
 import '../../../../core/time/civil_date.dart';
-import '../../../../core/time/today.dart';
+import '../../../../core/time/user_clock.dart';
 import '../../../../core/validation/validation_exception.dart';
 import '../../../../core/widgets/date_tile.dart';
 import '../../../../core/widgets/money_field.dart';
@@ -57,7 +57,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen>
   String? _toAccountId;
   String? _categoryId;
   String? _allocation;
-  CivilDate _date = todayCivil();
+  late CivilDate _date;
   TransactionRow? _existing;
   bool _loaded = false;
   bool _busy = false;
@@ -70,6 +70,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen>
   @override
   void initState() {
     super.initState();
+    _date = ref.read(userClockProvider).today();
     final startType = _types.indexOf(widget.initialType ?? 'expense');
     _tabs = TabController(
       length: _types.length,

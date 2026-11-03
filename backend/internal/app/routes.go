@@ -47,10 +47,18 @@ func (a *App) registerRoutes(jwt middleware.AccessTokenVerifier) {
 	v1 := a.web.Group("/v1")
 	a.identity.RegisterRoutes(v1.Group("/auth"), v1, authGuard)
 	a.sync.RegisterRoutes(v1)
+	a.report.RegisterRoutes(v1)
+	a.billing.RegisterRoutes(v1)
 
 	// Vercel Cron and RevenueCat: shared-secret Bearer, no client headers.
 	a.web.Use(cronPrefix, middleware.CronAuth(a.cfg.CronSecret))
 	a.web.Use(webhookPrefix, middleware.WebhookAuth(a.cfg.RevenueCat.WebhookSecret))
+
+	// RevenueCat webhook and cron jobs. Register them after the guards above (Fiber runs
+	// handlers in registration order).
+	a.billing.RegisterWebhook(v1)
+	a.ledger.RegisterRoutes(a.web.Group(cronPrefix))
+	a.web.Get(cronPrefix+"/maintenance", a.maintenance.Handle)
 }
 
 // health reports whether the database answers within healthTimeout. The response never

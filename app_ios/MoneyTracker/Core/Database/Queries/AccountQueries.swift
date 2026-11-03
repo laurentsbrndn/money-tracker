@@ -44,3 +44,16 @@ extension AppDatabase {
         ValueObservation.tracking { try $0.snapshots(accountId: accountId) }.values(in: pool)
     }
 }
+
+extension Database {
+    /// Every live snapshot of every account; the reconciliation needs the newest one of each.
+    func allSnapshots() throws -> [BalanceSnapshotRecord] {
+        try BalanceSnapshotRecord.filter(Column("deleted_at") == nil).fetchAll(self)
+    }
+}
+
+extension AppDatabase {
+    func observeAllSnapshots() -> AsyncValueObservation<[BalanceSnapshotRecord]> {
+        ValueObservation.tracking { try $0.allSnapshots() }.values(in: pool)
+    }
+}

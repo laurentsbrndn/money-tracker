@@ -22,6 +22,11 @@ type Entitlements interface {
 	Get(ctx context.Context, userID uuid.UUID) (Entitlement, error)
 }
 
+// PremiumEndedHandler is called, inside the user's lock, when a user's premium goes from
+// active to inactive. billing may not import ledger, so the composition root implements it
+// with ledger.PauseRules (docs/ARCHITECTURE.md §3.2).
+type PremiumEndedHandler = service.PremiumEndedHandler
+
 // Free plan limits (docs/BUSINESS_RULES.md §7).
 const (
 	MaxFreeAccounts         = service.MaxFreeAccounts

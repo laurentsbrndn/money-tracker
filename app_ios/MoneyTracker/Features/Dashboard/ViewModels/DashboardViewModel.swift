@@ -1,14 +1,18 @@
 import Foundation
 import Observation
 
-/// The monthly dashboard (APP_FLOWS Flow 2): month picker, summary, and the latest transactions.
-/// The cards for actual money, differences, and budget arrive in Fase 2.
+/// The monthly dashboard (APP_FLOWS Flow 2): month picker, summary, actual money, the difference
+/// card, the budget card, and the latest transactions. Every figure comes from `DomainRules`.
 @Observable
 @MainActor
 final class DashboardViewModel {
     var month = YearMonth(containing: UserClock.today())
     private(set) var accounts: [AccountRecord] = []
-    private(set) var monthTransactions: [TransactionRecord] = []
+    /// The full history: the formulas pick the month themselves, and the opening total of the
+    /// summary needs everything before it.
+    private(set) var allTransactions: [TransactionRecord] = []
+    private(set) var snapshots: [BalanceSnapshotRecord] = []
+    private(set) var goals: [BudgetGoalRecord] = []
     private(set) var recent: [TransactionRecord] = []
     private(set) var recentLoaded = false
     private(set) var isPremium = false
@@ -39,11 +43,25 @@ final class DashboardViewModel {
 
     var summary: MonthlySummary {
         DomainRules.computeMonthlySummary(
-            accounts: accounts.map(\.domain), transactions: monthTransactions.map(\.domain),
+            accounts: accounts.map(\.domain), transactions: allTransactions.map(\.domain),
             month: month, asOf: UserClock.today())
     }
 
-    /// Accounts, the latest five transactions, and the entitlement: independent of the month.
+    /// Real balances against the recorded ones as of today (not the selected month).
+    var overview: ReconcileOverview {
+        .compute(
+            accounts: accounts, transactions: allTransactions, snapshots: snapshots,
+            asOf: UserClock.today())
+    }
+
+    /// The budget of the selected month.
+    var monthBudget: MonthBudget {
+        MonthBudget.compute(
+            accounts: accounts.map(\.domain), transactions: allTransactions.map(\.domain),
+            goals: goals.map(\.domain), month: month, asOf: UserClock.today())
+    }
+
+    /// Accounts, history, snapshots, goals, the latest five transactions, and the entitlement.
     func observeStatic() async {
         await concurrently([
             { await forEachValue(self.accountsRepository.observeAll()) { self.accounts = $0 } },
@@ -56,20 +74,18 @@ final class DashboardViewModel {
                 }
             },
             {
+                await forEachValue(self.database.observeAllTransactions()) {
+                    self.allTransactions = $0
+                }
+            },
+            { await forEachValue(self.database.observeAllSnapshots()) { self.snapshots = $0 } },
+            { await forEachValue(self.database.observeBudgetGoals()) { self.goals = $0 } },
+            {
                 await forEachValue(self.database.observeSyncState()) {
                     self.isPremium = PlanLimits.isPremium(
                         entitlementJSON: $0[SyncStateKey.entitlement], now: Date())
                 }
             },
         ])
-    }
-
-    /// Transactions of the selected month; restarted when the month changes.
-    func observeMonth() async {
-        guard canView(month) else {
-            monthTransactions = []
-            return
-        }
-        await forEachValue(database.observeTransactions(in: month)) { self.monthTransactions = $0 }
     }
 }

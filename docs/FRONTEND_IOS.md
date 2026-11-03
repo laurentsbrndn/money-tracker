@@ -99,10 +99,17 @@ app_ios/
     │   │   ├── BillingService.swift
     │   │   └── EntitlementStore.swift
     │   ├── Notifications/
-    │   │   ├── NotificationService.swift
-    │   │   └── NotificationScheduler.swift
+    │   │   ├── NotificationService.swift      # UNUserNotificationCenter: izin, jadwal, banner, delegate
+    │   │   ├── NotificationScheduler.swift    # actor: membangun jadwal dari database + peringatan budget
+    │   │   ├── NotificationCoordinator.swift  # memicu pembangunan ulang jadwal
+    │   │   └── Logic/                         # murni Foundation: NotificationPlan, BudgetAlertPolicy
     │   ├── Security/
-    │   │   └── AppLockController.swift
+    │   │   ├── AppLockController.swift
+    │   │   ├── LockStorage.swift              # Keychain (WhenUnlockedThisDeviceOnly)
+    │   │   ├── PinHasher.swift                # PBKDF2-HMAC-SHA256 via CommonCrypto
+    │   │   ├── PinAttemptPolicy.swift
+    │   │   ├── BiometricService.swift
+    │   │   └── ScreenShield.swift             # window di atas app: layar kunci + penutup app switcher
     │   ├── Support/
     │   │   ├── IDGenerator.swift       # UUIDv7 (implementasi sendiri) + UUIDv5 (Insecure.SHA1 CryptoKit)
     │   │   ├── CivilDate.swift         # tanggal kalender, Codable "YYYY-MM-DD"
@@ -123,6 +130,7 @@ app_ios/
     │   ├── Budget/
     │   ├── Categories/
     │   ├── Reports/
+    │   ├── Security/
     │   ├── Recurring/
     │   ├── Subscription/
     │   └── Settings/
@@ -186,7 +194,9 @@ Implementasi persis `SYNC_PROTOCOL.md`. Khusus iOS:
 
 ### 4.5 Notifikasi
 
-Sama dengan Android (`FRONTEND_FLUTTER.md` §4.5), memakai `UNCalendarNotificationTrigger`. Jumlah notifikasi terjadwal dijaga di bawah batas 64 iOS.
+Sama dengan Android (`FRONTEND_FLUTTER.md` §4.5), memakai `UNCalendarNotificationTrigger` (komponen tanggal + `timeZone` user, tidak berulang). iOS menyimpan maksimal 64 notifikasi terjadwal, jadi jadwal dibangun sebagai jendela terbatas: pengingat harian 14 hari ke depan, 3 akhir bulan, 4 pengingat saldo basi, 3 evaluasi bulan (total ≤ 24). Identifier stabil `mt.plan.<id>`; setiap pembangunan ulang menghapus semua request berawalan `mt.plan.` lalu menjadwalkan ulang, sehingga idempoten.
+
+Jadwal dibangun ulang saat app dibuka, saat `scenePhase` aktif, setiap perubahan data lokal (pengaturan, transaksi, snapshot, akun, goal, termasuk hasil pull; debounce 2 detik), dan di akhir `BGAppRefreshTask`. Peringatan budget (80% dan 100%) tidak bisa berjalan saat app mati; ia dievaluasi pada pembangunan ulang yang sama dan dikirim sekali per ambang per bulan (penanda di `sync_state` kunci `budget_alerts_sent`, tabel lokal yang tidak disinkronkan). Di foreground, banner ditampilkan lewat `willPresent`.
 
 ### 4.6 UI
 
@@ -196,7 +206,20 @@ Sama dengan Android (`FRONTEND_FLUTTER.md` §4.5), memakai `UNCalendarNotificati
 
 ## 5. Navigasi dan layar
 
-Tab: **Beranda · Transaksi · Akun · Budget · Lainnya**. Daftar layar dan fasenya sama dengan tabel di `FRONTEND_FLUTTER.md` §5, dengan perbedaan:
+Tab: **Beranda · Transaksi · Akun · Budget · Lainnya**. Daftar layar dan fasenya sama dengan tabel di `FRONTEND_FLUTTER.md` §5. Route Flutter menjadi `AppRoute` yang di-push ke `NavigationStack` tiap tab (`AppRouter`):
+
+| Flutter | iOS |
+| --- | --- |
+| `/reconcile` | `AppRoute.reconcile` (di-push dari Beranda atau Akun; notifikasi saldo membuka Beranda → Cocokkan saldo) |
+| `/budget`, `/budget/goal` | tab Budget, `AppRoute.budgetGoal` |
+| `/more/settings/preferences` | `AppRoute.preferences` |
+| `/more/settings/security` | `AppRoute.security` |
+| `/more/settings/security/pin` | `AppRoute.securityPin(.set / .change / .remove)` |
+| `/more/settings/notifications` | `AppRoute.notifications` |
+
+**Layar kunci bukan route.** `ScreenShield` memasang `UIWindow` tersendiri (level `.alert + 1`) di atas seluruh app, sehingga kunci menutup tab, layar yang di-push, `.sheet`, dan dialog. Window yang sama menampilkan penutup (material blur) saat `scenePhase` tidak aktif bila PIN atau sembunyikan nominal aktif, supaya snapshot app switcher tidak memperlihatkan isi. Selain window itu, `RootView` menutup isi dengan warna latar selama `lock.locked` agar frame pertama tidak bocor sebelum window siap.
+
+Perbedaan iOS:
 
 | Layar | Perbedaan iOS |
 | --- | --- |
@@ -254,11 +277,29 @@ Perilaku sync, auth, dan aturan bisnis identik dengan Flutter. Yang berbeda hany
 | Keychain dan install ulang | Keychain bertahan setelah app dihapus, sedangkan database tidak. Saat peluncuran pertama setelah instal, item Keychain app dibersihkan supaya sesi lama tidak terbawa ke database kosong |
 | Nonce OAuth | Field `nonce` dikirim berisi nilai yang dimasukkan ke permintaan penyedia: hash SHA-256 (hex) untuk Apple, nilai mentah untuk Google. Server masih mengabaikannya (lihat item hardening di `ROADMAP.md`) |
 | Google Sign-In | URL kembali ditangani `.onOpenURL` di `MoneyTrackerApp`, bukan `AppDelegate` (app memakai siklus hidup scene SwiftUI). `AppDelegate` memiliki `AppContainer` supaya BGTask terdaftar sebelum app selesai diluncurkan, juga saat iOS meluncurkan app hanya untuk menjalankan task |
-| Tanggal "hari ini" | Memakai timezone perangkat sampai Fase 2 (`UserClock`), sama seperti Flutter |
-| Dashboard | Ringkasan bulan memakai `DomainRules.computeMonthlySummary` dengan transaksi bulan terpilih; `opening_total` belum ditampilkan sampai kartu Fase 2 |
+| Tanggal "hari ini" | `UserClock` memakai `user_settings.timezone` (`TimeZone(identifier:)`, fallback `Asia/Jakarta`), diperbarui `PreferencesStore` saat pengaturan berubah. Registrasi mengirim identifier perangkat (fallback `Asia/Jakarta` bila tidak dikenal). Port `civilDateIn` ada di `UserClock.civilDate(of:in:)` |
+| Dashboard | Ringkasan bulan memakai `DomainRules.computeMonthlySummary` dengan **seluruh** transaksi (rumus memilih bulan sendiri), sehingga `opening_total` benar sejak awal. Kartu uang aktual, selisih, dan budget dihitung lokal dari `DomainRules` |
 | Verifikasi email | Ditampilkan sebagai sheet dari banner Beranda atau halaman Profil (di Flutter: route yang di-push) |
 | Perlu login | `SyncBadge` "Perlu login" dan "Masuk" di initial sync membuka layar login sebagai sheet di atas app; app tetap dipakai di bawahnya |
 | Setup wizard | "Tambah akun" membuka formulir akun sebagai sheet |
 | Kategori | Urutkan lewat tombol Edit (drag); sembunyikan dan arsipkan lewat swipe |
 | Teks UI | Kunci di `Localizable.xcstrings` adalah teks Indonesia itu sendiri (`sourceLanguage = id`); teks di luar View memakai `String(localized:)` |
-| Tab Budget | Masih placeholder sampai Fase 2 |
+
+## 10. Catatan implementasi Fase 2 (keputusan dan perbedaan dari Flutter)
+
+Perilaku identik dengan Flutter; yang berbeda karena platform:
+
+| Hal | Keputusan iOS |
+| --- | --- |
+| Library | Hanya framework sistem: `UserNotifications`, `LocalAuthentication`, `CommonCrypto`, `Security`. Tidak ada package SPM baru |
+| Hash PIN | PBKDF2-HMAC-SHA256 lewat `CCKeyDerivationPBKDF`, salt acak 16 byte, 200.000 iterasi (disimpan bersama hash), dijalankan di luar main thread (`Task.detached`). Hash, salt, jumlah percobaan, `locked_until`, biometrik, dan auto-lock di Keychain `kSecAttrAccessibleWhenUnlockedThisDeviceOnly` (service `<bundle id>.lock`), tidak pernah disinkronkan |
+| Instal ulang | Keychain bertahan setelah app dihapus. `LockStorage` memasang penanda di `UserDefaults` (ikut terhapus bersama app); bila tidak ada, semua item kunci dihapus sebelum dipakai. "Lupa PIN? Keluar" menghapus data lokal dan PIN |
+| Peluncuran saat perangkat terkunci | Keychain tidak bisa dibaca; flag `UserDefaults` memberi tahu bahwa PIN ada, sehingga app tetap mulai terkunci dan membaca ulang saat aktif |
+| Auto-lock | Segera / 1 menit (bawaan) / 5 menit, dihitung dari `scenePhase == .background` dengan `ContinuousClock` (bukan jam dinding). Jeda percobaan PIN (5 salah → 30 dtk, 1, 5, 15, 30 menit) memakai jam dinding karena harus bertahan setelah app ditutup |
+| Biometrik | `LAContext.deviceOwnerAuthenticationWithBiometrics`; gagal atau dibatalkan berarti PIN. Prompt otomatis sekali saat app aktif dalam keadaan terkunci. `NSFaceIDUsageDescription` (Indonesia) ada di `Info.plist` |
+| Peringatan budget | Hanya berjalan saat app hidup atau saat `BGAppRefreshTask` (iOS tidak menjalankan kode saat app mati), jadi lonjakan yang terjadi di antara dua eksekusi baru diumumkan pada eksekusi berikutnya |
+| Izin notifikasi | Diminta pada langkah wizard (bila pengingat dinyalakan) dan saat pengingat dinyalakan di Lainnya → Notifikasi. Bila ditolak, layar Notifikasi menampilkan tombol "Buka pengaturan" |
+| Tap notifikasi | Payload route (`/transactions/new`, `/reconcile`, `/budget?month=YYYY-MM`) disimpan di `AppRouter.pendingRoute` dan dibuka setelah gate `ready` (cold start dan warm sama) |
+| Hari pertama minggu | Diterapkan ke `DatePicker` lewat `\.calendar` dari `PreferencesStore` |
+| Wizard | 6 langkah: Cash, Akun, Goal, Kategori, Notifikasi, Kunci |
+| Zona waktu trigger notifikasi | Waktu tembak dihitung sebagai `Date` absolut di timezone pengguna (`UserClock`), lalu `UNCalendarNotificationTrigger` non-repeating dibuat dari komponen kalender timezone perangkat (`TimeZone.current`); tidak memakai `DateComponents.timeZone`, dan jadwal dibangun ulang saat `NSSystemTimeZoneDidChange` dan significant time change |

@@ -7,11 +7,91 @@
     "(dihapus)" : {
 
     },
+    "/" : {
+
+    },
+    "%@ belum mencapai goal." : {
+
+    },
+    "%@ hampir melewati goal" : {
+
+    },
+    "%@ melewati goal" : {
+
+    },
+    "%@ melewati goal." : {
+
+    },
+    "%@ mencapai goal." : {
+
+    },
+    "%@ sudah mencapai %lld%% dari goal bulan ini." : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ sudah mencapai %2$lld%% dari goal bulan ini."
+          }
+        }
+      }
+    },
+    "%@ tidak melewati goal." : {
+
+    },
+    "%@: %@ dari goal %@ (%lld%% dari goal bulan ini)." : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@ dari goal %3$@ (%4$lld%% dari goal bulan ini)."
+          }
+        }
+      }
+    },
     "%lld" : {
 
     },
+    "%lld akun belum dicek lebih dari 7 hari" : {
+
+    },
+    "%lld akun berbeda dari catatan" : {
+
+    },
+    "%lld dari %lld akun cocok" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld dari %2$lld akun cocok"
+          }
+        }
+      }
+    },
+    "%lld dari %lld digit" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld dari %2$lld digit"
+          }
+        }
+      }
+    },
     "%lld data diterima" : {
 
+    },
+    "%lld dtk" : {
+
+    },
+    "%lld mnt %@ dtk" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld mnt %2$@ dtk"
+          }
+        }
+      }
     },
     "%lld/%lld" : {
       "localizations" : {
@@ -23,11 +103,43 @@
         }
       }
     },
+    "%lld/%lld/%lld" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld/%3$lld"
+          }
+        }
+      }
+    },
+    "0" : {
+
+    },
     "Ada %lld perubahan yang belum tersinkron. Jika keluar sekarang, perubahan itu hilang dari perangkat dan tidak pernah sampai ke server.\n\nSemua data di perangkat ini akan dihapus. Datamu tetap aman di server dan kembali setelah kamu masuk lagi." : {
+
+    },
+    "Ada akun yang saldo aslinya belum dicek lebih dari 7 hari." : {
+
+    },
+    "Akhir bulan pukul 20.00 dan saat ada akun yang saldonya sudah lebih dari 7 hari." : {
+
+    },
+    "Aktifkan buka kunci dengan biometrik" : {
 
     },
     "Aktifkan lagi" : {
 
+    },
+    "Aktual %@ · %@" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aktual %1$@ · %2$@"
+          }
+        }
+      }
     },
     "Akun" : {
 
@@ -56,6 +168,12 @@
     "Alokasi default" : {
 
     },
+    "Amankan aplikasi?" : {
+
+    },
+    "Aplikasi terkunci" : {
+
+    },
     "Apple" : {
 
     },
@@ -71,7 +189,25 @@
     "Atur awal" : {
 
     },
+    "Atur goal" : {
+
+    },
+    "Atur goal budget" : {
+
+    },
     "Atur needs, wants & savings" : {
+
+    },
+    "Atur pembagian needs, wants, dan savings untuk melihat budget bulan ini." : {
+
+    },
+    "Atur PIN" : {
+
+    },
+    "Bagaimana kamu membagi income?" : {
+
+    },
+    "Bagi income bulanan ke needs, wants, dan savings. Total harus 100%." : {
 
     },
     "Bagi penghasilan ke kebutuhan, keinginan, dan tabungan, lalu pantau budget tiap bulan." : {
@@ -107,10 +243,16 @@
     "Belum ada riwayat saldo." : {
 
     },
+    "Belum ada saldo asli. Cocokkan saldo untuk mengisinya." : {
+
+    },
     "Belum ada transaksi" : {
 
     },
     "Belum ada transaksi di akun ini." : {
+
+    },
+    "Belum ada transaksi di alokasi ini bulan ini." : {
 
     },
     "Belum bisa terhubung ke server. Periksa internetmu lalu coba lagi." : {
@@ -120,6 +262,9 @@
 
     },
     "Belum punya akun? Daftar" : {
+
+    },
+    "Belum teralokasi" : {
 
     },
     "Belum tersinkron" : {
@@ -134,7 +279,19 @@
     "Berapa uang tunai yang kamu pegang sekarang?" : {
 
     },
+    "Berlaku mulai %@." : {
+
+    },
     "Biaya admin (opsional)" : {
+
+    },
+    "Bila Sembunyikan nominal aktif, notifikasi tidak menampilkan nominal." : {
+
+    },
+    "biometrik" : {
+
+    },
+    "Biometrik tidak bisa diaktifkan." : {
 
     },
     "Buang perubahan" : {
@@ -149,7 +306,25 @@
     "Buat apa?" : {
 
     },
+    "Buat penyesuaian" : {
+
+    },
+    "Buat penyesuaian?" : {
+
+    },
+    "Buat PIN 6 digit" : {
+
+    },
     "Budget" : {
+
+    },
+    "Buka dengan %@" : {
+
+    },
+    "Buka kunci Money Tracker" : {
+
+    },
+    "Buka pengaturan" : {
 
     },
     "Bulan berikutnya" : {
@@ -161,16 +336,28 @@
     "Cari catatan atau sumber" : {
 
     },
+    "Cari timezone" : {
+
+    },
+    "Cash" : {
+
+    },
     "Catat pemasukan & pengeluaran" : {
 
     },
     "Catat transaksi" : {
 
     },
+    "Catat transaksi hari ini" : {
+
+    },
     "Catat transaksi pertama" : {
 
     },
     "Catat uang masuk dan keluar dalam hitungan detik, bahkan tanpa internet." : {
+
+    },
+    "Catat yang terlewat" : {
 
     },
     "Catatan" : {
@@ -185,7 +372,19 @@
     "Coba ubah atau hapus filter pencarian." : {
 
     },
+    "Cocok" : {
+
+    },
+    "Cocok · Disesuaikan %@" : {
+
+    },
+    "Cocokkan" : {
+
+    },
     "Cocokkan dengan saldo asli" : {
+
+    },
+    "Cocokkan saldo" : {
 
     },
     "Daftar" : {
@@ -198,6 +397,9 @@
 
     },
     "Dari mana?" : {
+
+    },
+    "Dasar perhitungan: %@" : {
 
     },
     "Data terkait belum ada di server." : {
@@ -215,10 +417,19 @@
     "Dikirim ulang." : {
 
     },
+    "Dipakai sebagai dasar bila lebih besar dari income yang tercatat." : {
+
+    },
+    "Diperbarui %@" : {
+
+    },
     "Disembunyikan" : {
 
     },
     "Ditolak server." : {
+
+    },
+    "Ditunda · %@" : {
 
     },
     "Duplikat" : {
@@ -237,6 +448,12 @@
 
     },
     "Email ini sudah terdaftar. Silakan masuk." : {
+
+    },
+    "Evaluasi %@" : {
+
+    },
+    "Evaluasi budget bulan lalu" : {
 
     },
     "Expense" : {
@@ -263,13 +480,32 @@
     "Ganti akun?" : {
 
     },
+    "Gelap" : {
+
+    },
     "Geser untuk menyembunyikan atau mengarsipkan. Tahan dan geser untuk mengurutkan." : {
+
+    },
+    "Goal %lld%% · %@" : {
+      "localizations" : {
+        "id" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Goal %1$lld%% · %2$@"
+          }
+        }
+      }
+    },
+    "Goal budget belum diatur" : {
 
     },
     "Google" : {
 
     },
     "Gratis. Datamu tersimpan di perangkat dan tersinkron ke server." : {
+
+    },
+    "Gunakan %@" : {
 
     },
     "Hanya berlaku untuk transaksi baru." : {
@@ -299,16 +535,46 @@
     "Hapus kategori ini permanen?" : {
 
     },
+    "Hari pertama minggu" : {
+
+    },
     "Hitung di total" : {
 
     },
     "Ikon" : {
 
     },
+    "Ikuti sistem" : {
+
+    },
     "Income" : {
 
     },
+    "Indonesia" : {
+
+    },
+    "Ingatkan saya tiap hari" : {
+
+    },
     "Ini mengisi saldo awal akun Cash. Kosongkan bila belum mau mengisi." : {
+
+    },
+    "Isi saldo asli minimal satu akun." : {
+
+    },
+    "Isi saldo asli tiap akun sesuai aplikasi bank, e-wallet, atau uang di tanganmu. Akun yang dikosongkan dilewati." : {
+
+    },
+    "Izin notifikasi belum aktif" : {
+
+    },
+    "Izinkan" : {
+
+    },
+    "Jam pengingat" : {
+
+    },
+    "Jam pengingat tidak valid" : {
 
     },
     "Jika kamu berlangganan Premium, batalkan langganan di pengaturan App Store. Menghapus akun tidak menghentikan tagihan." : {
@@ -332,10 +598,19 @@
     "Ke akun" : {
 
     },
+    "Keamanan" : {
+
+    },
     "Keluar" : {
 
     },
     "Keluar dari akun?" : {
+
+    },
+    "Keluar menghapus data dari perangkat ini dan mematikan kunci PIN. Datamu di server tetap aman dan kembali setelah kamu masuk lagi." : {
+
+    },
+    "Keluar menghapus data dari perangkat ini dan mematikan kunci PIN. Datamu di server tetap aman dan kembali setelah kamu masuk lagi.\n\nAda %lld perubahan yang belum tersinkron dan akan hilang." : {
 
     },
     "Kembali" : {
@@ -368,6 +643,18 @@
     "Kode sudah kedaluwarsa. Minta kode baru." : {
 
     },
+    "Kunci aplikasi dengan PIN" : {
+
+    },
+    "Kunci otomatis" : {
+
+    },
+    "Kunci PIN aktif" : {
+
+    },
+    "Kurang %@" : {
+
+    },
     "Lainnya" : {
 
     },
@@ -377,10 +664,16 @@
     "Lanjutkan dengan Google" : {
 
     },
+    "Lebih %@" : {
+
+    },
     "Lewati" : {
 
     },
     "Lewati semua" : {
+
+    },
+    "Lihat bagaimana needs, wants, dan savings %@." : {
 
     },
     "Lihat semua" : {
@@ -396,6 +689,9 @@
 
     },
     "Lupa password?" : {
+
+    },
+    "Lupa PIN? Keluar" : {
 
     },
     "Masuk" : {
@@ -419,10 +715,28 @@
     "Masukkan password untuk konfirmasi" : {
 
     },
+    "Masukkan PIN" : {
+
+    },
+    "Masukkan PIN saat ini" : {
+
+    },
     "Masukkan saldo tiap akun saat ini. Kamu bisa menambah lagi nanti." : {
 
     },
+    "Mati" : {
+
+    },
+    "Matikan kunci PIN" : {
+
+    },
+    "Mau diingatkan mencatat?" : {
+
+    },
     "Melewati batas paket gratis." : {
+
+    },
+    "Menentukan \"hari ini\" dan batas bulan. Transaksi yang sudah ada tidak berubah." : {
 
     },
     "Menunggu dikirim" : {
@@ -438,6 +752,9 @@
 
     },
     "Metode masuk" : {
+
+    },
+    "Minggu" : {
 
     },
     "Mulai" : {
@@ -467,6 +784,12 @@
     "Needs" : {
 
     },
+    "Needs (%)" : {
+
+    },
+    "Nominal tampil sebagai Rp •••••. Berlaku di semua perangkatmu." : {
+
+    },
     "Nominal terlalu besar" : {
 
     },
@@ -474,6 +797,9 @@
 
     },
     "Nominal wajib diisi" : {
+
+    },
+    "Notifikasi" : {
 
     },
     "Offline" : {
@@ -486,6 +812,9 @@
 
     },
     "Paket gratis dibatasi 5 kategori buatan sendiri. Hapus salah satu atau tingkatkan ke Premium." : {
+
+    },
+    "Pasang PIN 6 digit (dan biometrik) supaya hanya kamu yang bisa membuka aplikasi. Boleh dilewati." : {
 
     },
     "Password" : {
@@ -518,10 +847,25 @@
     "Pengaturan" : {
 
     },
+    "Pengaturan belum tersedia. Tunggu sinkronisasi selesai." : {
+
+    },
     "Pengeluaran" : {
 
     },
+    "Pengingat cocokkan saldo" : {
+
+    },
+    "Pengingat harian" : {
+
+    },
+    "Pengingat harian membantu catatanmu tetap lengkap. Bisa diubah kapan saja di Lainnya → Notifikasi." : {
+
+    },
     "Penyesuaian" : {
+
+    },
+    "Perangkat belum punya biometrik yang terdaftar." : {
 
     },
     "Perangkat ini masih berisi data akun lain. Masuk dengan akun ini akan menghapus data itu dari perangkat." : {
@@ -539,6 +883,12 @@
     "Perbarui aplikasi" : {
 
     },
+    "Peringatan budget" : {
+
+    },
+    "Perlu diperbarui" : {
+
+    },
     "Perlu login" : {
 
     },
@@ -548,7 +898,13 @@
     "Perlu perhatian (%lld)" : {
 
     },
+    "Persentase harus antara 0 dan 100" : {
+
+    },
     "Perubahan dibuang." : {
+
+    },
+    "Pilih 50/30/20 atau atur sendiri. Bisa diubah kapan saja di tab Budget." : {
 
     },
     "Pilih akun" : {
@@ -563,16 +919,52 @@
     "Pilih kategori" : {
 
     },
+    "PIN 6 digit diminta saat aplikasi dibuka." : {
+
+    },
+    "PIN dan biometrik hanya tersimpan di perangkat ini dan tidak disinkronkan." : {
+
+    },
+    "PIN salah" : {
+
+    },
+    "PIN tidak sama. Ulangi dari awal." : {
+
+    },
+    "Preferensi" : {
+
+    },
+    "Preset" : {
+
+    },
     "Profil" : {
 
     },
     "Profil disimpan" : {
 
     },
+    "Rekening & e-wallet" : {
+
+    },
+    "Rencana income atau income bulan ini, mana yang lebih besar." : {
+
+    },
+    "Rencana income bulanan (opsional)" : {
+
+    },
+    "Rencana income tidak valid" : {
+
+    },
     "Rentang tanggal" : {
 
     },
     "Reset" : {
+
+    },
+    "Rincian %@" : {
+
+    },
+    "Ringkasan" : {
 
     },
     "Riwayat lebih dari 3 bulan tersedia di Premium" : {
@@ -584,13 +976,25 @@
     "Rp" : {
 
     },
+    "Saat needs atau wants mencapai 80% dan 100% goal, serta evaluasi tiap tanggal 1." : {
+
+    },
+    "Saldo aktual perlu diperbarui" : {
+
+    },
     "Saldo akun ini %@. Transfer sisa saldo ke akun lain sebelum diarsipkan?" : {
 
     },
     "Saldo asli" : {
 
     },
+    "Saldo asli %@" : {
+
+    },
     "Saldo awal" : {
+
+    },
+    "Saldo cocok" : {
 
     },
     "Saldo ini menjadi saldo awal akun; transaksi sebelum tanggal ini tidak bisa dicatat." : {
@@ -605,16 +1009,31 @@
     "Saldo saat ini" : {
 
     },
+    "Samakan catatanmu dengan saldo asli rekening dan uang tunai." : {
+
+    },
     "Sampai" : {
+
+    },
+    "Satu transaksi penyesuaian sebesar %@ dibuat supaya saldo tercatat sama dengan saldo asli. Penyesuaian tidak dihitung sebagai pemasukan atau pengeluaran." : {
 
     },
     "Savings" : {
 
     },
-    "Segera hadir" : {
+    "Savings (%)" : {
+
+    },
+    "Segera setelah ke latar belakang" : {
 
     },
     "Selesai" : {
+
+    },
+    "Selisih %@" : {
+
+    },
+    "Selisih tidak tercatat" : {
 
     },
     "Sembunyikan" : {
@@ -623,10 +1042,16 @@
     "Sembunyikan kategori yang tidak relevan" : {
 
     },
+    "Sembunyikan nominal" : {
+
+    },
     "Sembunyikan password" : {
 
     },
     "Semua" : {
+
+    },
+    "Semua akun sama dengan catatanmu." : {
 
     },
     "Semua data di perangkat ini akan dihapus. Datamu tetap aman di server dan kembali setelah kamu masuk lagi." : {
@@ -636,6 +1061,9 @@
 
     },
     "Semua tanggal" : {
+
+    },
+    "Senin" : {
 
     },
     "Server menolak perubahan ini. Perbaiki lalu kirim ulang, atau buang perubahan dan ambil versi dari server." : {
@@ -653,6 +1081,15 @@
     "Sesimu berakhir. Masuk lagi untuk melanjutkan." : {
 
     },
+    "Setelah 1 menit" : {
+
+    },
+    "Setelah 5 menit" : {
+
+    },
+    "Setiap hari pukul %@; dilewati bila hari itu sudah ada transaksi." : {
+
+    },
     "Simpan" : {
 
     },
@@ -665,7 +1102,13 @@
     "Sinkronisasi selesai." : {
 
     },
+    "Sisa %@" : {
+
+    },
     "Status email" : {
+
+    },
+    "Sudah mencatat pengeluaran dan pemasukanmu hari ini?" : {
 
     },
     "Sudah punya akun? Masuk" : {
@@ -687,6 +1130,9 @@
 
     },
     "Tambah kategori" : {
+
+    },
+    "Tambahkan akun lebih dulu untuk mencocokkan saldo." : {
 
     },
     "Tambahkan rekening & e-wallet" : {
@@ -713,19 +1159,37 @@
     "Tanggal saldo awal tidak boleh di masa depan" : {
 
     },
+    "Tanggal saldo lebih awal dari tanggal saldo awal akun" : {
+
+    },
     "Tanggal terlalu jauh di depan" : {
+
+    },
+    "Tanpa izin, pengingat dan peringatan tidak akan muncul." : {
 
     },
     "Tanpa kategori" : {
 
     },
+    "Tema" : {
+
+    },
     "Terakhir sinkron" : {
+
+    },
+    "Terang" : {
 
     },
     "Terapkan" : {
 
     },
+    "Tercatat" : {
+
+    },
     "Tercatat sebagai savings bulan ini" : {
+
+    },
+    "Tercatat: %@" : {
 
     },
     "Terjadi kesalahan" : {
@@ -737,7 +1201,13 @@
     "Terlalu banyak percobaan salah. Minta kode baru." : {
 
     },
+    "Terlalu banyak percobaan. Coba lagi dalam %@." : {
+
+    },
     "Terlalu banyak percobaan. Coba lagi dalam %lld menit." : {
+
+    },
+    "Terlalu banyak percobaan. Coba lagi nanti." : {
 
     },
     "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi." : {
@@ -752,6 +1222,9 @@
     "Tidak ada email" : {
 
     },
+    "Tidak ada goal atau income untuk dibandingkan." : {
+
+    },
     "Tidak ada hasil" : {
 
     },
@@ -761,16 +1234,40 @@
     "Tidak ada koneksi." : {
 
     },
+    "Tidak ada selisih untuk disesuaikan" : {
+
+    },
     "Tidak dihitung di total" : {
 
     },
     "Tidak diizinkan." : {
 
     },
+    "Timezone" : {
+
+    },
+    "Timezone tidak dikenal." : {
+
+    },
+    "Tinjau lagi" : {
+
+    },
     "Tipe" : {
 
     },
     "Tipe akun" : {
+
+    },
+    "Total" : {
+
+    },
+    "Total %lld%%" : {
+
+    },
+    "Total disesuaikan: %@" : {
+
+    },
+    "Total persentase harus 100%" : {
 
     },
     "Total saldo tercatat" : {
@@ -800,6 +1297,9 @@
     "Transfer" : {
 
     },
+    "Transfer ke tabungan (bersih)" : {
+
+    },
     "Transfer sisa saldo" : {
 
     },
@@ -807,6 +1307,9 @@
 
     },
     "Tutup" : {
+
+    },
+    "Uang aktual" : {
 
     },
     "Ubah" : {
@@ -821,7 +1324,16 @@
     "Ubah password" : {
 
     },
+    "Ubah PIN" : {
+
+    },
     "Ubah transaksi" : {
+
+    },
+    "Ulangi PIN" : {
+
+    },
+    "Update saldo aktual" : {
 
     },
     "Urungkan" : {
@@ -845,7 +1357,13 @@
     "Wajib diisi" : {
 
     },
+    "Waktunya cocokkan saldo" : {
+
+    },
     "Wants" : {
+
+    },
+    "Wants (%)" : {
 
     },
     "Warna" : {

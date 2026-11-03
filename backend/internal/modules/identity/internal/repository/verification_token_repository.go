@@ -83,3 +83,12 @@ func (r *VerificationTokenRepository) MarkUsed(ctx context.Context, id uuid.UUID
 	}
 	return nil
 }
+
+// DeleteExpiredBefore removes tokens whose expires_at is before cutoff and returns how many.
+func (r *VerificationTokenRepository) DeleteExpiredBefore(ctx context.Context, cutoff time.Time) (int64, error) {
+	res := r.db.DB(ctx).Where("expires_at < ?", cutoff).Delete(&model.VerificationToken{})
+	if res.Error != nil {
+		return 0, fmt.Errorf("delete expired verification tokens: %w", res.Error)
+	}
+	return res.RowsAffected, nil
+}

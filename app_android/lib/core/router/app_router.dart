@@ -10,6 +10,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
+import '../../features/budget/presentation/screens/budget_goal_screen.dart';
 import '../../features/budget/presentation/screens/budget_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/categories/presentation/screens/category_form_screen.dart';
@@ -18,10 +19,15 @@ import '../../features/onboarding/presentation/screens/initial_sync_screen.dart'
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/setup_screen.dart';
 import '../../features/onboarding/presentation/screens/splash_screen.dart';
+import '../../features/reconciliation/presentation/screens/reconcile_screen.dart';
 import '../../features/settings/presentation/screens/change_password_screen.dart';
 import '../../features/settings/presentation/screens/delete_account_screen.dart';
 import '../../features/settings/presentation/screens/more_screen.dart';
+import '../../features/settings/presentation/screens/notification_settings_screen.dart';
+import '../../features/settings/presentation/screens/pin_setup_screen.dart';
+import '../../features/settings/presentation/screens/preferences_screen.dart';
 import '../../features/settings/presentation/screens/profile_screen.dart';
+import '../../features/settings/presentation/screens/security_screen.dart';
 import '../../features/settings/presentation/screens/sync_settings_screen.dart';
 import '../../features/settings/presentation/screens/upgrade_required_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_form_screen.dart';
@@ -122,6 +128,14 @@ GoRouter appRouter(Ref ref) {
             AccountDetailScreen(accountId: state.pathParameters['id']!),
       ),
       GoRoute(
+        path: RoutePaths.budgetGoal,
+        builder: (context, state) => const BudgetGoalScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.reconcile,
+        builder: (context, state) => const ReconcileScreen(),
+      ),
+      GoRoute(
         path: RoutePaths.categories,
         builder: (context, state) => const CategoriesScreen(),
       ),
@@ -142,6 +156,24 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: RoutePaths.settingsPassword,
         builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.settingsPreferences,
+        builder: (context, state) => const PreferencesScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.settingsNotifications,
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.settingsSecurity,
+        builder: (context, state) => const SecurityScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.settingsPin,
+        builder: (context, state) => PinSetupScreen(
+          mode: PinSetupMode.parse(state.uri.queryParameters['mode']),
+        ),
       ),
       GoRoute(
         path: RoutePaths.settingsSync,

@@ -108,6 +108,20 @@ func (r *UserRepository) MarkPendingDeletion(ctx context.Context, id uuid.UUID, 
 	})
 }
 
+// PendingDeletionBefore returns the ids of users in pending_deletion whose deletion was
+// requested before cutoff, oldest request first, at most limit.
+func (r *UserRepository) PendingDeletionBefore(ctx context.Context, cutoff time.Time, limit int) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+	err := r.db.DB(ctx).Model(&model.User{}).
+		Where("status = ? AND deletion_requested_at < ?", model.UserStatusPendingDeletion, cutoff).
+		Order("deletion_requested_at, id").Limit(limit).
+		Pluck("id", &ids).Error
+	if err != nil {
+		return nil, fmt.Errorf("list users pending deletion: %w", err)
+	}
+	return ids, nil
+}
+
 // Delete removes the user row; identities and tokens go with it (ON DELETE CASCADE).
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	if err := r.db.DB(ctx).Where("id = ?", id).Delete(&model.User{}).Error; err != nil {

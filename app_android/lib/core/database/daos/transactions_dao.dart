@@ -45,6 +45,23 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
             ]))
           .watch();
 
+  /// Whether a live, posted transaction is dated [date] (the daily reminder is
+  /// skipped on such a day).
+  Future<bool> hasPostedOn(CivilDate date) async {
+    final row =
+        await (select(transactions)
+              ..where(
+                (t) =>
+                    t.deletedAt.isNull() &
+                    t.status.equals('posted') &
+                    t.transactionDate.isBiggerOrEqualValue(date.toString()) &
+                    t.transactionDate.isSmallerOrEqualValue(date.toString()),
+              )
+              ..limit(1))
+            .getSingleOrNull();
+    return row != null;
+  }
+
   /// Every live transaction (needed by the balance formulas).
   Stream<List<TransactionRow>> watchAllActive() =>
       (select(transactions)..where((t) => t.deletedAt.isNull())).watch();

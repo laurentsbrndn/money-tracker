@@ -8,16 +8,21 @@ import '../../../../core/sync/sync_scheduler.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/sync_badge.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../budget/application/budget_providers.dart';
+import '../../../reconciliation/application/reconciliation_providers.dart';
+import '../../../reconciliation/presentation/widgets/actual_money_card.dart';
+import '../../../reconciliation/presentation/widgets/difference_card.dart';
 import '../../../settings/application/user_settings_providers.dart';
 import '../../../transactions/application/transaction_lookups.dart';
 import '../../../transactions/presentation/widgets/transaction_tile.dart';
 import '../../application/dashboard_providers.dart';
+import '../widgets/budget_card.dart';
 import '../widgets/month_selector.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/verify_email_banner.dart';
 
-/// Dashboard (APP_FLOWS Flow 2). The "uang aktual", selisih and budget cards
-/// arrive in Fase 2.
+/// Dashboard (APP_FLOWS Flow 2): month summary, real money, difference,
+/// budget, and the latest transactions.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -30,6 +35,8 @@ class HomeScreen extends ConsumerWidget {
     final hide = ref.watch(hideAmountsProvider);
     final categories = ref.watch(categoriesByIdProvider);
     final accounts = ref.watch(accountsByIdProvider);
+    final reconcileView = ref.watch(reconcileViewProvider).value;
+    final budget = ref.watch(monthBudgetProvider(month)).value;
     final empty = recent.hasValue && !ref.watch(hasAnyTransactionProvider);
 
     return Scaffold(
@@ -58,6 +65,24 @@ class HomeScreen extends ConsumerWidget {
               ),
               error: (error, stackTrace) => Text(l10n.errorGeneric),
             ),
+            if (reconcileView != null && reconcileView.items.isNotEmpty) ...[
+              ActualMoneyCard(
+                view: reconcileView,
+                hideAmounts: hide,
+                onTap: () => context.go(RoutePaths.accounts),
+              ),
+              DifferenceCard(
+                view: reconcileView,
+                hideAmounts: hide,
+                onReconcile: () => context.push(RoutePaths.reconcile),
+              ),
+            ],
+            if (budget != null)
+              BudgetCard(
+                month: budget,
+                hideAmounts: hide,
+                onTap: () => context.go(RoutePaths.budget),
+              ),
             const SizedBox(height: 16),
             if (empty)
               SizedBox(

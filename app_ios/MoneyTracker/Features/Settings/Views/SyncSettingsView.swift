@@ -43,7 +43,10 @@ struct SyncSettingsView: View {
                             HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "exclamationmark.circle").foregroundStyle(.red)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(Self.title(change)).foregroundStyle(.primary)
+                                    Text(
+                                        Self.title(
+                                            change, hidden: container.preferences.hideAmounts)
+                                    ).foregroundStyle(.primary)
                                     Text(SyncSettingsViewModel.reason(change.error))
                                         .font(.footnote).foregroundStyle(.secondary)
                                 }
@@ -83,11 +86,11 @@ struct SyncSettingsView: View {
         }
     }
 
-    private static func title(_ change: FailedChange) -> String {
+    private static func title(_ change: FailedChange, hidden: Bool) -> String {
         [
             SyncSettingsViewModel.entityLabel(change.entity),
             change.title.isEmpty ? nil : change.title,
-            change.amount.map { MoneyFormatter.rupiah($0) },
+            change.amount.map { MoneyFormatter.rupiah($0, hidden: hidden) },
             change.isDelete ? String(localized: "(dihapus)") : nil,
         ].compactMap { $0 }.joined(separator: " · ")
     }

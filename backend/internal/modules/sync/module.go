@@ -2,6 +2,7 @@ package sync
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -49,4 +50,10 @@ func (m *Module) RegisterRoutes(v1 fiber.Router) {
 // PurgeUser deletes the user's idempotency keys.
 func (m *Module) PurgeUser(ctx context.Context, userID uuid.UUID) error {
 	return m.keys.DeleteByUser(ctx, userID)
+}
+
+// DeleteExpiredKeys removes idempotency keys created before cutoff (maintenance job) and
+// returns how many.
+func (m *Module) DeleteExpiredKeys(ctx context.Context, cutoff time.Time) (int64, error) {
+	return m.keys.DeleteCreatedBefore(ctx, cutoff)
 }

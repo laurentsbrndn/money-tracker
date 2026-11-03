@@ -46,10 +46,13 @@ type Users interface {
 	Get(ctx context.Context, userID uuid.UUID) (User, error)
 }
 
-// Settings creates the settings row of a new user. The Onboarder (composition root) calls it
-// inside the registration transaction.
+// Settings creates and reads the settings row. The Onboarder (composition root) calls
+// CreateDefault inside the registration transaction; the composition root also adapts Timezone
+// for modules that must not import identity.
 type Settings interface {
 	CreateDefault(ctx context.Context, userID uuid.UUID, timezone string) error
+	// Timezone returns the IANA timezone name of the user.
+	Timezone(ctx context.Context, userID uuid.UUID) (string, error)
 }
 
 // ErrUserNotFound is returned by Users.Get for an unknown user.

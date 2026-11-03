@@ -6,7 +6,6 @@ import '../../../core/ids/id_generator.dart';
 import '../../../core/sync/outbox_writer.dart';
 import '../../../core/sync/sync_entities.dart';
 import '../../../core/time/civil_date.dart';
-import '../../../core/time/today.dart';
 import '../../../core/validation/validation_exception.dart';
 
 /// Accounts and their opening snapshots. Reads are live streams from the
@@ -17,11 +16,15 @@ class AccountsRepository {
     required this._db,
     required this._writer,
     required this._isPremium,
+    required this._today,
   });
 
   final AppDatabase _db;
   final OutboxWriter _writer;
   final Future<bool> Function() _isPremium;
+
+  /// "Today" in the user's timezone.
+  final CivilDate Function() _today;
 
   static const IdGenerator _ids = IdGenerator();
 
@@ -49,7 +52,7 @@ class AccountsRepository {
     if (openingBalance.abs() > maxAmount) {
       throw const ValidationException(ValidationError.amountRange);
     }
-    if (openingDate.isAfter(todayCivil())) {
+    if (openingDate.isAfter(_today())) {
       throw const ValidationException(ValidationError.openingDateFuture);
     }
   }

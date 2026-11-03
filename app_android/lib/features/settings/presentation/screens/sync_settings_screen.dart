@@ -17,6 +17,7 @@ import '../../../../core/time/civil_date.dart';
 import '../../../../core/time/civil_date_format.dart';
 import '../../../../core/time/timestamp_format.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../application/user_settings_providers.dart';
 
 /// Sync status, "Sync sekarang", and the "Perlu perhatian" list
 /// (APP_FLOWS Flow 11).
@@ -203,7 +204,11 @@ class _SyncSettingsScreenState extends ConsumerState<SyncSettingsScreen> {
                   [
                     _entityLabel(l10n, change.entity),
                     if (change.title.isNotEmpty) change.title,
-                    if (change.amount != null) formatRupiah(change.amount!),
+                    if (change.amount != null)
+                      formatRupiah(
+                        change.amount!,
+                        hidden: ref.watch(hideAmountsProvider),
+                      ),
                     if (change.isDelete) l10n.syncDeleteSuffix,
                   ].join(' · '),
                 ),

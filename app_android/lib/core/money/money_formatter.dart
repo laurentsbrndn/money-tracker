@@ -8,6 +8,15 @@ String formatRupiah(int amount, {bool hidden = false}) {
   return '${sign}Rp ${groupThousands(amount.abs())}';
 }
 
+/// Like [formatRupiah] but with an explicit `+` for positive amounts, for
+/// differences and adjustments: `+Rp 5.000`, `-Rp 5.000`.
+String formatSignedRupiah(int amount, {bool hidden = false}) {
+  if (hidden) {
+    return 'Rp •••••';
+  }
+  return amount > 0 ? '+${formatRupiah(amount)}' : formatRupiah(amount);
+}
+
 /// `1234567` → `1.234.567` (no currency symbol).
 String groupThousands(int value) {
   final digits = value.abs().toString();

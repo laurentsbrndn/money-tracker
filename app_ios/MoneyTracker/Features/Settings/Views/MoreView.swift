@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// "Lainnya" menu. Preferences, security, notifications, subscription, and export arrive with
-/// their phases.
+/// "Lainnya" menu. Subscription and export arrive with their phases.
 struct MoreView: View {
     @Environment(AppContainer.self) private var container
     @State private var model: MoreViewModel
@@ -30,6 +29,15 @@ struct MoreView: View {
             Section {
                 NavigationLink(value: AppRoute.categories) {
                     Label("Kategori", systemImage: "square.grid.2x2")
+                }
+                NavigationLink(value: AppRoute.preferences) {
+                    Label("Preferensi", systemImage: "slider.horizontal.3")
+                }
+                NavigationLink(value: AppRoute.security) {
+                    Label("Keamanan", systemImage: "lock")
+                }
+                NavigationLink(value: AppRoute.notifications) {
+                    Label("Notifikasi", systemImage: "bell")
                 }
                 NavigationLink(value: AppRoute.syncSettings) {
                     HStack {

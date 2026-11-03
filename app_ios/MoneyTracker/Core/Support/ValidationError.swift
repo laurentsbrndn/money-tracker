@@ -12,6 +12,9 @@ enum ValidationError: Error, LocalizedError {
     case dateFuture, dateBeforeOpening, openingDateFuture
     case accountRequired, toAccountRequired, sameAccount
     case categoryRequired, allocationRequired
+    case adjustmentZero, snapshotDateInvalid
+    case goalPercentRange, goalTotal, plannedIncomeRange
+    case settingsMissing, timezoneInvalid, reminderTimeInvalid
 
     var errorDescription: String? {
         switch self {
@@ -32,6 +35,16 @@ enum ValidationError: Error, LocalizedError {
         case .sameAccount: String(localized: "Akun asal dan tujuan harus berbeda")
         case .categoryRequired: String(localized: "Pilih kategori")
         case .allocationRequired: String(localized: "Pilih alokasi")
+        case .adjustmentZero: String(localized: "Tidak ada selisih untuk disesuaikan")
+        case .snapshotDateInvalid:
+            String(localized: "Tanggal saldo lebih awal dari tanggal saldo awal akun")
+        case .goalPercentRange: String(localized: "Persentase harus antara 0 dan 100")
+        case .goalTotal: String(localized: "Total persentase harus 100%")
+        case .plannedIncomeRange: String(localized: "Rencana income tidak valid")
+        case .settingsMissing:
+            String(localized: "Pengaturan belum tersedia. Tunggu sinkronisasi selesai.")
+        case .timezoneInvalid: String(localized: "Timezone tidak dikenal.")
+        case .reminderTimeInvalid: String(localized: "Jam pengingat tidak valid")
         }
     }
 }

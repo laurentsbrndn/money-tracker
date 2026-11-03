@@ -13,6 +13,24 @@ extension TransactionRecord {
             id: id, type: TransactionType(rawValue: type) ?? .expense,
             status: TransactionStatus(rawValue: status) ?? .posted, date: transactionDate,
             amount: amount, accountID: accountId, toAccountID: toAccountId,
-            allocation: allocation.flatMap(Allocation.init(rawValue:)), isDeleted: deletedAt != nil)
+            allocation: allocation.flatMap(Allocation.init(rawValue:)), categoryID: categoryId,
+            isDeleted: deletedAt != nil)
+    }
+}
+
+extension BalanceSnapshotRecord {
+    var domain: BalanceSnapshot {
+        BalanceSnapshot(
+            accountID: accountId, date: snapshotDate, amount: amount, updatedAt: updatedAt,
+            isDeleted: deletedAt != nil)
+    }
+}
+
+extension BudgetGoalRecord {
+    var domain: BudgetGoal {
+        BudgetGoal(
+            effectiveMonth: YearMonth(containing: effectiveMonth), needsPct: Int64(needsPct),
+            wantsPct: Int64(wantsPct), savingsPct: Int64(savingsPct), plannedIncome: plannedIncome,
+            isDeleted: deletedAt != nil)
     }
 }

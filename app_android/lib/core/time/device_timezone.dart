@@ -1,15 +1,19 @@
-/// Best-effort IANA timezone for registration. The app is Indonesia-first, so
-/// the device's UTC offset is mapped to the matching Indonesian zone and
-/// anything else falls back to `Asia/Jakarta`. The user can change the
-/// timezone later in preferences (Fase 2).
-String guessIanaTimezone([Duration? offset]) {
-  final current = offset ?? DateTime.now().timeZoneOffset;
-  switch (current.inHours) {
-    case 8:
-      return 'Asia/Makassar';
-    case 9:
-      return 'Asia/Jayapura';
-    default:
-      return 'Asia/Jakarta';
+import 'package:flutter_timezone/flutter_timezone.dart';
+
+import 'user_clock.dart';
+
+/// The device's IANA timezone, used as the initial `user_settings.timezone`
+/// when registering (APP_FLOWS Flow 12 lets the user change it later). Falls
+/// back to [defaultTimezone] when the platform returns a name that the bundled
+/// timezone database does not know.
+Future<String> detectDeviceTimezone() async {
+  try {
+    final info = await FlutterTimezone.getLocalTimezone();
+    if (isValidTimezone(info.identifier)) {
+      return info.identifier;
+    }
+  } on Object {
+    // Fall through to the default.
   }
+  return defaultTimezone;
 }

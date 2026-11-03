@@ -104,3 +104,78 @@ extension DomainRules {
             remaining: goalAmount - actual)
     }
 }
+
+// MARK: - Warnings and breakdown
+
+/// Warning thresholds of §4.5, in percent of `goalAmount`.
+let budgetWarnPercent = 80
+let budgetLimitPercent = 100
+
+/// The expense of one category in a month; `categoryID` is nil for an expense without a
+/// category.
+struct CategoryTotal: Sendable, Equatable {
+    var categoryID: String?
+    var amount: Int64
+}
+
+/// What makes up one bucket of the budget (APP_FLOWS Flow 6, "rincian per kategori").
+struct AllocationBreakdown: Sendable, Equatable {
+    /// Expenses of the bucket grouped by category, largest first (§4.6).
+    var categories: [CategoryTotal]
+    /// Net transfers into savings accounts; 0 for needs and wants. Together with the category
+    /// totals it adds up to `actual` of `computeBudget`.
+    var transferNet: Int64
+
+    var total: Int64 { categories.reduce(transferNet) { $0 + $1.amount } }
+}
+
+extension DomainRules {
+    /// The highest warning threshold (80 or 100) that `actual` has reached for a bucket with
+    /// `goalAmount`, or nil. A goal of 0 never warns. Integer arithmetic only:
+    /// `actual * 100 >= goalAmount * threshold`.
+    static func budgetAlertLevel(goalAmount: Int64, actual: Int64) -> Int? {
+        guard goalAmount > 0 else { return nil }
+        if actual * 100 >= goalAmount * Int64(budgetLimitPercent) { return budgetLimitPercent }
+        if actual * 100 >= goalAmount * Int64(budgetWarnPercent) { return budgetWarnPercent }
+        return nil
+    }
+
+    /// The categories behind `allocation` in `month`, from the same transactions and rules as
+    /// `computeBudget`.
+    static func computeAllocationBreakdown(
+        accounts: [Account], transactions: [Transaction], allocation: Allocation,
+        month: YearMonth, asOf: CivilDate
+    ) -> AllocationBreakdown {
+        var isSavings: [String: Bool] = [:]
+        for account in accounts { isSavings[account.id] = account.type == .savings }
+
+        var byCategory: [String?: Int64] = [:]
+        var transferNet: Int64 = 0
+        for tx in transactions where counts(tx, asOf: asOf) && month.contains(tx.date) {
+            switch tx.type {
+            case .expense:
+                if tx.allocation == allocation {
+                    byCategory[tx.categoryID, default: 0] += tx.amount
+                }
+            case .transfer:
+                if allocation == .savings {
+                    let from = isSavings[tx.accountID] ?? false
+                    let to = tx.toAccountID.flatMap { isSavings[$0] } ?? false
+                    if !from && to {
+                        transferNet += tx.amount
+                    } else if from && !to {
+                        transferNet -= tx.amount
+                    }
+                }
+            case .income, .adjustment:
+                break
+            }
+        }
+        let categories = byCategory.map { CategoryTotal(categoryID: $0.key, amount: $0.value) }
+            .sorted {
+                if $0.amount != $1.amount { return $0.amount > $1.amount }
+                return ($0.categoryID ?? "") < ($1.categoryID ?? "")
+            }
+        return AllocationBreakdown(categories: categories, transferNet: transferNet)
+    }
+}

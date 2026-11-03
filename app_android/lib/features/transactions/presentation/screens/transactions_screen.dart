@@ -9,7 +9,7 @@ import '../../../../core/money/money_formatter.dart';
 import '../../../../core/router/route_paths.dart';
 import '../../../../core/sync/sync_scheduler.dart';
 import '../../../../core/time/civil_date_format.dart';
-import '../../../../core/time/today.dart';
+import '../../../../core/time/user_clock.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../settings/application/user_settings_providers.dart';
@@ -208,7 +208,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ],
               );
             }
-            final groups = groupByDay(data, todayCivil());
+            final groups = groupByDay(data, ref.watch(userClockProvider).today());
             return ListView.builder(
               controller: _scroll,
               physics: const AlwaysScrollableScrollPhysics(),

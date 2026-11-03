@@ -44,7 +44,7 @@ struct AccountDetailView: View {
             Button("Batal", role: .cancel) {}
         } message: {
             Text(
-                "Saldo akun ini \(MoneyFormatter.rupiah(model.expectedBalance)). Transfer sisa saldo ke akun lain sebelum diarsipkan?"
+                "Saldo akun ini \(MoneyFormatter.rupiah(model.expectedBalance, hidden: container.preferences.hideAmounts)). Transfer sisa saldo ke akun lain sebelum diarsipkan?"
             )
         }
         .alert(

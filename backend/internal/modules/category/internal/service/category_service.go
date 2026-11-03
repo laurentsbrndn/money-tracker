@@ -182,6 +182,7 @@ func (s *CategoryService) CountCustom(ctx context.Context, userID uuid.UUID) (in
 func (s *CategoryService) SeedDefaults(ctx context.Context, userID uuid.UUID) error {
 	now := s.clock.Now()
 	position := map[string]int{}
+	rows := make([]*model.Category, 0, len(defaultCategories))
 	for _, d := range defaultCategories {
 		id, err := idgen.NewV7()
 		if err != nil {
@@ -203,11 +204,10 @@ func (s *CategoryService) SeedDefaults(ctx context.Context, userID uuid.UUID) er
 			allocation := d.Allocation
 			row.DefaultAllocation = &allocation
 		}
-		if err := s.repo.Save(ctx, row, now); err != nil {
-			return err
-		}
+		rows = append(rows, row)
 	}
-	return nil
+	// One version query and one INSERT for the whole list, in list order.
+	return s.repo.SaveMany(ctx, rows, now)
 }
 
 // PurgeUser deletes every category of the user.

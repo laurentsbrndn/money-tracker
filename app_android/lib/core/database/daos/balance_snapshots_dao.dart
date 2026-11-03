@@ -14,6 +14,9 @@ class BalanceSnapshotsDao extends DatabaseAccessor<AppDatabase>
   Stream<List<BalanceSnapshotRow>> watchActive() =>
       (select(balanceSnapshots)..where((t) => t.deletedAt.isNull())).watch();
 
+  Future<List<BalanceSnapshotRow>> allActive() =>
+      (select(balanceSnapshots)..where((t) => t.deletedAt.isNull())).get();
+
   Future<BalanceSnapshotRow?> findById(String id) => (select(
     balanceSnapshots,
   )..where((t) => t.id.equals(id))).getSingleOrNull();

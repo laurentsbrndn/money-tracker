@@ -12,6 +12,8 @@ final class SyncBackgroundTask {
     private let engine: SyncEngine
     private let database: AppDatabase
     private let session: SessionStore
+    /// Runs after each background sync (rebuilds the local notifications from the new data).
+    var afterRun: (@MainActor () async -> Void)?
 
     init(bundleID: String, engine: SyncEngine, database: AppDatabase, session: SessionStore) {
         self.identifier = bundleID + ".sync"
@@ -47,11 +49,16 @@ final class SyncBackgroundTask {
         schedule()
         let work = Task { () -> Bool in
             if await foregroundMarkerIsFresh() { return true }
-            guard session.status == .authenticated,
+            var success = true
+            if session.status == .authenticated,
                 (try? await database.syncState(SyncStateKey.initialSyncDone)) == "true"
-            else { return true }
-            let outcome = await engine.runOnce()
-            return outcome == .synced || outcome == .offline || outcome == .skipped
+            {
+                let outcome = await engine.runOnce()
+                success = outcome == .synced || outcome == .offline || outcome == .skipped
+            }
+            // Whatever the sync pulled (or not), the notifications are rebuilt from the data now.
+            await afterRun?()
+            return success
         }
         task.expirationHandler = { work.cancel() }
         Task {

@@ -8,14 +8,17 @@ import '../../../../core/widgets/amount_text.dart';
 import '../../../../core/widgets/async_body.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../reconciliation/application/reconciliation_providers.dart';
+import '../../../reconciliation/domain/reconcile_item.dart';
+import '../../../reconciliation/presentation/widgets/actual_money_card.dart';
 import '../../../settings/application/user_settings_providers.dart';
 import '../../application/accounts_providers.dart';
 import '../../domain/account_type_labels.dart';
 import '../../domain/account_with_balance.dart';
 import '../widgets/account_tile.dart';
 
-/// Accounts tab (APP_FLOWS Flow 5): the expected total and the accounts by
-/// type. Real balances and the reconciliation arrive in Fase 2.
+/// Accounts tab (APP_FLOWS Flow 5): the real money, the expected total, and
+/// the accounts by type with their reconciliation badge.
 class AccountsScreen extends ConsumerWidget {
   const AccountsScreen({super.key});
 
@@ -24,8 +27,22 @@ class AccountsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final overview = ref.watch(accountsOverviewProvider);
     final hide = ref.watch(hideAmountsProvider);
+    final view = ref.watch(reconcileViewProvider).value;
+    final reconcileById = {
+      for (final entry in view?.items ?? const <ReconcileItem>[])
+        entry.account.id: entry,
+    };
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tabAccounts)),
+      appBar: AppBar(
+        title: Text(l10n.tabAccounts),
+        actions: [
+          IconButton(
+            tooltip: l10n.accountsReconcileAction,
+            onPressed: () => context.push(RoutePaths.reconcile),
+            icon: const Icon(Icons.fact_check_outlined),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         tooltip: l10n.accountsAdd,
         onPressed: () => context.push(RoutePaths.accountNew),
@@ -63,6 +80,11 @@ class AccountsScreen extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 96),
               children: [
+                if (view != null && view.items.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: ActualMoneyCard(view: view, hideAmounts: hide),
+                  ),
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Card(
@@ -90,12 +112,13 @@ class AccountsScreen extends ConsumerWidget {
                   ..._section(context, accountTypeLabel(l10n, type), [
                     for (final item in active)
                       if (item.account.type == type) item,
-                  ], hide),
+                  ], hide, reconcileById),
                 ..._section(
                   context,
                   l10n.accountsArchivedSection,
                   archived,
                   hide,
+                  reconcileById,
                 ),
               ],
             );
@@ -110,6 +133,7 @@ class AccountsScreen extends ConsumerWidget {
     String title,
     List<AccountWithBalance> items,
     bool hide,
+    Map<String, ReconcileItem> reconcileById,
   ) {
     if (items.isEmpty) {
       return const [];
@@ -123,6 +147,7 @@ class AccountsScreen extends ConsumerWidget {
         AccountTile(
           item: item,
           hideAmounts: hide,
+          reconcile: reconcileById[item.account.id],
           onTap: () => context.push(RoutePaths.account(item.account.id)),
         ),
     ];

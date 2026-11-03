@@ -411,5 +411,434 @@
   "deleteAccountConfirm": "Hapus akun saya",
   "deleteAccountWrongWord": "Ketik HAPUS dengan huruf besar.",
   "upgradeRequiredTitle": "Perbarui aplikasi",
-  "upgradeRequiredBody": "Versi aplikasi ini sudah terlalu lama. Perbarui lewat Google Play untuk melanjutkan."
+  "upgradeRequiredBody": "Versi aplikasi ini sudah terlalu lama. Perbarui lewat Google Play untuk melanjutkan.",
+  "validationSnapshotDate": "Tanggal saldo tidak boleh sebelum tanggal saldo awal akun.",
+  "validationAdjustmentZero": "Tidak ada selisih untuk disesuaikan.",
+  "validationGoalPercentRange": "Setiap persentase harus antara 0 dan 100.",
+  "validationGoalTotal": "Total persentase harus tepat 100%.",
+  "validationPlannedIncome": "Rencana income tidak valid.",
+  "validationTimezone": "Timezone tidak dikenal.",
+  "validationReminderTime": "Jam pengingat tidak valid.",
+  "validationSettingsMissing": "Pengaturan belum siap. Tunggu sinkronisasi selesai lalu coba lagi.",
+  "reconcileTitle": "Cocokkan saldo",
+  "reconcileIntro": "Isi saldo asli tiap akun sesuai aplikasi bank, e-wallet, atau uang di tanganmu. Akun yang dikosongkan dilewati.",
+  "reconcileRecordedLabel": "Tercatat: {amount}",
+  "@reconcileRecordedLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reconcileInputLabel": "Saldo asli",
+  "reconcileSubmit": "Cocokkan",
+  "reconcileActual": "Saldo asli",
+  "reconcileRecorded": "Tercatat",
+  "reconcileMatched": "Cocok",
+  "reconcileDiff": "Selisih {amount}",
+  "@reconcileDiff": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reconcileMissed": "Catat yang terlewat",
+  "reconcileAdjust": "Buat penyesuaian",
+  "reconcileLater": "Nanti saja",
+  "reconcileDeferred": "Ditunda",
+  "reconcileReview": "Tinjau lagi",
+  "reconcileAdjustTitle": "Buat penyesuaian?",
+  "reconcileAdjustBody": "Satu transaksi penyesuaian sebesar {amount} dibuat supaya saldo tercatat sama dengan saldo asli. Penyesuaian tidak dihitung sebagai pemasukan atau pengeluaran.",
+  "@reconcileAdjustBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reconcileAdjustNote": "Selisih tidak tercatat",
+  "reconcileAdjusted": "Disesuaikan {amount}",
+  "@reconcileAdjusted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reconcileSummaryTitle": "Ringkasan",
+  "reconcileSummaryMatched": "{matched} dari {total} akun cocok",
+  "@reconcileSummaryMatched": {
+    "placeholders": {
+      "matched": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "reconcileSummaryAdjusted": "Total disesuaikan: {amount}",
+  "@reconcileSummaryAdjusted": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reconcileNeedsInput": "Isi saldo asli minimal satu akun.",
+  "reconcileEmptyTitle": "Belum ada akun",
+  "reconcileEmptyBody": "Tambahkan akun lebih dulu untuk mencocokkan saldo.",
+  "accountsActualTotal": "Uang aktual",
+  "accountsRecordedTotal": "Tercatat {amount}",
+  "@accountsRecordedTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "accountsReconcileAction": "Cocokkan saldo",
+  "accountsNoSnapshot": "Belum ada saldo asli",
+  "accountsActualOn": "Aktual {amount} · {date}",
+  "@accountsActualOn": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountBadgeMatched": "Cocok",
+  "accountBadgeStale": "Perlu update",
+  "actualMoneyTitle": "Uang aktual",
+  "actualMoneyAccounts": "Rekening & e-wallet",
+  "actualMoneyCash": "Cash",
+  "actualMoneyUpdated": "Diperbarui {date}",
+  "@actualMoneyUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "actualMoneyNone": "Belum ada saldo asli. Cocokkan saldo untuk mengisinya.",
+  "diffMatchedTitle": "Saldo cocok",
+  "diffMatchedBody": "Semua akun sama dengan catatanmu.",
+  "diffMismatchBody": "{count} akun berbeda dari catatan",
+  "@diffMismatchBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diffStaleTitle": "Update saldo aktual",
+  "diffStaleBody": "{count} akun belum dicek lebih dari 7 hari",
+  "@diffStaleBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diffAction": "Cocokkan",
+  "diffTitle": "Selisih saldo",
+  "budgetBasis": "Dasar perhitungan: {amount}",
+  "@budgetBasis": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetBasisHint": "Rencana income atau income bulan ini, mana yang lebih besar.",
+  "budgetNoGoalTitle": "Goal budget belum diatur",
+  "budgetNoGoalBody": "Atur pembagian needs, wants, dan savings untuk melihat budget bulan ini.",
+  "budgetSetGoal": "Atur goal",
+  "budgetGoalLine": "Goal {pct}% · {amount}",
+  "@budgetGoalLine": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetActualLine": "Aktual {percent} · {amount}",
+  "@budgetActualLine": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetRemaining": "Sisa {amount}",
+  "@budgetRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetOver": "Lebih {amount}",
+  "@budgetOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetShort": "Kurang {amount}",
+  "@budgetShort": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetUnallocated": "Belum teralokasi",
+  "budgetBreakdownTitle": "Rincian {name}",
+  "@budgetBreakdownTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetBreakdownEmpty": "Belum ada transaksi di alokasi ini bulan ini.",
+  "budgetBreakdownTransfers": "Transfer ke tabungan (bersih)",
+  "budgetBreakdownUncategorized": "Tanpa kategori",
+  "budgetBreakdownTotal": "Total",
+  "budgetEvalTitle": "Evaluasi {month}",
+  "@budgetEvalTitle": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetEvalWithin": "{name} tidak melewati goal.",
+  "@budgetEvalWithin": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetEvalOver": "{name} melewati goal.",
+  "@budgetEvalOver": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetEvalReached": "{name} mencapai goal.",
+  "@budgetEvalReached": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetEvalShort": "{name} belum mencapai goal.",
+  "@budgetEvalShort": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetEvalUnknown": "Tidak ada goal atau income untuk dibandingkan.",
+  "budgetGoalTitle": "Atur goal budget",
+  "budgetGoalIntro": "Bagi income bulanan ke needs, wants, dan savings. Total harus 100%.",
+  "budgetGoalEffective": "Berlaku mulai {month}.",
+  "@budgetGoalEffective": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetGoalPresets": "Preset",
+  "budgetGoalNeeds": "Needs (%)",
+  "budgetGoalWants": "Wants (%)",
+  "budgetGoalSavings": "Savings (%)",
+  "budgetGoalTotal": "Total {total}%",
+  "@budgetGoalTotal": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "budgetGoalPlanned": "Rencana income bulanan (opsional)",
+  "budgetGoalPlannedHint": "Dipakai sebagai dasar bila lebih besar dari income yang tercatat.",
+  "budgetGoalSaved": "Goal budget disimpan",
+  "dashboardBudgetTitle": "Budget",
+  "setupStepGoal": "Goal budget",
+  "setupGoalTitle": "Bagaimana kamu membagi income?",
+  "setupGoalBody": "Pilih 50/30/20 atau atur sendiri. Bisa diubah kapan saja di tab Budget.",
+  "lockTitle": "Aplikasi terkunci",
+  "lockEnterPin": "Masukkan PIN",
+  "lockWrongPin": "PIN salah",
+  "lockWait": "Terlalu banyak percobaan. Coba lagi dalam {time}.",
+  "@lockWait": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lockBiometricReason": "Buka kunci Money Tracker",
+  "lockUseBiometric": "Gunakan biometrik",
+  "lockForgot": "Lupa PIN? Keluar",
+  "lockForgotBody": "Keluar menghapus data dari perangkat ini dan mematikan kunci PIN. Datamu di server tetap aman dan kembali setelah kamu masuk lagi.",
+  "lockForgotPending": "Ada {count} perubahan yang belum tersinkron dan akan hilang.",
+  "@lockForgotPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pinNewPrompt": "Buat PIN 6 digit",
+  "pinConfirmPrompt": "Ulangi PIN",
+  "pinMismatch": "PIN tidak sama. Ulangi dari awal.",
+  "pinCurrentPrompt": "Masukkan PIN saat ini",
+  "pinSetTitle": "Atur PIN",
+  "pinChangeTitle": "Ubah PIN",
+  "pinRemoveTitle": "Matikan kunci PIN",
+  "pinSaved": "PIN disimpan",
+  "pinRemoved": "Kunci PIN dimatikan",
+  "securityTitle": "Keamanan",
+  "securityPinToggle": "Kunci aplikasi dengan PIN",
+  "securityPinSubtitle": "PIN 6 digit diminta saat aplikasi dibuka.",
+  "securityChangePin": "Ubah PIN",
+  "securityBiometric": "Buka dengan biometrik",
+  "securityBiometricUnavailable": "Perangkat belum punya biometrik yang terdaftar.",
+  "securityBiometricReason": "Aktifkan buka kunci dengan biometrik",
+  "securityAutoLock": "Kunci otomatis",
+  "securityAutoLockImmediately": "Segera setelah ke latar belakang",
+  "securityAutoLock1min": "Setelah 1 menit",
+  "securityAutoLock5min": "Setelah 5 menit",
+  "securityHideAmounts": "Sembunyikan nominal",
+  "securityHideAmountsSubtitle": "Nominal tampil sebagai Rp •••••. Berlaku di semua perangkatmu.",
+  "securityDeviceOnlyNote": "PIN dan biometrik hanya tersimpan di perangkat ini dan tidak disinkronkan.",
+  "prefsTitle": "Preferensi",
+  "prefsTimezone": "Timezone",
+  "prefsTimezoneHint": "Menentukan \"hari ini\" dan batas bulan. Transaksi yang sudah ada tidak berubah.",
+  "prefsTimezoneSearch": "Cari timezone",
+  "prefsTimezoneIndonesia": "Indonesia",
+  "prefsTimezoneOthers": "Lainnya",
+  "prefsWeekStart": "Hari pertama minggu",
+  "prefsMonday": "Senin",
+  "prefsSunday": "Minggu",
+  "prefsTheme": "Tema",
+  "prefsThemeSystem": "Ikuti sistem",
+  "prefsThemeLight": "Terang",
+  "prefsThemeDark": "Gelap",
+  "prefsSettingsNotReady": "Pengaturan belum tersedia. Tunggu sinkronisasi selesai.",
+  "moreSecurity": "Keamanan",
+  "morePreferences": "Preferensi",
+  "moreNotifications": "Notifikasi",
+  "notifChannelReminders": "Pengingat",
+  "notifChannelBudget": "Peringatan budget",
+  "notifDailyTitle": "Catat transaksi hari ini",
+  "notifDailyBody": "Sudah mencatat pengeluaran dan pemasukanmu hari ini?",
+  "notifReconcileTitle": "Waktunya cocokkan saldo",
+  "notifReconcileBody": "Samakan catatanmu dengan saldo asli rekening dan uang tunai.",
+  "notifStaleTitle": "Saldo aktual perlu diperbarui",
+  "notifStaleBody": "Ada akun yang saldo aslinya belum dicek lebih dari 7 hari.",
+  "notifEvalTitle": "Evaluasi budget bulan lalu",
+  "notifEvalBody": "Lihat bagaimana needs, wants, dan savings {month}.",
+  "@notifEvalBody": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "notifBudgetWarnTitle": "{name} hampir melewati goal",
+  "@notifBudgetWarnTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifBudgetLimitTitle": "{name} melewati goal",
+  "@notifBudgetLimitTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifBudgetBodyHidden": "{name} sudah mencapai {level}% dari goal bulan ini.",
+  "@notifBudgetBodyHidden": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "notifBudgetBody": "{name}: {actual} dari goal {goal} ({level}% dari goal bulan ini).",
+  "@notifBudgetBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "actual": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "notifSettingsTitle": "Notifikasi",
+  "notifPermissionOffTitle": "Izin notifikasi belum aktif",
+  "notifPermissionOffBody": "Tanpa izin, pengingat dan peringatan tidak akan muncul.",
+  "notifPermissionAllow": "Izinkan",
+  "notifPermissionOpenSettings": "Buka pengaturan",
+  "notifDaily": "Pengingat harian",
+  "notifDailyOn": "Setiap hari pukul {time}; dilewati bila hari itu sudah ada transaksi.",
+  "@notifDailyOn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "notifDailyOff": "Mati",
+  "notifDailyTime": "Jam pengingat",
+  "notifReconcile": "Pengingat cocokkan saldo",
+  "notifReconcileSubtitle": "Akhir bulan pukul 20.00 dan saat ada akun yang saldonya sudah lebih dari 7 hari.",
+  "notifBudget": "Peringatan budget",
+  "notifBudgetSubtitle": "Saat needs atau wants mencapai 80% dan 100% goal, serta evaluasi tiap tanggal 1.",
+  "notifHideNote": "Bila Sembunyikan nominal aktif, notifikasi tidak menampilkan nominal.",
+  "setupStepNotifications": "Notifikasi",
+  "setupNotificationsTitle": "Mau diingatkan mencatat?",
+  "setupNotificationsBody": "Pengingat harian membantu catatanmu tetap lengkap. Bisa diubah kapan saja di Lainnya → Notifikasi.",
+  "setupNotificationsToggle": "Ingatkan saya tiap hari",
+  "setupStepLock": "Kunci",
+  "setupLockTitle": "Amankan aplikasi?",
+  "setupLockBody": "Pasang PIN 6 digit (dan biometrik) supaya hanya kamu yang bisa membuka aplikasi. Boleh dilewati.",
+  "setupLockAction": "Atur PIN",
+  "setupLockActive": "Kunci PIN aktif"
 }

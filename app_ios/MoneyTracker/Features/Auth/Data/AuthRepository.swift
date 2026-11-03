@@ -5,7 +5,12 @@ import Foundation
 struct AuthRepository: Sendable {
     let client: Client
 
-    private var timezone: String { TimeZone.current.identifier }
+    /// The device's IANA timezone, sent at registration; `Asia/Jakarta` (the server default) when
+    /// the device reports none the app can use.
+    private var timezone: String {
+        let identifier = TimeZone.current.identifier
+        return UserClock.isValid(timezone: identifier) ? identifier : UserClock.defaultTimezone
+    }
 
     func register(name: String, email: String, password: String) async throws
         -> Components.Schemas.AuthResponse

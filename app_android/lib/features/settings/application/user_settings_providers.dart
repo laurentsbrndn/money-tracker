@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -20,3 +21,12 @@ final userSettingsProvider = StreamProvider.autoDispose<UserSettingsRow?>(
 @riverpod
 bool hideAmounts(Ref ref) =>
     ref.watch(userSettingsProvider).value?.hideAmounts ?? false;
+
+/// `theme` as the app's [ThemeMode].
+@riverpod
+ThemeMode appThemeMode(Ref ref) =>
+    switch (ref.watch(userSettingsProvider).value?.theme) {
+      'light' => ThemeMode.light,
+      'dark' => ThemeMode.dark,
+      _ => ThemeMode.system,
+    };

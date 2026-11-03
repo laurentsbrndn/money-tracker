@@ -56,3 +56,19 @@ func buildVerifiers(base context.Context, cfg config.Config, log *slog.Logger) (
 	}
 	return apple, google, nil
 }
+
+// validateRevenueCat checks the RevenueCat config. Outside local both secrets are required, so
+// a deployment cannot silently run without the webhook guard or the REST verification. In
+// local a missing value only logs: the webhook then rejects every call (empty secret) and the
+// state comes from the fields of each event.
+func validateRevenueCat(cfg config.Config, log *slog.Logger) error {
+	err := cfg.RevenueCat.Validate()
+	if err == nil {
+		return nil
+	}
+	if cfg.AppEnv != config.EnvLocal {
+		return fmt.Errorf("revenuecat configuration: %w", err)
+	}
+	log.Warn("RevenueCat is not fully configured", "reason", err)
+	return nil
+}

@@ -3,7 +3,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 
@@ -12,7 +11,6 @@ import (
 	"moneytracker/internal/modules/ledger/internal/model"
 	"moneytracker/internal/modules/ledger/internal/repository"
 	"moneytracker/internal/modules/wallet"
-	"moneytracker/internal/platform/civil"
 	"moneytracker/internal/platform/clock"
 	"moneytracker/internal/platform/syncbase"
 )
@@ -25,15 +23,14 @@ const (
 
 // TransactionService validates and stores transactions (docs/BUSINESS_RULES.md §6).
 type TransactionService struct {
-	repo       *repository.TransactionRepository
-	accounts   wallet.Accounts
-	categories category.Categories
-	clock      clock.Clock
+	repo  *repository.TransactionRepository
+	refs  references
+	clock clock.Clock
 }
 
 // NewTransactionService builds the service.
 func NewTransactionService(repo *repository.TransactionRepository, accounts wallet.Accounts, categories category.Categories, clk clock.Clock) *TransactionService {
-	return &TransactionService{repo: repo, accounts: accounts, categories: categories, clock: clk}
+	return &TransactionService{repo: repo, refs: references{accounts: accounts, categories: categories}, clock: clk}
 }
 
 // Upsert validates a pushed transaction and writes the whole row. Shape rules (fields per
@@ -176,60 +173,21 @@ func firstSet(fields ...field) *syncbase.RejectError {
 // checkReferences validates every row the transaction points to. It returns a rejection for
 // rule violations and an error for infrastructure failures.
 func (s *TransactionService) checkReferences(ctx context.Context, userID uuid.UUID, in dto.TransactionRow) (*syncbase.RejectError, error) {
-	if rej, err := s.checkAccount(ctx, userID, "account_id", in.AccountID, *in.TransactionDate); rej != nil || err != nil {
+	if rej, err := s.refs.checkAccount(ctx, userID, "account_id", in.AccountID, "transaction_date", *in.TransactionDate); rej != nil || err != nil {
 		return rej, err
 	}
 	if in.ToAccountID != nil {
-		if rej, err := s.checkAccount(ctx, userID, "to_account_id", *in.ToAccountID, *in.TransactionDate); rej != nil || err != nil {
+		if rej, err := s.refs.checkAccount(ctx, userID, "to_account_id", *in.ToAccountID, "transaction_date", *in.TransactionDate); rej != nil || err != nil {
 			return rej, err
 		}
 	}
 	if in.CategoryID != nil {
-		if rej, err := s.checkCategory(ctx, userID, *in.CategoryID, in.Type); rej != nil || err != nil {
+		if rej, err := s.refs.checkCategory(ctx, userID, *in.CategoryID, in.Type); rej != nil || err != nil {
 			return rej, err
 		}
 	}
 	if in.LinkedTransactionID != nil {
 		return s.checkLinked(ctx, userID, in)
-	}
-	return nil, nil
-}
-
-// checkAccount requires a live account of the user whose opening date is not after date.
-// An account that is missing or owned by someone else is reference_missing; archived
-// accounts are fine, deleted ones are not.
-func (s *TransactionService) checkAccount(ctx context.Context, userID uuid.UUID, fieldName string, id uuid.UUID, date civil.Date) (*syncbase.RejectError, error) {
-	account, err := s.accounts.Get(ctx, userID, id)
-	if err != nil {
-		if errors.Is(err, wallet.ErrNotFound) {
-			return syncbase.ReferenceMissing("akun belum ada"), nil
-		}
-		return nil, err
-	}
-	if account.IsDeleted {
-		return syncbase.InvalidField(fieldName, "akun sudah dihapus"), nil
-	}
-	if date.Before(account.OpeningDate) {
-		return syncbase.InvalidField("transaction_date", "tanggal sebelum tanggal saldo awal akun"), nil
-	}
-	return nil, nil
-}
-
-// checkCategory requires a live category of the right kind: expense transactions use expense
-// categories, income transactions use income categories.
-func (s *TransactionService) checkCategory(ctx context.Context, userID, id uuid.UUID, txType string) (*syncbase.RejectError, error) {
-	cat, err := s.categories.Get(ctx, userID, id)
-	if err != nil {
-		if errors.Is(err, category.ErrNotFound) {
-			return syncbase.ReferenceMissing("kategori belum ada"), nil
-		}
-		return nil, err
-	}
-	if cat.IsDeleted {
-		return syncbase.InvalidField("category_id", "kategori sudah dihapus"), nil
-	}
-	if cat.Type != txType {
-		return syncbase.InvalidField("category_id", "tipe kategori tidak sesuai dengan tipe transaksi"), nil
 	}
 	return nil, nil
 }

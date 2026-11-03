@@ -10,12 +10,17 @@ import '../../../../core/theme/provider_logos.dart';
 import '../../../../core/widgets/money_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../accounts/application/accounts_providers.dart';
+import '../../../budget/domain/budget_goal_input.dart';
 import '../../../categories/application/categories_providers.dart';
+import '../../../settings/application/user_settings_providers.dart';
 import '../../application/setup_actions.dart';
+import '../widgets/setup_goal_step.dart';
+import '../widgets/setup_lock_step.dart';
+import '../widgets/setup_notification_step.dart';
 
 /// Setup wizard for new users (APP_FLOWS Flow 1, step 6): Cash balance,
-/// extra accounts, hide categories. Goal, reminders, and app lock belong to
-/// Fase 2 and are not part of this wizard yet. Can be skipped at any time.
+/// extra accounts, budget goal, hide categories, daily reminder, and PIN lock.
+/// Can be skipped at any time.
 class SetupScreen extends ConsumerStatefulWidget {
   const SetupScreen({super.key});
 
@@ -24,9 +29,12 @@ class SetupScreen extends ConsumerStatefulWidget {
 }
 
 class _SetupScreenState extends ConsumerState<SetupScreen> {
-  static const int _stepCount = 3;
+  static const int _stepCount = 6;
 
   final _cash = TextEditingController();
+  BudgetGoalInput? _goal;
+  bool _reminderOn = true;
+  String _reminderTime = '20:00';
   int _step = 0;
   bool _busy = false;
 
@@ -46,6 +54,17 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
         if (value != null) {
           await ref.read(setupActionsProvider).saveCashBalance(value);
         }
+      }
+      if (_step == 2) {
+        final goal = _goal;
+        if (goal != null && goal.isValid) {
+          await ref.read(setupActionsProvider).saveGoal(goal);
+        }
+      }
+      if (_step == 4) {
+        await ref
+            .read(setupActionsProvider)
+            .saveReminder(enabled: _reminderOn, time: _reminderTime);
       }
       if (_step == _stepCount - 1) {
         await _finish();
@@ -80,7 +99,10 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     final titles = [
       l10n.setupStepCash,
       l10n.setupStepAccounts,
+      l10n.setupStepGoal,
       l10n.setupStepCategories,
+      l10n.setupStepNotifications,
+      l10n.setupStepLock,
     ];
     return Scaffold(
       appBar: AppBar(
@@ -104,7 +126,17 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
               child: switch (_step) {
                 0 => _CashStep(controller: _cash),
                 1 => const _AccountsStep(),
-                _ => const _CategoriesStep(),
+                2 => SetupGoalStep(onChanged: (value) => _goal = value),
+                3 => const _CategoriesStep(),
+                4 => SetupNotificationStep(
+                  enabled: _reminderOn,
+                  time: _reminderTime,
+                  onEnabledChanged: (value) =>
+                      setState(() => _reminderOn = value),
+                  onTimeChanged: (value) =>
+                      setState(() => _reminderTime = value),
+                ),
+                _ => const SetupLockStep(),
               },
             ),
             Padding(
@@ -175,6 +207,7 @@ class _AccountsStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final accounts = ref.watch(accountBalancesProvider).value ?? const [];
+    final hide = ref.watch(hideAmountsProvider);
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -190,7 +223,9 @@ class _AccountsStep extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             leading: ProviderLogo(providerKey: item.account.providerKey),
             title: Text(item.account.name),
-            trailing: Text(formatRupiah(item.expectedBalance)),
+            trailing: Text(
+              formatRupiah(item.expectedBalance, hidden: hide),
+            ),
           ),
         const SizedBox(height: 8),
         OutlinedButton.icon(

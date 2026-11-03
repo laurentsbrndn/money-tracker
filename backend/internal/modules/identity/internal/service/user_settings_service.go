@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -100,3 +102,18 @@ func (s *UserSettingsService) CreateDefault(ctx context.Context, userID uuid.UUI
 	}
 	return s.repo.Save(ctx, row, now)
 }
+
+// Timezone returns the IANA timezone name of the user's settings (docs/BUSINESS_RULES.md §1).
+func (s *UserSettingsService) Timezone(ctx context.Context, userID uuid.UUID) (string, error) {
+	row, err := s.repo.Find(ctx, userID, userID)
+	if err != nil {
+		return "", err
+	}
+	if row == nil {
+		return "", fmt.Errorf("timezone of user %s: %w", userID, ErrSettingsNotFound)
+	}
+	return row.Timezone, nil
+}
+
+// ErrSettingsNotFound is returned by Timezone when the user has no settings row.
+var ErrSettingsNotFound = errors.New("user settings not found")

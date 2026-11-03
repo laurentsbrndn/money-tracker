@@ -197,6 +197,35 @@
                     },
                 ]),
             Gallery(
+                title: "Cocokkan saldo",
+                entries: [
+                    Entry(title: "Cocokkan saldo", style: .sheet, tab: .dashboard) {
+                        AnyView(ReconcileView(container: $0))
+                    },
+                    Entry(title: "Kartu uang aktual & selisih", style: .sheet) {
+                        AnyView(ReconcileCardsPreview(container: $0))
+                    },
+                ]),
+            Gallery(
+                title: "Budget",
+                entries: [
+                    Entry(title: "Budget", style: .sheet, tab: .budget) {
+                        AnyView(BudgetView(container: $0))
+                    },
+                    Entry(title: "Atur goal", style: .sheet, tab: .budget) {
+                        AnyView(BudgetGoalView(container: $0))
+                    },
+                    Entry(title: "Rincian Needs", style: .sheet) { _ in
+                        AnyView(
+                            BudgetBreakdownSheet(
+                                allocation: .needs, month: YearMonth(year: 2026, month: 11),
+                                breakdown: DomainRules.computeAllocationBreakdown(
+                                    accounts: [], transactions: [], allocation: .needs,
+                                    month: YearMonth(year: 2026, month: 11),
+                                    asOf: PreviewSampleData.today)))
+                    },
+                ]),
+            Gallery(
                 title: "Kategori",
                 entries: [
                     Entry(title: "Daftar kategori", style: .sheet, tab: .more) {
@@ -215,6 +244,30 @@
                 entries: [
                     Entry(title: "Lainnya (menu)", style: .sheet, tab: .more) {
                         AnyView(MoreView(container: $0))
+                    },
+                    Entry(title: "Preferensi", style: .sheet, tab: .more) {
+                        AnyView(PreferencesView(container: $0))
+                    },
+                    Entry(title: "Pilih timezone", style: .sheet, tab: .more) { _ in
+                        AnyView(
+                            NavigationStack {
+                                TimezonePickerView(selected: "Asia/Jakarta", onSelect: { _ in })
+                            })
+                    },
+                    Entry(title: "Keamanan", style: .sheet, tab: .more) {
+                        AnyView(SecurityView(container: $0))
+                    },
+                    Entry(title: "Atur PIN", style: .sheet, tab: .more) {
+                        AnyView(PinSetupView(container: $0, mode: .set))
+                    },
+                    Entry(title: "Layar kunci", style: .sheet) {
+                        AnyView(LockView(container: $0))
+                    },
+                    Entry(title: "Penutup app switcher", style: .sheet) { _ in
+                        AnyView(PrivacyCoverView())
+                    },
+                    Entry(title: "Notifikasi", style: .sheet, tab: .more) {
+                        AnyView(NotificationSettingsView(container: $0))
                     },
                     Entry(title: "Sinkronisasi / Perlu perhatian", style: .sheet, tab: .more) {
                         AnyView(SyncSettingsView(container: $0))

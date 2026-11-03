@@ -20,12 +20,12 @@ class AuthRepository {
     required String name,
     required String email,
     required String password,
-  }) => _api.auth.register(
+  }) async => _api.auth.register(
     body: RegisterRequest(
       name: name,
       email: email,
       password: password,
-      timezone: guessIanaTimezone(),
+      timezone: await detectDeviceTimezone(),
     ),
   );
 
@@ -36,11 +36,11 @@ class AuthRepository {
     body: LoginRequest(email: email, password: password),
   );
 
-  Future<AuthResponse> loginWithGoogle(String idToken) =>
+  Future<AuthResponse> loginWithGoogle(String idToken) async =>
       _api.auth.loginWithGoogle(
         body: GoogleLoginRequest(
           idToken: idToken,
-          timezone: guessIanaTimezone(),
+          timezone: await detectDeviceTimezone(),
         ),
       );
 

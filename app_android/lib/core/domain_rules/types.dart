@@ -77,7 +77,8 @@ class Account {
 }
 
 /// [toAccountId] is null unless [type] is transfer; [allocation] is null
-/// unless [type] is expense; [amount] is signed for adjustments.
+/// unless [type] is expense; [categoryId] is null for transfers and
+/// adjustments; [amount] is signed for adjustments.
 class Transaction {
   const Transaction({
     required this.id,
@@ -89,6 +90,7 @@ class Transaction {
     required this.deleted,
     this.toAccountId,
     this.allocation,
+    this.categoryId,
   });
 
   final String id;
@@ -99,6 +101,9 @@ class Transaction {
   final String accountId;
   final String? toAccountId;
   final Allocation? allocation;
+
+  /// Only set for expenses and income; used by the per-category breakdown.
+  final String? categoryId;
   final bool deleted;
 }
 

@@ -6,4 +6,5 @@ abstract final class AppColors {
   static const Color income = Color(0xFF2E7D32);
   static const Color expense = Color(0xFFC62828);
   static const Color transfer = Color(0xFF757575);
+  static const Color warning = Color(0xFFF9A825);
 }

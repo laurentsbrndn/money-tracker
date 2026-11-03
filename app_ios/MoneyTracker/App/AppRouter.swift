@@ -19,6 +19,19 @@ enum AppRoute: Hashable {
     case changePassword
     case syncSettings
     case deleteAccount
+    case reconcile
+    case budgetGoal
+    case preferences
+    case security
+    case securityPin(PinSetupMode)
+    case notifications
+}
+
+/// What the PIN screen does (`/more/settings/security/pin`).
+enum PinSetupMode: Hashable {
+    case set
+    case change
+    case remove
 }
 
 /// What the transaction form sheet opens with.
@@ -48,6 +61,10 @@ final class AppRouter {
     var showReLogin = false
     var showVerifyEmail = false
     var transactionForm: TransactionFormRequest?
+    /// A tapped notification waiting for the app to be ready (cold start, or still setting up).
+    var pendingRoute: NotificationRoute?
+    /// The month the Budget tab should open on (set by the month-evaluation notification).
+    var budgetMonth: YearMonth?
     /// A filter another screen wants the transactions tab to open with (account detail → "Lihat semua").
     var pendingTransactionFilter: TransactionFilter?
 
@@ -64,6 +81,8 @@ final class AppRouter {
         showVerifyEmail = false
         transactionForm = nil
         pendingTransactionFilter = nil
+        pendingRoute = nil
+        budgetMonth = nil
     }
 
     func push(_ route: AppRoute) {
@@ -95,5 +114,27 @@ final class AppRouter {
 
     func openTransaction(id: String) {
         transactionForm = TransactionFormRequest(mode: .edit(id: id))
+    }
+}
+
+extension AppRouter {
+    /// A tapped notification: remember where it leads; `RootView` opens it once the app is ready.
+    func receive(payload: String) {
+        pendingRoute = NotificationRoute.parse(payload)
+    }
+
+    /// Opens the screen of a tapped notification (cold start and warm alike).
+    func open(_ route: NotificationRoute) {
+        switch route {
+        case .newTransaction:
+            openTransactionForm()
+        case .reconcile:
+            selectedTab = .dashboard
+            dashboardPath = NavigationPath([AppRoute.reconcile])
+        case .budget(let month):
+            selectedTab = .budget
+            budgetPath = NavigationPath()
+            budgetMonth = month
+        }
     }
 }

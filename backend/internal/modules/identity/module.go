@@ -45,6 +45,8 @@ type Module struct {
 	db           *database.TxManager
 	users        *repository.UserRepository
 	settings     *repository.UserSettingsRepository
+	refresh      *repository.RefreshTokenRepository
+	verification *repository.VerificationTokenRepository
 	settingsSvc  *service.UserSettingsService
 	settingsSync syncbase.Handler
 	views        *service.UserViewer
@@ -79,6 +81,8 @@ func New(d Deps) *Module {
 		db:           d.DB,
 		users:        users,
 		settings:     settings,
+		refresh:      refresh,
+		verification: verifications,
 		settingsSvc:  settingsSvc,
 		settingsSync: synchandler.NewUserSettingsHandler(settings, settingsSvc),
 		views:        views,
@@ -121,6 +125,26 @@ func (m *Module) RegisterRoutes(public, protected fiber.Router, authGuard fiber.
 	protected.Get("/me", m.meHandler.Get)
 	protected.Patch("/me", m.meHandler.Update)
 	protected.Delete("/me", m.meHandler.Delete)
+}
+
+// DeleteExpiredTokens removes refresh tokens and verification codes that expired before cutoff
+// (maintenance job, docs/API.md §7). It returns how many of each were removed.
+func (m *Module) DeleteExpiredTokens(ctx context.Context, cutoff time.Time) (refreshTokens, verificationTokens int64, err error) {
+	refreshTokens, err = m.refresh.DeleteExpiredBefore(ctx, cutoff)
+	if err != nil {
+		return 0, 0, err
+	}
+	verificationTokens, err = m.verification.DeleteExpiredBefore(ctx, cutoff)
+	if err != nil {
+		return refreshTokens, 0, err
+	}
+	return refreshTokens, verificationTokens, nil
+}
+
+// PendingDeletion lists the users whose deletion was requested before cutoff and are still in
+// pending_deletion, oldest first, at most limit (maintenance job).
+func (m *Module) PendingDeletion(ctx context.Context, cutoff time.Time, limit int) ([]uuid.UUID, error) {
+	return m.users.PendingDeletionBefore(ctx, cutoff, limit)
 }
 
 // PurgeUser permanently deletes the user, its sessions and codes (ON DELETE CASCADE), and the

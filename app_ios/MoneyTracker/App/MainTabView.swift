@@ -24,8 +24,7 @@ struct MainTabView: View {
             }
             Tab("Budget", systemImage: "chart.pie", value: AppTab.budget) {
                 NavigationStack(path: $router.budgetPath) {
-                    ContentUnavailableView("Segera hadir", systemImage: "hammer")
-                        .navigationTitle("Budget")
+                    BudgetView(container: container).routeDestinations(container)
                 }
             }
             Tab("Lainnya", systemImage: "ellipsis", value: AppTab.more) {
@@ -55,6 +54,12 @@ extension View {
             case .changePassword: ChangePasswordView(container: container)
             case .syncSettings: SyncSettingsView(container: container)
             case .deleteAccount: DeleteAccountView(container: container)
+            case .reconcile: ReconcileView(container: container)
+            case .budgetGoal: BudgetGoalView(container: container)
+            case .preferences: PreferencesView(container: container)
+            case .security: SecurityView(container: container)
+            case .securityPin(let mode): PinSetupView(container: container, mode: mode)
+            case .notifications: NotificationSettingsView(container: container)
             }
         }
     }

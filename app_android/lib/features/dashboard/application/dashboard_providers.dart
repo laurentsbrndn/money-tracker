@@ -7,7 +7,7 @@ import '../../../core/database/app_database_provider.dart';
 import '../../../core/database/mappers/row_mappers.dart';
 import '../../../core/domain_rules/balance.dart';
 import '../../../core/domain_rules/period.dart';
-import '../../../core/time/today.dart';
+import '../../../core/time/user_clock.dart';
 import '../../accounts/application/accounts_providers.dart';
 
 part 'dashboard_providers.g.dart';
@@ -16,19 +16,20 @@ part 'dashboard_providers.g.dart';
 @Riverpod(keepAlive: true)
 class SelectedMonth extends _$SelectedMonth {
   @override
-  YearMonth build() => YearMonth.of(todayCivil());
+  YearMonth build() => YearMonth.of(ref.read(userClockProvider).today());
 
   void select(YearMonth month) => state = month;
 }
 
 /// The oldest month a free user may open: the current month plus the two
 /// before it (BUSINESS_RULES §7).
-YearMonth oldestFreeMonth() => YearMonth.of(todayCivil()).addMonths(-2);
+YearMonth oldestFreeMonth(Ref ref) =>
+    YearMonth.of(ref.read(userClockProvider).today()).addMonths(-2);
 
 @riverpod
 bool canViewMonth(Ref ref, YearMonth month) {
   final premium = ref.watch(isPremiumProvider).value ?? false;
-  return premium || month.compareTo(oldestFreeMonth()) >= 0;
+  return premium || month.compareTo(oldestFreeMonth(ref)) >= 0;
 }
 
 /// Live transactions of one month. Declared by hand because it returns a
@@ -59,7 +60,7 @@ Future<MonthlySummary> monthlySummary(Ref ref, YearMonth month) async {
     [for (final account in accounts) account.toDomain()],
     [for (final row in transactions) row.toDomain()],
     month,
-    todayCivil(),
+    ref.watch(userClockProvider).today(),
   );
 }
 

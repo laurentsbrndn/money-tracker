@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Accounts tab (APP_FLOWS Flow 5). Real balances and the reconciliation arrive in Fase 2.
+/// Accounts tab (APP_FLOWS Flow 5): actual money, the reconciliation entry point, and the
+/// accounts by type.
 struct AccountsView: View {
     @Environment(AppContainer.self) private var container
     @State private var model: AccountsViewModel
@@ -20,12 +21,24 @@ struct AccountsView: View {
                 .listRowBackground(Color.clear)
             } else if !model.items.isEmpty {
                 Section {
+                    ActualMoneyCard(
+                        overview: model.overview, hidden: container.preferences.hideAmounts
+                    )
+                    .listRowInsets(EdgeInsets())
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Total saldo tercatat").font(.subheadline).foregroundStyle(.secondary)
                         AmountText(
                             amount: model.expectedTotal, hidden: container.preferences.hideAmounts
                         )
-                        .font(.title.bold())
+                        .font(.title2.bold())
+                    }
+                    DifferenceCard(
+                        overview: model.overview, hidden: container.preferences.hideAmounts,
+                        onReconcile: { container.router.accountsPath.append(AppRoute.reconcile) }
+                    )
+                    .listRowInsets(EdgeInsets())
+                    Button("Cocokkan saldo", systemImage: "checkmark.circle") {
+                        container.router.accountsPath.append(AppRoute.reconcile)
                     }
                 }
                 ForEach(AccountTypeLabels.values, id: \.self) { type in

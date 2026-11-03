@@ -211,7 +211,7 @@ Aturan `data` untuk `upsert` yang diterapkan handler entitas:
 - `data.id` harus sama dengan `id` entri. `updated_at` yang disimpan adalah `updated_at` entri (setelah clamp), bukan `data.updated_at`.
 - `data.deleted_at` harus null/tidak ada. Penghapusan memakai `op = delete`. Upsert pada baris yang sudah tombstone menghidupkannya kembali (skenario S6).
 - Referensi (akun, kategori, transfer terkait) yang tidak ditemukan untuk user itu → `reference_missing` (retryable). Yang sudah dihapus → `validation`.
-- Batas paket gratis dihitung saat baris menjadi aktif (baru, hidup lagi, atau akun di-unarchive), termasuk baris yang ditulis entri sebelumnya dalam batch yang sama.
+- Batas paket gratis dihitung saat baris menjadi aktif (baru, hidup lagi, atau akun di-unarchive), termasuk baris yang ditulis entri sebelumnya dalam batch yang sama. Untuk `recurring_rules`, "aktif" berarti baru, hidup lagi dari tombstone, atau `is_paused` berubah dari true ke false; user non-premium ditolak dengan `plan_limit`.
 
 Aturan `null` pada `data`: `data` adalah seluruh baris. Untuk field nullable, key yang tidak ada diperlakukan sama dengan `null`. Field wajib non-null harus ada, bila tidak entri ditolak dengan `validation`. Client boleh mengirim `null` eksplisit atau menghilangkan key; hasilnya sama.
 

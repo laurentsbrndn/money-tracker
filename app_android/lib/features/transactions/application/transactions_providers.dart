@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/app_database_provider.dart';
 import '../../../core/sync/sync_providers.dart';
+import '../../../core/time/user_clock.dart';
 import '../data/transactions_repository.dart';
 import '../domain/transaction_filter.dart';
 
@@ -16,6 +17,7 @@ TransactionsRepository transactionsRepository(Ref ref) =>
     TransactionsRepository(
       db: ref.watch(appDatabaseProvider),
       writer: ref.watch(outboxWriterProvider),
+      today: () => ref.read(userClockProvider).today(),
     );
 
 /// Filter and page size of the history list. The list is paged by growing

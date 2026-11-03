@@ -3,7 +3,6 @@ import '../../../core/ids/id_generator.dart';
 import '../../../core/sync/outbox_writer.dart';
 import '../../../core/sync/sync_entities.dart';
 import '../../../core/time/civil_date.dart';
-import '../../../core/time/today.dart';
 import '../../../core/validation/validation_exception.dart';
 import '../domain/transaction_draft.dart';
 import '../domain/transaction_filter.dart';
@@ -12,10 +11,17 @@ import '../domain/transaction_filter.dart';
 /// goes through the [OutboxWriter] (SYNC_PROTOCOL §6). Rules from
 /// BUSINESS_RULES §6 are checked before saving; the server repeats them.
 class TransactionsRepository {
-  TransactionsRepository({required this._db, required this._writer});
+  TransactionsRepository({
+    required this._db,
+    required this._writer,
+    required this._today,
+  });
 
   final AppDatabase _db;
   final OutboxWriter _writer;
+
+  /// "Today" in the user's timezone.
+  final CivilDate Function() _today;
 
   static const IdGenerator _ids = IdGenerator();
 
@@ -68,7 +74,7 @@ class TransactionsRepository {
     if (amount > maxAmount) {
       throw const ValidationException(ValidationError.amountRange);
     }
-    if (draft.date.isAfter(todayCivil().addDays(366))) {
+    if (draft.date.isAfter(_today().addDays(366))) {
       throw const ValidationException(ValidationError.dateFuture);
     }
     final note = draft.note?.trim();
@@ -255,7 +261,7 @@ class TransactionsRepository {
           syncStatus: 'pending',
           type: source.type,
           status: 'posted',
-          transactionDate: todayCivil(),
+          transactionDate: _today(),
           amount: source.amount,
           currency: source.currency,
           accountId: source.accountId,

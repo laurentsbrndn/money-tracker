@@ -44,7 +44,9 @@ class AccountDetailScreen extends ConsumerWidget {
         context: context,
         builder: (context) => AlertDialog(
           title: Text(l10n.accountArchiveBalanceTitle),
-          content: Text(l10n.accountArchiveBalanceBody(formatRupiah(balance))),
+          content: Text(l10n.accountArchiveBalanceBody(
+              formatRupiah(balance, hidden: ref.read(hideAmountsProvider)),
+            )),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),

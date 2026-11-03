@@ -1,23 +1,40 @@
 import Observation
 
-/// The three-step setup wizard for new users (APP_FLOWS Flow 1, step 6): Cash balance, extra
-/// accounts, hidden categories. Budget goal, reminders, and app lock belong to Fase 2 and are not
-/// part of this wizard yet. It can be skipped at any time.
+/// The six-step setup wizard for new users (APP_FLOWS Flow 1, step 6): Cash balance, extra
+/// accounts, budget goal, hidden categories, notifications, and app lock. It can be skipped at
+/// any time.
 @Observable
 @MainActor
 final class SetupWizardViewModel {
-    static let stepCount = 3
+    static let stepCount = 6
+
+    static let cashStep = 0
+    static let goalStep = 2
+    static let notificationStep = 4
 
     var step = 0
     var cashText = ""
     private(set) var busy = false
     var errorMessage: String?
 
+    /// The goal form of step 3 (starts from the 50/30/20 the server seeded).
+    let goal: BudgetGoalViewModel
+    var reminderEnabled = false
+    var reminderDate = NotificationSettingsViewModel.date(
+        from: NotificationSettingsViewModel.defaultReminderTime)
+    let lock: AppLockController
+
     private let setup: SetupRepository
     private let accounts: AccountsRepository
     private let categories: CategoriesRepository
+    private let userSettings: UserSettingsRepository
+    private let notificationService: NotificationService
 
     init(container: AppContainer) {
+        goal = BudgetGoalViewModel(container: container)
+        lock = container.lock
+        userSettings = container.userSettings
+        notificationService = container.notificationService
         setup = container.setup
         accounts = container.accounts
         categories = container.categories
@@ -30,8 +47,21 @@ final class SetupWizardViewModel {
         errorMessage = nil
         defer { busy = false }
         do {
-            if step == 0, let balance = MoneyFormatter.value(of: cashText) {
-                try await saveCashBalance(balance)
+            switch step {
+            case Self.cashStep:
+                if let balance = MoneyFormatter.value(of: cashText) {
+                    try await saveCashBalance(balance)
+                }
+            case Self.goalStep:
+                // Nothing is written when it equals the goal already in force this month.
+                if goal.loaded, !(await goal.save()) {
+                    errorMessage = goal.errorMessage
+                    return
+                }
+            case Self.notificationStep:
+                try await saveReminder()
+            default:
+                break
             }
             if isLastStep {
                 try await setup.markDone()
@@ -41,6 +71,23 @@ final class SetupWizardViewModel {
         } catch {
             errorMessage = ErrorMessages.describe(error)
         }
+    }
+
+    /// Step 5: turns the daily reminder on at the chosen time, asking for the notification
+    /// permission now, the moment the user opts in. Nothing happens when it stays off.
+    private func saveReminder() async throws {
+        guard reminderEnabled else { return }
+        if await notificationService.isUndetermined() {
+            await notificationService.requestPermission()
+        }
+        try await userSettings.setDailyReminderTime(
+            NotificationSettingsViewModel.time(from: reminderDate))
+    }
+
+    func setBiometric(_ enabled: Bool) async {
+        let ok = await lock.setBiometric(
+            enabled: enabled, reason: String(localized: "Aktifkan buka kunci dengan biometrik"))
+        if !ok && enabled { errorMessage = String(localized: "Biometrik tidak bisa diaktifkan.") }
     }
 
     func back() {

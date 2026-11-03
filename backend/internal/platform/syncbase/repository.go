@@ -77,6 +77,38 @@ func (r *Repository[T, P]) Save(ctx context.Context, row P, now time.Time) error
 	return nil
 }
 
+// SaveMany stamps the rows with one version query and writes them with one INSERT, replacing
+// by id like Save. Versions ascend in the order of rows. Call it inside the transaction that
+// holds the user's advisory lock.
+func (r *Repository[T, P]) SaveMany(ctx context.Context, rows []P, now time.Time) error {
+	if len(rows) == 0 {
+		return nil
+	}
+	db := r.db.DB(ctx)
+	cols := make([]*Columns, len(rows))
+	for i, row := range rows {
+		cols[i] = row.Sync()
+	}
+	if err := StampAll(ctx, db, now, cols...); err != nil {
+		return err
+	}
+	err := db.Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "id"}}, UpdateAll: true}).Create(rows).Error
+	if err != nil {
+		return fmt.Errorf("save sync rows: %w", err)
+	}
+	return nil
+}
+
+// Write writes a row whose Columns were already stamped (see StampAll), inserting or replacing
+// by id. Use it with StampAll when rows of several tables share one version query.
+func (r *Repository[T, P]) Write(ctx context.Context, row P) error {
+	err := r.db.DB(ctx).Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "id"}}, UpdateAll: true}).Create(row).Error
+	if err != nil {
+		return fmt.Errorf("save sync row: %w", err)
+	}
+	return nil
+}
+
 // Tombstone marks the row deleted at `at` (deleted_at and updated_at) and stamps it.
 func (r *Repository[T, P]) Tombstone(ctx context.Context, userID, id uuid.UUID, at Time, now time.Time) error {
 	db := r.db.DB(ctx)

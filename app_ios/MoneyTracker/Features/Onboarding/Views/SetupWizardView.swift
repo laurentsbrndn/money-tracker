@@ -4,6 +4,7 @@ struct SetupWizardView: View {
     @Environment(AppContainer.self) private var container
     @State private var model: SetupWizardViewModel
     @State private var showAccountForm = false
+    @State private var showPinSetup = false
 
     init(container: AppContainer) {
         _model = State(initialValue: SetupWizardViewModel(container: container))
@@ -20,7 +21,10 @@ struct SetupWizardView: View {
                     switch model.step {
                     case 0: cashStep
                     case 1: accountsStep
-                    default: categoriesStep
+                    case 2: goalStep
+                    case 3: categoriesStep
+                    case 4: notificationsStep
+                    default: lockStep
                     }
                 }
                 .frame(maxHeight: .infinity, alignment: .top)
@@ -46,6 +50,18 @@ struct SetupWizardView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Lewati semua") { Task { await model.skipAll() } }.disabled(model.busy)
+                }
+            }
+            .sheet(isPresented: $showPinSetup) {
+                NavigationStack {
+                    PinSetupView(
+                        container: container, mode: .set, onFinished: { showPinSetup = false }
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Batal") { showPinSetup = false }
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $showAccountForm) {
@@ -89,6 +105,68 @@ struct SetupWizardView: View {
                     }
                 }
                 Button("Tambah akun", systemImage: "plus") { showAccountForm = true }
+            }
+        }
+    }
+
+    private var goalStep: some View {
+        Form {
+            Section {
+                Text("Bagaimana kamu membagi income?").font(.title3.bold())
+                Text("Pilih 50/30/20 atau atur sendiri. Bisa diubah kapan saja di tab Budget.")
+                    .foregroundStyle(.secondary)
+            }
+            BudgetGoalForm(model: model.goal)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .task { await model.goal.load() }
+    }
+
+    private var notificationsStep: some View {
+        Form {
+            Section {
+                Text("Mau diingatkan mencatat?").font(.title3.bold())
+                Text(
+                    "Pengingat harian membantu catatanmu tetap lengkap. Bisa diubah kapan saja di Lainnya → Notifikasi."
+                )
+                .foregroundStyle(.secondary)
+            }
+            Section {
+                Toggle("Ingatkan saya tiap hari", isOn: $model.reminderEnabled)
+                if model.reminderEnabled {
+                    DatePicker(
+                        "Jam pengingat", selection: $model.reminderDate,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .environment(\.timeZone, .gmt)
+                }
+            }
+        }
+    }
+
+    private var lockStep: some View {
+        Form {
+            Section {
+                Text("Amankan aplikasi?").font(.title3.bold())
+                Text(
+                    "Pasang PIN 6 digit (dan biometrik) supaya hanya kamu yang bisa membuka aplikasi. Boleh dilewati."
+                )
+                .foregroundStyle(.secondary)
+            }
+            Section {
+                if model.lock.pinSet {
+                    Label("Kunci PIN aktif", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(AppColors.income)
+                    if model.lock.biometric.isAvailable() {
+                        Toggle(
+                            "Buka dengan \(model.lock.biometric.kindName())",
+                            isOn: Binding(
+                                get: { model.lock.biometricEnabled },
+                                set: { on in Task { await model.setBiometric(on) } }))
+                    }
+                } else {
+                    Button("Atur PIN", systemImage: "lock") { showPinSetup = true }
+                }
             }
         }
     }

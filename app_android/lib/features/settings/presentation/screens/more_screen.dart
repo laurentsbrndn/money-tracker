@@ -15,8 +15,8 @@ final _versionProvider = FutureProvider.autoDispose<String>(
   (ref) async => (await PackageInfo.fromPlatform()).version,
 );
 
-/// "Lainnya" menu (APP_FLOWS Flow 12). Preferences, security, notifications,
-/// subscription, and export arrive with their phases.
+/// "Lainnya" menu (APP_FLOWS Flow 12). Subscription and export arrive with
+/// their phases.
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
@@ -76,6 +76,21 @@ class MoreScreen extends ConsumerWidget {
             leading: const Icon(Icons.category_outlined),
             title: Text(l10n.moreCategories),
             onTap: () => context.push(RoutePaths.categories),
+          ),
+          ListTile(
+            leading: const Icon(Icons.tune),
+            title: Text(l10n.morePreferences),
+            onTap: () => context.push(RoutePaths.settingsPreferences),
+          ),
+          ListTile(
+            leading: const Icon(Icons.notifications_outlined),
+            title: Text(l10n.moreNotifications),
+            onTap: () => context.push(RoutePaths.settingsNotifications),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: Text(l10n.moreSecurity),
+            onTap: () => context.push(RoutePaths.settingsSecurity),
           ),
           ListTile(
             leading: Badge(

@@ -226,9 +226,14 @@ Tab bawah: **Beranda · Transaksi · Akun · Budget · Lainnya**.
 | `/more/reports` | Laporan | 3 |
 | `/more/recurring` | Transaksi berulang | 3 |
 | `/more/subscription`, `/paywall` | Langganan & paywall | 3 |
-| `/more/settings/*` | Profil, preferensi, keamanan, notifikasi, sinkronisasi, data, hapus akun | 1–3 |
-| `/lock` | Layar kunci PIN/biometrik | 2 |
+| `/more/settings/*` | Profil, sinkronisasi, data, hapus akun | 1–3 |
+| `/more/settings/preferences` | Preferensi: timezone, hari pertama minggu, tema | 2 |
+| `/more/settings/security` | Keamanan: PIN, biometrik, kunci otomatis, sembunyikan nominal | 2 |
+| `/more/settings/security/pin` | Atur, ubah, atau matikan PIN | 2 |
+| `/more/settings/notifications` | Notifikasi: pengingat harian, cocokkan saldo, peringatan budget | 2 |
 | `/upgrade-required` | Perbarui aplikasi (`426`) | 1 |
+
+**Layar kunci bukan route.** Kunci PIN/biometrik adalah overlay di atas seluruh app (`LockGate` membungkus root app), jadi ikut menutup dialog dan bottom sheet yang sedang terbuka dan tidak memengaruhi stack navigasi. Karena itu tidak ada route `/lock`.
 
 Alur detail setiap layar ada di `APP_FLOWS.md`.
 

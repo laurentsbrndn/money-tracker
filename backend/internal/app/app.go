@@ -16,6 +16,7 @@ import (
 	"moneytracker/internal/modules/category"
 	"moneytracker/internal/modules/identity"
 	"moneytracker/internal/modules/ledger"
+	"moneytracker/internal/modules/report"
 	syncmod "moneytracker/internal/modules/sync"
 	"moneytracker/internal/modules/wallet"
 	"moneytracker/internal/platform/auth"
@@ -44,10 +45,12 @@ type App struct {
 	web    *fiber.App
 	cancel context.CancelFunc // ends background work (JWKS refresh)
 
-	identity *identity.Module
-	sync     *syncmod.Module
-	// purgers delete a user's data permanently; the maintenance job calls them.
-	purgers []identity.UserPurger
+	identity    *identity.Module
+	billing     *billing.Module
+	ledger      *ledger.Module
+	sync        *syncmod.Module
+	report      *report.Module
+	maintenance *maintenance
 }
 
 // fiberConfig builds the Fiber settings. Behind Vercel the client IP is read from
@@ -94,7 +97,16 @@ func Build(cfg config.Config, log *slog.Logger) (*App, error) {
 	txm := database.NewTxManager(db)
 	jwt := auth.NewJWT(cfg.JWTSecret, cfg.JWTIssuer, cfg.AccessTokenTTL, clk)
 
-	billingModule := billing.New()
+	if err := validateRevenueCat(cfg, log); err != nil {
+		cancel()
+		return nil, err
+	}
+	premiumEnded := &latePremiumEnded{}
+	billingModule := billing.New(billing.Deps{
+		DB: txm, Clock: clk, Log: log,
+		RevenueCatAPIKey: cfg.RevenueCat.SecretAPIKey, RevenueCatBaseURL: cfg.RevenueCat.APIBaseURL,
+		PremiumEnded: premiumEnded,
+	})
 
 	// ledger implements the reference checkers that wallet and category consume while ledger
 	// itself needs wallet and category: bind them once ledger exists (see lateReferences).
@@ -105,10 +117,13 @@ func Build(cfg config.Config, log *slog.Logger) (*App, error) {
 	walletModule := wallet.New(wallet.Deps{
 		DB: txm, Clock: clk, Billing: billingModule.API(), References: refs.accountChecker(),
 	})
+	zones := &lateTimezones{}
 	ledgerModule := ledger.New(ledger.Deps{
-		DB: txm, Clock: clk, Wallet: walletModule.API(), Category: categoryModule.API(),
+		DB: txm, Clock: clk, Log: log, Wallet: walletModule.API(), Category: categoryModule.API(),
+		Billing: billingModule.API(), Timezones: zones,
 	})
 	refs.bind(ledgerModule.AccountReferences(), ledgerModule.CategoryReferences())
+	premiumEnded.handler = ledgerPauser{pause: ledgerModule.PauseRules}
 	budgetModule := budget.New(budget.Deps{DB: txm, Clock: clk})
 
 	seed := &onboarder{
@@ -131,6 +146,17 @@ func Build(cfg config.Config, log *slog.Logger) (*App, error) {
 		Log:             log,
 	})
 	seed.settings = identityModule.Settings()
+	zones.source = identityModule.Settings()
+	reportModule := report.New(report.Deps{
+		DB:        txm,
+		Clock:     clk,
+		Ledger:    ledgerModule.API(),
+		Accounts:  walletModule.API(),
+		Snapshots: walletModule.Snapshots(),
+		Goals:     budgetModule.API(),
+		Billing:   billingModule.API(),
+		Timezones: identityModule.Settings(),
+	})
 
 	// Every module registers its entity handlers before the sync module is built.
 	registry := syncmod.NewRegistry()
@@ -146,10 +172,18 @@ func Build(cfg config.Config, log *slog.Logger) (*App, error) {
 		web:      fiber.New(fiberConfig(cfg, log)),
 		cancel:   cancel,
 		identity: identityModule,
+		billing:  billingModule,
+		ledger:   ledgerModule,
 		sync:     syncModule,
-		// Children before parents; identity (the users row) goes last.
-		purgers: []identity.UserPurger{
-			ledgerModule, budgetModule, walletModule, categoryModule, syncModule, identityModule, billingModule,
+		report:   reportModule,
+		maintenance: &maintenance{
+			db: txm, clock: clk, log: log, identity: identityModule, sync: syncModule,
+			// Children before parents (balance snapshots go before their accounts inside
+			// wallet); identity deletes the users row, so it comes last among the modules
+			// that hold a user lock. billing has no FK to users and may follow.
+			purgers: []identity.UserPurger{
+				ledgerModule, budgetModule, walletModule, categoryModule, syncModule, billingModule, identityModule,
+			},
 		},
 	}
 	a.registerRoutes(jwt)
