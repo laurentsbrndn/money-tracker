@@ -272,7 +272,8 @@ Config dibagi dua kelompok:
 | --- | --- | --- |
 | `APP_ENV` | ya | `local`, `preview`, `production` |
 | `PORT` | tidak | default `8080` (Vercel mengisinya saat deploy) |
-| `DATABASE_URL` | ya | Neon **pooled**, tambahkan `?sslmode=require&connect_timeout=10` |
+| `DATABASE_URL` | ya | Neon **pooled**, tambahkan `?sslmode=require&connect_timeout=10`. Di `preview`/`production` start gagal bila host tidak memuat `-pooler` atau `sslmode` melemah (pesan tidak memuat URL) |
+| `VERCEL_ENV` | otomatis | Diisi Vercel. Start gagal bila `APP_ENV=local` di Vercel, atau `APP_ENV` berbeda dari `VERCEL_ENV` (production/preview) |
 | `DATABASE_URL_DIRECT` | migrate saja | Neon **direct** |
 | `JWT_SECRET` | ya | ≥ 32 byte acak |
 | `JWT_ISSUER` | ya | `moneytracker-api` |
@@ -321,7 +322,7 @@ Di luar itu, gunakan query builder GORM. `db.Raw` / `db.Exec` dengan string SQL 
 ### 4.4 HTTP
 
 - Fiber config: `BodyLimit 1 MB`, `ReadTimeout 10s`, `WriteTimeout 15s`, `ErrorHandler = httpx.ErrorHandler`.
-- Urutan middleware global: `request_id` → `recover` → `access_log`.
+- Urutan middleware global: `request_id` → `security_headers` → `recover` → `access_log`. `security_headers` memasang `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, CSP `default-src 'none'`, dan `Cache-Control: no-store`. CORS tidak diaktifkan (app native tidak membutuhkannya).
 - Grup route:
 
 | Grup | Middleware tambahan |
@@ -453,7 +454,19 @@ Satu tugas yang gagal tidak menghentikan tugas lain; bila ada yang gagal job men
 
 - Vercel Project → Root Directory `backend`. Entrypoint `cmd/api/main.go`, server listen di env `PORT`.
 - Set semua env §4.1 di Vercel (Production dan Preview terpisah).
-- Migration dijalankan manual sebelum deploy yang membutuhkan skema baru.
+- Migration dijalankan manual sebelum deploy yang membutuhkan skema baru. Tidak ada `buildCommand` yang menjalankan migrasi; `cmd/api` tidak pernah memigrasi.
+- Batas paket Hobby: cron hanya boleh sekali per hari dan waktunya bisa meleset dalam rentang satu jam (dua jadwal di atas sudah harian). Vercel mengirim `Authorization: Bearer $CRON_SECRET` bila env `CRON_SECRET` ada.
+- Durasi fungsi memakai default Vercel; tidak ada blok `functions`/`maxDuration` di `vercel.json` (belum dipastikan didukung untuk runtime Go preset `go`). Batas internal: webhook 20 detik, panggilan RevenueCat 5 detik, `/healthz` 2 detik.
+
+### 7.1 Langkah deploy manual
+
+1. **Env di Vercel** (Settings → Environment Variables, Production dan Preview terpisah): semua variabel §4.1, termasuk `APP_ENV` (`production`/`preview`), `DATABASE_URL` (pooled), `JWT_SECRET` dan `OTP_SECRET` (≥ 32 byte acak, mis. `openssl rand -base64 48`), `CRON_SECRET` (≥ 16 karakter acak), `JWT_ISSUER`, `EMAIL_FROM`, `RESEND_API_KEY`, `APPLE_BUNDLE_ID`, `GOOGLE_CLIENT_IDS`, `REVENUECAT_WEBHOOK_SECRET`, `REVENUECAT_SECRET_API_KEY`. `DATABASE_URL_DIRECT` tidak perlu di Vercel.
+2. **Migrasi** dari laptop, ke Neon direct: `cd backend && DATABASE_URL_DIRECT='<url direct>' go run ./cmd/migrate status`, lalu `... up`, lalu `status` lagi (semua `applied`).
+3. **Deploy**: Root Directory `backend`, framework `go`; push lewat alur git kamu. Lihat log build dan log runtime: bila ada `invalid configuration: ...` perbaiki env yang disebut lalu redeploy.
+4. **Cek `/healthz`**: `curl -i https://<domain>/healthz` → `200 {"status":"ok"}` dan header `X-Request-ID`.
+5. **Cek cron**: `curl -i https://<domain>/v1/internal/cron/maintenance` → `401`; ulangi dengan `-H "Authorization: Bearer <CRON_SECRET>"` → `200`. Sama untuk `/v1/internal/cron/recurring`. Lalu cek tab Cron Jobs di dashboard Vercel.
+6. **Webhook RevenueCat**: di dashboard RevenueCat isi URL `https://<domain>/v1/billing/webhooks/revenuecat` dan Authorization header `Bearer <REVENUECAT_WEBHOOK_SECRET>`, kirim event **TEST** → harus `200`; tanpa/dengan secret salah → `401`. Cek baris `billing_events` bertipe `TEST` terproses.
+7. **Smoke test app**: register → kode email masuk (Resend) → login → sync pull.
 
 ## 8. Testing
 

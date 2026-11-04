@@ -27,10 +27,11 @@ type healthResponse struct {
 	Status string `json:"status"`
 }
 
-// registerRoutes sets the global middleware order (request_id → recover → access_log), the
+// registerRoutes sets the global middleware order (request_id → security_headers → recover → access_log), the
 // health check, and the /v1 guards. Modules add their routes here as they are implemented.
 func (a *App) registerRoutes(jwt middleware.AccessTokenVerifier) {
 	a.web.Use(middleware.RequestID())
+	a.web.Use(middleware.SecurityHeaders())
 	a.web.Use(middleware.Recover(a.log))
 	a.web.Use(middleware.AccessLog(a.log))
 

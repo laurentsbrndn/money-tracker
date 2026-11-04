@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -38,6 +39,9 @@ type Config struct {
 	MinAppVersionAndroid string        `env:"MIN_APP_VERSION_ANDROID" envDefault:"0.0.0"`
 	MinAppVersionIOS     string        `env:"MIN_APP_VERSION_IOS" envDefault:"0.0.0"`
 	LogLevel             string        `env:"LOG_LEVEL" envDefault:"info"`
+	// VercelEnv is set by Vercel (production, preview, development); used only to catch a
+	// mismatched APP_ENV.
+	VercelEnv string `env:"VERCEL_ENV"`
 
 	Apple      AppleConfig
 	Google     GoogleConfig
@@ -81,6 +85,16 @@ func (c Config) validate() error {
 	if strings.TrimSpace(c.DatabaseURL) == "" {
 		add("DATABASE_URL must not be empty")
 	}
+	if c.AppEnv != EnvLocal {
+		if err := c.validateRemoteDatabase(); err != nil {
+			errs = append(errs, err)
+		}
+		if (c.VercelEnv == EnvProduction || c.VercelEnv == EnvPreview) && c.AppEnv != c.VercelEnv {
+			add("APP_ENV (%q) does not match VERCEL_ENV (%q)", c.AppEnv, c.VercelEnv)
+		}
+	} else if c.VercelEnv != "" {
+		add("APP_ENV=local must not be used on Vercel (VERCEL_ENV=%q); proxy headers would be ignored", c.VercelEnv)
+	}
 	if len(c.JWTSecret) < 32 {
 		add("JWT_SECRET must be at least 32 bytes")
 	}
@@ -108,6 +122,22 @@ func (c Config) validate() error {
 
 	if err := errors.Join(errs...); err != nil {
 		return fmt.Errorf("invalid configuration: %w", err)
+	}
+	return nil
+}
+
+// validateRemoteDatabase requires the Neon pooled connection string outside local. The
+// message never includes the URL (it carries the password).
+func (c Config) validateRemoteDatabase() error {
+	u, err := url.Parse(c.DatabaseURL)
+	if err != nil || u.Hostname() == "" {
+		return errors.New("DATABASE_URL must be a valid postgres URL")
+	}
+	if !strings.Contains(u.Hostname(), "-pooler") {
+		return errors.New("DATABASE_URL must be the Neon pooled connection (host contains -pooler); use DATABASE_URL_DIRECT only for migrations")
+	}
+	if mode := u.Query().Get("sslmode"); mode == "disable" || mode == "allow" || mode == "prefer" {
+		return errors.New("DATABASE_URL must use sslmode=require (or stricter)")
 	}
 	return nil
 }
