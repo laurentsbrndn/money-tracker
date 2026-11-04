@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Lainnya" menu. Subscription and export arrive with their phases.
+/// "Lainnya" menu (APP_FLOWS Flow 12).
 struct MoreView: View {
     @Environment(AppContainer.self) private var container
     @State private var model: MoreViewModel
@@ -22,6 +22,32 @@ struct MoreView: View {
                                 Text(user.email ?? String(localized: "Tidak ada email"))
                                     .font(.subheadline).foregroundStyle(.secondary)
                             }
+                        }
+                    }
+                }
+            }
+            Section {
+                NavigationLink(value: AppRoute.subscription) {
+                    HStack {
+                        Label("Langganan", systemImage: "star.circle")
+                        Spacer()
+                        if container.premium.isPremium {
+                            Text("Premium aktif").font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                NavigationLink(value: AppRoute.recurring) {
+                    Label("Transaksi berulang", systemImage: "repeat")
+                }
+                NavigationLink(value: AppRoute.reports) {
+                    Label("Laporan", systemImage: "chart.bar.xaxis")
+                }
+                NavigationLink(value: AppRoute.export) {
+                    HStack {
+                        Label("Export data", systemImage: "square.and.arrow.up")
+                        Spacer()
+                        if !container.premium.isPremium {
+                            Image(systemName: "lock").font(.caption).foregroundStyle(.secondary)
                         }
                     }
                 }

@@ -15,6 +15,8 @@ final class AccountFormViewModel {
     private(set) var busy = false
     private(set) var saved = false
     var errorMessage: String?
+    /// The save was refused by the free-plan limit: the form offers the paywall.
+    private(set) var planLimit = false
 
     private var existing: AccountRecord?
     private let repository: AccountsRepository
@@ -42,6 +44,7 @@ final class AccountFormViewModel {
     func save() async {
         busy = true
         errorMessage = nil
+        planLimit = false
         defer { busy = false }
         let balance = MoneyFormatter.value(of: balanceText, allowNegative: true) ?? 0
         let provider = type == "cash" ? nil : providerKey
@@ -57,6 +60,7 @@ final class AccountFormViewModel {
             }
             saved = true
         } catch {
+            planLimit = error is PlanLimitError
             errorMessage = ErrorMessages.describe(error)
         }
     }

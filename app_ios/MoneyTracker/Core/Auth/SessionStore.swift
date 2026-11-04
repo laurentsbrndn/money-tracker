@@ -25,7 +25,9 @@ final class SessionStore {
     }
 
     private(set) var status: Status = .loading
-    private(set) var user: SessionUser?
+    private(set) var user: SessionUser? {
+        didSet { if user?.id != oldValue?.id { onUserChanged?(user?.id) } }
+    }
 
     var hasSession: Bool { status == .authenticated || status == .needsLogin }
 
@@ -33,6 +35,10 @@ final class SessionStore {
     private let database: AppDatabase
     private var refresher: TokenRefresher?
     private var client: Client?
+
+    /// Called when the signed-in user changes (login, registration, logout, account switch), so
+    /// the store customer can follow.
+    var onUserChanged: ((String?) -> Void)?
 
     /// Called after a login or registration succeeded, so sync can start.
     var onEstablished: (() -> Void)?

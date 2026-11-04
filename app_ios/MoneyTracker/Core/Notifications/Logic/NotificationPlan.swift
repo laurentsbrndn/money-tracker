@@ -156,6 +156,8 @@ enum NotificationPlan {
 enum NotificationPayload {
     static let newTransaction = "/transactions/new"
     static let reconcile = "/reconcile"
+    /// A recurring transaction waits for confirmation.
+    static let transactions = "/transactions"
 
     static func budget(month: YearMonth) -> String { "/budget?month=\(month.description)" }
 }
@@ -164,6 +166,7 @@ enum NotificationPayload {
 enum NotificationRoute: Equatable, Sendable {
     case newTransaction
     case reconcile
+    case transactions
     case budget(month: YearMonth?)
 
     /// Reads a payload back into the screen it opens; nil for an unknown payload.
@@ -172,6 +175,7 @@ enum NotificationRoute: Equatable, Sendable {
         switch parts.first.map(String.init) {
         case "/transactions/new": return .newTransaction
         case "/reconcile": return .reconcile
+        case "/transactions": return .transactions
         case "/budget":
             var month: YearMonth?
             if parts.count == 2 {

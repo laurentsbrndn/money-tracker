@@ -38,6 +38,13 @@ final class AppContainer {
     let notificationService: NotificationService
     let notifications: NotificationCoordinator
     let failedChanges: FailedChangesService
+    let billing: any BillingProviding
+    let premium: PremiumStatus
+    let entitlements: EntitlementRepository
+    let subscription: SubscriptionViewModel
+    let recurring: RecurringRepository
+    let recurringCoordinator: RecurringCoordinator
+    let billingCoordinator: BillingCoordinator
 
     init(config: AppConfig = .load(), router: AppRouter = AppRouter()) {
         self.config = config
@@ -138,6 +145,25 @@ final class AppContainer {
         self.preferences = PreferencesStore(database: database)
         self.lookups = LookupStore(database: database)
 
+        let billing = BillingService(apiKey: config.revenueCatKey)
+        let premium = PremiumStatus(database: database)
+        let entitlements = EntitlementRepository(database: database, client: api.client)
+        self.billing = billing
+        self.premium = premium
+        self.entitlements = entitlements
+        self.subscription = SubscriptionViewModel(
+            billing: billing, entitlements: entitlements, session: session,
+            requestSync: { scheduler.requestSync() })
+        self.recurring = RecurringRepository(
+            database: database, writer: writer, entitlement: entitlement)
+        self.recurringCoordinator = RecurringCoordinator(
+            generator: RecurringGenerator(
+                database: database, writer: writer, entitlement: entitlement),
+            database: database, gate: gate, notifications: notificationService)
+        self.billingCoordinator = BillingCoordinator(
+            billing: billing, session: session, premium: premium, database: database,
+            failedChanges: failedChanges)
+
         session.onEstablished = { scheduler.sessionEstablished() }
         lock.load()
         notificationService.install { [router] payload in router.receive(payload: payload) }
@@ -147,6 +173,11 @@ final class AppContainer {
         preferences.start()
         lookups.start()
         notifications.start()
+        // Export files hold real amounts: drop any left from the last run.
+        ExportFileService().cleanUp()
+        premium.start()
+        billingCoordinator.start()
+        recurringCoordinator.start()
     }
 
     #if DEBUG
@@ -235,6 +266,28 @@ final class AppContainer {
             self.gate = AppGateStore(database: database, session: session)
             self.preferences = PreferencesStore(database: database)
             self.lookups = LookupStore(database: database)
+
+            let billing = PreviewBilling()
+            let premium = PremiumStatus(database: database)
+            let entitlements = EntitlementRepository(database: database, client: api.client)
+            self.billing = billing
+            self.premium = premium
+            self.entitlements = entitlements
+            self.subscription = SubscriptionViewModel(
+                billing: billing, entitlements: entitlements, session: session,
+                requestSync: {})
+            self.recurring = RecurringRepository(
+                database: database, writer: writer, entitlement: entitlement)
+            self.recurringCoordinator = RecurringCoordinator(
+                generator: RecurringGenerator(
+                    database: database, writer: writer, entitlement: entitlement),
+                database: database, gate: gate, notifications: notificationService)
+            self.billingCoordinator = BillingCoordinator(
+                billing: billing, session: session, premium: premium, database: database,
+                failedChanges: failedChanges)
+            // Previews never observe: the entitlement is read once from the seeded database.
+            let cached = (try? database.pool.read { try $0.syncState(SyncStateKey.entitlement) }) ?? nil
+            premium.applyPreview(EntitlementInfo(cache: cached, now: Date()))
 
             syncStatus.start()
             gate.start()

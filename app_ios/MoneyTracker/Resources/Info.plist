@@ -42,6 +42,10 @@
     <string>$(API_BASE_URL)</string>
     <key>REVENUECAT_IOS_KEY</key>
     <string>$(REVENUECAT_IOS_KEY)</string>
+    <key>TERMS_URL</key>
+    <string>$(TERMS_URL)</string>
+    <key>PRIVACY_URL</key>
+    <string>$(PRIVACY_URL)</string>
     <key>GOOGLE_IOS_CLIENT_ID</key>
     <string>$(GOOGLE_IOS_CLIENT_ID)</string>
     <key>GIDClientID</key>

@@ -286,6 +286,48 @@
                     },
                 ]),
             Gallery(
+                title: "Langganan & Premium",
+                entries: [
+                    Entry(title: "Paywall", style: .sheet, tab: .more) { _ in
+                        AnyView(PaywallView())
+                    },
+                    Entry(title: "Langganan (status)", style: .sheet, tab: .more) { _ in
+                        AnyView(SubscriptionView())
+                    },
+                ]),
+            Gallery(
+                title: "Transaksi berulang",
+                entries: [
+                    Entry(title: "Daftar aturan", style: .sheet, tab: .more) {
+                        AnyView(RecurringView(container: $0))
+                    },
+                    Entry(title: "Aturan baru", style: .sheet, tab: .more) {
+                        AnyView(
+                            RecurringFormView(
+                                container: $0, ruleId: nil,
+                                prefill: RecurringPrefill(
+                                    type: "expense", startDate: PreviewSampleData.today,
+                                    amount: 150_000, accountId: "acc-bca",
+                                    categoryId: "cat-sub", allocation: "wants", note: "Gym")))
+                    },
+                    Entry(title: "Ubah aturan", style: .sheet, tab: .more) {
+                        AnyView(RecurringFormView(container: $0, ruleId: "rule-salary", prefill: nil))
+                    },
+                    Entry(title: "Menunggu konfirmasi (di Transaksi)", style: .sheet, tab: .transactions) {
+                        AnyView(TransactionsView(container: $0))
+                    },
+                ]),
+            Gallery(
+                title: "Laporan & Export",
+                entries: [
+                    Entry(title: "Laporan", style: .sheet, tab: .more) {
+                        AnyView(ReportsView(container: $0))
+                    },
+                    Entry(title: "Export data", style: .sheet, tab: .more) {
+                        AnyView(ExportView(container: $0))
+                    },
+                ]),
+            Gallery(
                 title: "Komponen",
                 entries: [
                     Entry(title: "SyncBadge (state mengikuti varian)", style: .sheet) { _ in

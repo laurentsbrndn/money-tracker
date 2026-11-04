@@ -94,7 +94,7 @@ struct TransactionsRepository: Sendable {
                 TransactionRecord(
                     id: id, createdAt: existing?.createdAt ?? tx.now, updatedAt: tx.now,
                     deletedAt: nil, serverVersion: existing?.serverVersion, syncStatus: "pending",
-                    syncError: nil, type: draft.type, status: existing?.status ?? "posted",
+                    syncError: nil, type: draft.type, status: TransactionStatus.posted.rawValue,
                     transactionDate: draft.date, amount: amount, currency: "IDR",
                     accountId: accountId, toAccountId: toAccountId, categoryId: categoryId,
                     allocation: allocation,
@@ -132,6 +132,21 @@ struct TransactionsRepository: Sendable {
                 toAccountId: nil, categoryId: feeCategory.id,
                 allocation: feeCategory.defaultAllocation ?? "needs", source: nil, note: nil,
                 linkedTransactionId: transferId, recurringRuleId: nil))
+    }
+
+    /// Records a transaction that waits for confirmation (a `confirm` rule created it). Saving
+    /// the form of a pending transaction records it too.
+    func confirm(_ id: String) async throws {
+        guard var row = try await find(id), row.deletedAt == nil,
+            row.status == TransactionStatus.pendingConfirmation.rawValue
+        else { return }
+        row.status = TransactionStatus.posted.rawValue
+        let confirmed = row
+        try await writer.write { tx in try tx.upsert(confirmed) }
+    }
+
+    func observePending() -> AsyncValueObservation<[TransactionRecord]> {
+        database.observePendingTransactions()
     }
 
     /// Deletes the transaction (and the admin fees linked to a transfer). Returns what was

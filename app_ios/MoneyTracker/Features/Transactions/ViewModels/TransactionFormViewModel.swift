@@ -117,6 +117,17 @@ final class TransactionFormViewModel {
         accountId = open.first { $0.id == last }?.id ?? open.first?.id
     }
 
+    /// "Jadikan berulang" (APP_FLOWS Flow 10): the fields typed so far become the template of a
+    /// recurring rule, and the date its first occurrence.
+    func recurringPrefill() -> RecurringPrefill {
+        RecurringPrefill(
+            type: type, startDate: date, amount: amount, accountId: accountId,
+            toAccountId: type == "transfer" ? toAccountId : nil,
+            categoryId: type == "transfer" ? nil : categoryId,
+            allocation: type == "expense" ? allocation : nil,
+            source: type == "income" ? source : nil, note: note)
+    }
+
     func typeChanged() {
         categoryId = nil
         allocation = nil

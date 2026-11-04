@@ -5,13 +5,16 @@ struct TransactionsView: View {
     @Environment(AppContainer.self) private var container
     @State private var model: TransactionsViewModel
     @State private var showFilter = false
+    @State private var pending: PendingConfirmationViewModel
 
     init(container: AppContainer) {
         _model = State(initialValue: TransactionsViewModel(container: container))
+        _pending = State(initialValue: PendingConfirmationViewModel(container: container))
     }
 
     var body: some View {
         List {
+            PendingConfirmationSection(model: pending)
             if model.loaded && model.rows.isEmpty {
                 if model.filter.isEmpty {
                     EmptyStateView(
@@ -81,6 +84,15 @@ struct TransactionsView: View {
         .refreshable { await container.scheduler.syncNow() }
         .overlay(alignment: .bottomTrailing) { AddTransactionButton() }
         .task(id: model.observationKey) { await model.observe() }
+        .task { await pending.observe() }
+        .alert(pending.notice ?? "", isPresented: .constant(pending.notice != nil)) {
+            Button("OK") { pending.notice = nil }
+        }
+        .alert("Terjadi kesalahan", isPresented: .constant(pending.errorMessage != nil)) {
+            Button("OK") { pending.errorMessage = nil }
+        } message: {
+            Text(pending.errorMessage ?? "")
+        }
         .onAppear(perform: takePendingFilter)
         .onChange(of: container.router.pendingTransactionFilter) { takePendingFilter() }
         .sheet(isPresented: $showFilter) {

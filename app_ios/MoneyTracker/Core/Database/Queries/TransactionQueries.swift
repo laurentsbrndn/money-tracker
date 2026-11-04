@@ -49,6 +49,17 @@ extension Database {
         try TransactionRecord.filter(Column("deleted_at") == nil).fetchAll(self)
     }
 
+    /// Live, posted rows for the export, oldest first. A nil bound is open; pending
+    /// confirmations and tombstones never come back.
+    func postedTransactions(from: CivilDate?, to: CivilDate?) throws -> [TransactionRecord] {
+        var request = TransactionRecord.filter(
+            Column("deleted_at") == nil && Column("status") == TransactionStatus.posted.rawValue)
+        if let from { request = request.filter(Column("transaction_date") >= from) }
+        if let to { request = request.filter(Column("transaction_date") <= to) }
+        return try request.order(Column("transaction_date").asc, Column("created_at").asc)
+            .fetchAll(self)
+    }
+
     /// Recent distinct income sources, for suggestions.
     func recentSources(limit: Int = 8) throws -> [String] {
         let rows =
@@ -68,7 +79,8 @@ extension Database {
     }
 
     /// Live transactions in the history list, newest first, `limit` rows (paged by growing the
-    /// limit).
+    /// limit). Transactions waiting for confirmation are not in it: they have their own section
+    /// and do not count yet.
     func filteredTransactions(_ filter: TransactionFilter, limit: Int) throws -> [TransactionRecord]
     {
         try Self.request(for: filter).limit(limit).fetchAll(self)
@@ -77,7 +89,8 @@ extension Database {
     private static func request(for filter: TransactionFilter) -> QueryInterfaceRequest<
         TransactionRecord
     > {
-        var request = TransactionRecord.filter(Column("deleted_at") == nil)
+        var request = TransactionRecord.filter(
+            Column("deleted_at") == nil && Column("status") == TransactionStatus.posted.rawValue)
         if let type = filter.type { request = request.filter(Column("type") == type) }
         if let accountId = filter.accountId {
             request = request.filter(
@@ -118,9 +131,21 @@ extension AppDatabase {
         ValueObservation.tracking { db in
             try TransactionRecord
                 .filter(
-                    Column("deleted_at") == nil && Column("transaction_date") >= month.first
+                    Column("deleted_at") == nil && Column("status") == TransactionStatus.posted.rawValue
+                        && Column("transaction_date") >= month.first
                         && Column("transaction_date") <= month.last
                 ).order(Column("transaction_date").desc, Column("created_at").desc).fetchAll(db)
+        }.values(in: pool)
+    }
+
+    /// Live transactions of `confirm` rules waiting to be recorded or skipped, oldest first.
+    func observePendingTransactions() -> AsyncValueObservation<[TransactionRecord]> {
+        ValueObservation.tracking { db in
+            try TransactionRecord
+                .filter(
+                    Column("deleted_at") == nil
+                        && Column("status") == TransactionStatus.pendingConfirmation.rawValue
+                ).order(Column("transaction_date").asc, Column("created_at").asc).fetchAll(db)
         }.values(in: pool)
     }
 

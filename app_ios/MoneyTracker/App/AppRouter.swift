@@ -25,6 +25,12 @@ enum AppRoute: Hashable {
     case security
     case securityPin(PinSetupMode)
     case notifications
+    case subscription
+    case paywall(restore: Bool)
+    case recurring
+    case recurringForm(id: String?, prefill: RecurringPrefill?)
+    case reports
+    case export
 }
 
 /// What the PIN screen does (`/more/settings/security/pin`).
@@ -107,6 +113,14 @@ final class AppRouter {
             mode: .new(type: type, fromAccountId: fromAccountId, amount: amount))
     }
 
+    /// The recurring-rule form over the rules list, starting from a transaction.
+    func openRecurringForm(prefill: RecurringPrefill) {
+        selectedTab = .more
+        morePath = NavigationPath([
+            AppRoute.recurring, AppRoute.recurringForm(id: nil, prefill: prefill),
+        ])
+    }
+
     func showTransactions(filter: TransactionFilter) {
         pendingTransactionFilter = filter
         selectedTab = .transactions
@@ -131,6 +145,8 @@ extension AppRouter {
         case .reconcile:
             selectedTab = .dashboard
             dashboardPath = NavigationPath([AppRoute.reconcile])
+        case .transactions:
+            selectedTab = .transactions
         case .budget(let month):
             selectedTab = .budget
             budgetPath = NavigationPath()

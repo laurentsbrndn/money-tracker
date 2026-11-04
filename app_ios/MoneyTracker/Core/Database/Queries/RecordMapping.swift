@@ -14,7 +14,7 @@ extension TransactionRecord {
             status: TransactionStatus(rawValue: status) ?? .posted, date: transactionDate,
             amount: amount, accountID: accountId, toAccountID: toAccountId,
             allocation: allocation.flatMap(Allocation.init(rawValue:)), categoryID: categoryId,
-            isDeleted: deletedAt != nil)
+            source: source, isDeleted: deletedAt != nil)
     }
 }
 

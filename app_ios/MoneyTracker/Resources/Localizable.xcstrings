@@ -10,6 +10,15 @@
     "/" : {
 
     },
+    "%@  ←  %@" : {
+
+    },
+    "%@ / bulan" : {
+
+    },
+    "%@ / tahun" : {
+
+    },
     "%@ belum mencapai goal." : {
 
     },
@@ -25,6 +34,9 @@
     "%@ mencapai goal." : {
 
     },
+    "%@ s/d %@" : {
+
+    },
     "%@ sudah mencapai %lld%% dari goal bulan ini." : {
       "localizations" : {
         "id" : {
@@ -36,6 +48,9 @@
       }
     },
     "%@ tidak melewati goal." : {
+
+    },
+    "%@: %@" : {
 
     },
     "%@: %@ dari goal %@ (%lld%% dari goal bulan ini)." : {
@@ -116,13 +131,34 @@
     "0" : {
 
     },
+    "1" : {
+
+    },
+    "3 bulan terakhir" : {
+
+    },
+    "6 bulan" : {
+
+    },
+    "12 bulan" : {
+
+    },
     "Ada %lld perubahan yang belum tersinkron. Jika keluar sekarang, perubahan itu hilang dari perangkat dan tidak pernah sampai ke server.\n\nSemua data di perangkat ini akan dihapus. Datamu tetap aman di server dan kembali setelah kamu masuk lagi." : {
+
+    },
+    "Ada %lld transaksi berulang yang perlu kamu catat atau lewati." : {
 
     },
     "Ada akun yang saldo aslinya belum dicek lebih dari 7 hari." : {
 
     },
+    "Ada tanggal selesai" : {
+
+    },
     "Akhir bulan pukul 20.00 dan saat ada akun yang saldonya sudah lebih dari 7 hari." : {
+
+    },
+    "Aktif" : {
 
     },
     "Aktifkan buka kunci dengan biometrik" : {
@@ -147,6 +183,9 @@
     "Akun asal dan tujuan harus berbeda" : {
 
     },
+    "Akun dan kategori buatan sendiri tanpa batas" : {
+
+    },
     "Akun dan seluruh datamu akan dihapus dan tidak bisa dikembalikan. Penghapusan permanen dilakukan setelah 30 hari." : {
 
     },
@@ -162,6 +201,12 @@
     "Akun ini masih punya transaksi. Arsipkan saja." : {
 
     },
+    "Akun tujuan" : {
+
+    },
+    "Akunmu belum bisa dihubungkan ke toko. Coba lagi." : {
+
+    },
     "Alokasi" : {
 
     },
@@ -172,6 +217,9 @@
 
     },
     "Aplikasi terkunci" : {
+
+    },
+    "App terkunci, export dibatalkan." : {
 
     },
     "Apple" : {
@@ -204,6 +252,12 @@
     "Atur PIN" : {
 
     },
+    "Aturan baru" : {
+
+    },
+    "Aturan ini dijeda otomatis karena Premium berakhir. Aturan lanjut setelah kamu berlangganan Premium lagi." : {
+
+    },
     "Bagaimana kamu membagi income?" : {
 
     },
@@ -234,6 +288,9 @@
     "Belum ada data" : {
 
     },
+    "Belum ada data untuk periode ini." : {
+
+    },
     "Belum ada kategori" : {
 
     },
@@ -247,6 +304,9 @@
 
     },
     "Belum ada transaksi" : {
+
+    },
+    "Belum ada transaksi berulang" : {
 
     },
     "Belum ada transaksi di akun ini." : {
@@ -273,13 +333,22 @@
     "Belum terverifikasi" : {
 
     },
+    "Berakhir pada %@, tidak diperpanjang" : {
+
+    },
     "Beranda" : {
 
     },
     "Berapa uang tunai yang kamu pegang sekarang?" : {
 
     },
+    "Berikutnya %@" : {
+
+    },
     "Berlaku mulai %@." : {
+
+    },
+    "Berlangganan" : {
 
     },
     "Biaya admin (opsional)" : {
@@ -306,6 +375,9 @@
     "Buat apa?" : {
 
     },
+    "Buat aturan untuk gaji, tagihan, atau langganan yang datang tiap periode." : {
+
+    },
     "Buat penyesuaian" : {
 
     },
@@ -327,10 +399,31 @@
     "Buka pengaturan" : {
 
     },
+    "bulan" : {
+
+    },
+    "Bulan" : {
+
+    },
     "Bulan berikutnya" : {
 
     },
+    "Bulan ini" : {
+
+    },
+    "Bulan ini tidak tersedia" : {
+
+    },
+    "Bulan lalu" : {
+
+    },
     "Bulan sebelumnya" : {
+
+    },
+    "Bulanan" : {
+
+    },
+    "Cara mencatat" : {
 
     },
     "Cari catatan atau sumber" : {
@@ -342,7 +435,13 @@
     "Cash" : {
 
     },
+    "Catat" : {
+
+    },
     "Catat pemasukan & pengeluaran" : {
+
+    },
+    "Catat tanpa batas dan lihat gambaran keuanganmu lebih jelas." : {
 
     },
     "Catat transaksi" : {
@@ -387,6 +486,9 @@
     "Cocokkan saldo" : {
 
     },
+    "CSV" : {
+
+    },
     "Daftar" : {
 
     },
@@ -397,6 +499,9 @@
 
     },
     "Dari mana?" : {
+
+    },
+    "Dari tanggal" : {
 
     },
     "Dasar perhitungan: %@" : {
@@ -411,7 +516,19 @@
     "Defisit" : {
 
     },
+    "Dengan Premium, transaksi rutin dicatat otomatis atau menunggu konfirmasimu." : {
+
+    },
+    "Di bulan yang lebih pendek, transaksi dicatat pada hari terakhir bulan itu." : {
+
+    },
     "Diarsipkan" : {
+
+    },
+    "Dijeda" : {
+
+    },
+    "Dijeda: Premium berakhir" : {
 
     },
     "Dikirim ulang." : {
@@ -421,6 +538,9 @@
 
     },
     "Diperbarui %@" : {
+
+    },
+    "Diperpanjang otomatis pada %@" : {
 
     },
     "Disembunyikan" : {
@@ -459,13 +579,40 @@
     "Expense" : {
 
     },
+    "Export" : {
+
+    },
+    "Export CSV dan PDF" : {
+
+    },
+    "Export CSV dan PDF tersedia untuk Premium." : {
+
+    },
+    "Export data" : {
+
+    },
+    "Export untuk Premium" : {
+
+    },
+    "File gagal dibuat atau dibagikan. Coba lagi." : {
+
+    },
+    "File memuat nominal asli walau Sembunyikan nominal aktif, dan hanya dibuat saat app tidak terkunci." : {
+
+    },
     "Filter" : {
 
     },
     "Filter transaksi" : {
 
     },
+    "Format" : {
+
+    },
     "Format email tidak valid" : {
+
+    },
+    "Frekuensi" : {
 
     },
     "Gagal masuk dengan Apple. Coba lagi." : {
@@ -508,6 +655,9 @@
     "Gunakan %@" : {
 
     },
+    "Halaman %lld dari %lld" : {
+
+    },
     "Hanya berlaku untuk transaksi baru." : {
 
     },
@@ -523,6 +673,12 @@
     "Hapus akun saya" : {
 
     },
+    "Hapus aturan" : {
+
+    },
+    "Hapus aturan ini? Transaksi yang sudah dibuat tidak ikut terhapus." : {
+
+    },
     "Hapus data & masuk" : {
 
     },
@@ -535,7 +691,16 @@
     "Hapus kategori ini permanen?" : {
 
     },
+    "hari" : {
+
+    },
+    "Hari" : {
+
+    },
     "Hari pertama minggu" : {
+
+    },
+    "Harian" : {
 
     },
     "Hitung di total" : {
@@ -559,6 +724,9 @@
     "Ini mengisi saldo awal akun Cash. Kosongkan bila belum mau mengisi." : {
 
     },
+    "Interval harus antara 1 dan 366." : {
+
+    },
     "Isi saldo asli minimal satu akun." : {
 
     },
@@ -571,13 +739,34 @@
     "Izinkan" : {
 
     },
+    "Jadikan berulang" : {
+
+    },
+    "Jadwal" : {
+
+    },
+    "Jadwal belum lengkap atau tidak valid." : {
+
+    },
     "Jam pengingat" : {
 
     },
     "Jam pengingat tidak valid" : {
 
     },
+    "Jeda" : {
+
+    },
     "Jika kamu berlangganan Premium, batalkan langganan di pengaturan App Store. Menghapus akun tidak menghentikan tagihan." : {
+
+    },
+    "Jumlah" : {
+
+    },
+    "Jumlah (Rp)" : {
+
+    },
+    "Jumlah transaksi" : {
 
     },
     "Kami mengirim kode 6 digit ke %@. Masukkan kode itu di bawah." : {
@@ -601,6 +790,12 @@
     "Keamanan" : {
 
     },
+    "Kebijakan Privasi" : {
+
+    },
+    "Kelola langganan" : {
+
+    },
     "Keluar" : {
 
     },
@@ -620,6 +815,9 @@
 
     },
     "Ketik HAPUS untuk konfirmasi" : {
+
+    },
+    "Ketuk bagian grafik untuk melihat transaksinya." : {
 
     },
     "Kirim kode" : {
@@ -643,6 +841,9 @@
     "Kode sudah kedaluwarsa. Minta kode baru." : {
 
     },
+    "Koma" : {
+
+    },
     "Kunci aplikasi dengan PIN" : {
 
     },
@@ -658,10 +859,37 @@
     "Lainnya" : {
 
     },
+    "Langganan" : {
+
+    },
+    "Langganan belum tersedia" : {
+
+    },
+    "Langganan diperpanjang otomatis dan bisa dibatalkan kapan saja di pengaturan Apple ID. Uji coba gratis hanya untuk pengguna yang memenuhi syarat." : {
+
+    },
+    "Langganan sudah berakhir menurut data terakhir dari server. Fitur Premium tetap terbuka sementara bila tidak ada koneksi." : {
+
+    },
     "Lanjut" : {
 
     },
+    "Lanjutkan" : {
+
+    },
     "Lanjutkan dengan Google" : {
+
+    },
+    "Laporan" : {
+
+    },
+    "Laporan Premium" : {
+
+    },
+    "Laporan Transaksi Money Tracker" : {
+
+    },
+    "Laporan tren, perbandingan, dan selisih tidak tercatat" : {
 
     },
     "Lebih %@" : {
@@ -674,6 +902,12 @@
 
     },
     "Lihat bagaimana needs, wants, dan savings %@." : {
+
+    },
+    "Lihat paket Premium" : {
+
+    },
+    "Lihat Premium" : {
 
     },
     "Lihat semua" : {
@@ -692,6 +926,9 @@
 
     },
     "Lupa PIN? Keluar" : {
+
+    },
+    "Masih ada proses pembelian yang berjalan." : {
 
     },
     "Masuk" : {
@@ -733,7 +970,13 @@
     "Mau diingatkan mencatat?" : {
 
     },
+    "Melanjutkan aturan butuh Premium." : {
+
+    },
     "Melewati batas paket gratis." : {
+
+    },
+    "Memproses pembelian…" : {
 
     },
     "Menentukan \"hari ini\" dan batas bulan. Transaksi yang sudah ada tidak berubah." : {
@@ -742,10 +985,19 @@
     "Menunggu dikirim" : {
 
     },
+    "Menunggu konfirmasi (%lld)" : {
+
+    },
+    "Menunggu server mengaktifkan Premium. Biasanya hanya beberapa detik." : {
+
+    },
     "Menunggu sync (%lld)" : {
 
     },
     "Menyiapkan data…" : {
+
+    },
+    "Menyiapkan file…" : {
 
     },
     "Menyinkronkan…" : {
@@ -754,7 +1006,19 @@
     "Metode masuk" : {
 
     },
+    "minggu" : {
+
+    },
     "Minggu" : {
+
+    },
+    "Mingguan" : {
+
+    },
+    "Minta konfirmasi" : {
+
+    },
+    "Money Tracker Premium" : {
 
     },
     "Mulai" : {
@@ -787,6 +1051,12 @@
     "Needs (%)" : {
 
     },
+    "Nol" : {
+
+    },
+    "Nominal" : {
+
+    },
     "Nominal tampil sebagai Rp •••••. Berlaku di semua perangkatmu." : {
 
     },
@@ -808,10 +1078,34 @@
     "OK" : {
 
     },
+    "Otomatis" : {
+
+    },
+    "Otomatis mengikuti bahasa perangkat: titik koma bila pemisah desimalnya koma." : {
+
+    },
+    "Paket belum bisa dimuat" : {
+
+    },
+    "Paket gratis" : {
+
+    },
     "Paket gratis dibatasi 4 akun aktif. Arsipkan akun lain atau tingkatkan ke Premium." : {
 
     },
     "Paket gratis dibatasi 5 kategori buatan sendiri. Hapus salah satu atau tingkatkan ke Premium." : {
+
+    },
+    "Paket gratis melihat bulan berjalan dan 2 bulan sebelumnya." : {
+
+    },
+    "Paket ini tidak bisa dibeli saat ini." : {
+
+    },
+    "Paket langganan belum tersedia saat ini. Coba lagi nanti." : {
+
+    },
+    "Paket: %@" : {
 
     },
     "Pasang PIN 6 digit (dan biometrik) supaya hanya kamu yang bisa membuka aplikasi. Boleh dilewati." : {
@@ -838,10 +1132,34 @@
     "Password saat ini" : {
 
     },
+    "PDF" : {
+
+    },
     "Pemasukan" : {
 
     },
+    "Pemasukan %@ · Pengeluaran %@" : {
+
+    },
     "Pemasukan dan pengeluaranmu akan muncul di sini." : {
+
+    },
+    "Pembayaran diterima, aktivasi belum selesai" : {
+
+    },
+    "Pembayaran menunggu persetujuan. Premium aktif setelah pembayaran selesai." : {
+
+    },
+    "Pembelian belum diaktifkan di versi aplikasi ini." : {
+
+    },
+    "Pembelian dibatalkan." : {
+
+    },
+    "Pembelian tidak diizinkan di akun App Store ini, atau App Store sedang bermasalah." : {
+
+    },
+    "Pemisah kolom CSV" : {
 
     },
     "Pengaturan" : {
@@ -851,6 +1169,9 @@
 
     },
     "Pengeluaran" : {
+
+    },
+    "Pengeluaran per kategori" : {
 
     },
     "Pengingat cocokkan saldo" : {
@@ -863,6 +1184,9 @@
 
     },
     "Penyesuaian" : {
+
+    },
+    "Per kategori" : {
 
     },
     "Perangkat belum punya biometrik yang terdaftar." : {
@@ -880,10 +1204,19 @@
     "Perbaiki" : {
 
     },
+    "Perbandingan" : {
+
+    },
     "Perbarui aplikasi" : {
 
     },
+    "Periksa lagi" : {
+
+    },
     "Peringatan budget" : {
+
+    },
+    "Periode" : {
 
     },
     "Perlu diperbarui" : {
@@ -919,6 +1252,9 @@
     "Pilih kategori" : {
 
     },
+    "Pilih tujuan untuk menyimpan atau mengirim file." : {
+
+    },
     "PIN 6 digit diminta saat aplikasi dibuka." : {
 
     },
@@ -934,6 +1270,18 @@
     "Preferensi" : {
 
     },
+    "Premium" : {
+
+    },
+    "Premium aktif" : {
+
+    },
+    "Premium bulanan" : {
+
+    },
+    "Premium tahunan" : {
+
+    },
     "Preset" : {
 
     },
@@ -941,6 +1289,9 @@
 
     },
     "Profil disimpan" : {
+
+    },
+    "Pulihkan pembelian" : {
 
     },
     "Rekening & e-wallet" : {
@@ -953,6 +1304,9 @@
 
     },
     "Rencana income tidak valid" : {
+
+    },
+    "Rentang" : {
 
     },
     "Rentang tanggal" : {
@@ -971,6 +1325,9 @@
 
     },
     "Riwayat saldo" : {
+
+    },
+    "Riwayat semua bulan" : {
 
     },
     "Rp" : {
@@ -1015,6 +1372,9 @@
     "Sampai" : {
 
     },
+    "Sampai tanggal" : {
+
+    },
     "Satu transaksi penyesuaian sebesar %@ dibuat supaya saldo tercatat sama dengan saldo asli. Penyesuaian tidak dihitung sebagai pemasukan atau pengeluaran." : {
 
     },
@@ -1024,16 +1384,25 @@
     "Savings (%)" : {
 
     },
+    "Savings %@" : {
+
+    },
     "Segera setelah ke latar belakang" : {
 
     },
     "Selesai" : {
 
     },
+    "Selisih" : {
+
+    },
     "Selisih %@" : {
 
     },
     "Selisih tidak tercatat" : {
+
+    },
+    "Selisih yang disesuaikan lewat Cocokkan saldo, bertanda. Positif berarti saldo asli lebih besar dari catatan." : {
 
     },
     "Sembunyikan" : {
@@ -1054,6 +1423,9 @@
     "Semua akun sama dengan catatanmu." : {
 
     },
+    "Semua data" : {
+
+    },
     "Semua data di perangkat ini akan dihapus. Datamu tetap aman di server dan kembali setelah kamu masuk lagi." : {
 
     },
@@ -1066,10 +1438,19 @@
     "Senin" : {
 
     },
+    "Seri" : {
+
+    },
+    "Server belum mengonfirmasi Premium. Ini bisa terjadi bila koneksi lambat. Periksa lagi sebentar lagi; kamu tidak perlu membayar ulang." : {
+
+    },
     "Server menolak perubahan ini. Perbaiki lalu kirim ulang, atau buang perubahan dan ambil versi dari server." : {
 
     },
     "Server sedang bermasalah. Coba lagi nanti." : {
+
+    },
+    "Sesi berakhir. Masuk lagi untuk melanjutkan." : {
 
     },
     "Sesi tidak valid. Silakan masuk lagi." : {
@@ -1087,7 +1468,34 @@
     "Setelah 5 menit" : {
 
     },
+    "Setiap" : {
+
+    },
+    "Setiap %@" : {
+
+    },
+    "Setiap %lld %@" : {
+
+    },
+    "Setiap %lld bulan pada tanggal %lld" : {
+
+    },
+    "Setiap %lld hari" : {
+
+    },
+    "Setiap %lld minggu pada hari %@" : {
+
+    },
+    "Setiap %lld tahun pada %lld %@" : {
+
+    },
+    "Setiap hari" : {
+
+    },
     "Setiap hari pukul %@; dilewati bila hari itu sudah ada transaksi." : {
+
+    },
+    "Setiap tanggal %lld" : {
 
     },
     "Simpan" : {
@@ -1114,10 +1522,16 @@
     "Sudah punya akun? Masuk" : {
 
     },
+    "Sumber income" : {
+
+    },
     "Sumber maksimal 100 karakter" : {
 
     },
     "Surplus" : {
+
+    },
+    "Syarat & Ketentuan" : {
 
     },
     "Sync sekarang" : {
@@ -1126,7 +1540,19 @@
     "Tabungan" : {
 
     },
+    "tahun" : {
+
+    },
+    "Tahun ini" : {
+
+    },
+    "Tahunan" : {
+
+    },
     "Tambah akun" : {
+
+    },
+    "Tambah aturan" : {
 
     },
     "Tambah kategori" : {
@@ -1150,6 +1576,9 @@
     "Tanggal" : {
 
     },
+    "Tanggal awal tidak boleh setelah tanggal akhir." : {
+
+    },
     "Tanggal lebih awal dari tanggal saldo awal akun" : {
 
     },
@@ -1162,6 +1591,9 @@
     "Tanggal saldo lebih awal dari tanggal saldo awal akun" : {
 
     },
+    "Tanggal selesai tidak boleh sebelum tanggal mulai." : {
+
+    },
     "Tanggal terlalu jauh di depan" : {
 
     },
@@ -1169,6 +1601,9 @@
 
     },
     "Tanpa kategori" : {
+
+    },
+    "Tanpa sumber" : {
 
     },
     "Tema" : {
@@ -1192,7 +1627,13 @@
     "Tercatat: %@" : {
 
     },
+    "Terima kasih! Semua fitur Premium sudah terbuka." : {
+
+    },
     "Terjadi kesalahan" : {
+
+    },
+    "Terjadi kesalahan pada pembelian. Coba lagi." : {
 
     },
     "Terjadi kesalahan. Coba lagi." : {
@@ -1228,13 +1669,28 @@
     "Tidak ada hasil" : {
 
     },
+    "Tidak ada jadwal berikutnya" : {
+
+    },
     "Tidak ada koneksi internet. Periksa jaringanmu lalu coba lagi." : {
 
     },
     "Tidak ada koneksi." : {
 
     },
+    "Tidak ada pembelian aktif yang bisa dipulihkan untuk akun ini." : {
+
+    },
     "Tidak ada selisih untuk disesuaikan" : {
+
+    },
+    "Tidak ada transaksi pada periode ini." : {
+
+    },
+    "Tidak bisa membuka pengaturan langganan." : {
+
+    },
+    "Tidak bisa terhubung ke App Store. Periksa koneksi lalu coba lagi." : {
 
     },
     "Tidak dihitung di total" : {
@@ -1249,6 +1705,9 @@
     "Timezone tidak dikenal." : {
 
     },
+    "Tingkatkan ke Premium untuk akun dan kategori tanpa batas, riwayat semua bulan, laporan tren, transaksi berulang, dan export." : {
+
+    },
     "Tinjau lagi" : {
 
     },
@@ -1258,7 +1717,13 @@
     "Tipe akun" : {
 
     },
+    "Titik koma" : {
+
+    },
     "Total" : {
+
+    },
+    "Total %@" : {
 
     },
     "Total %lld%%" : {
@@ -1282,10 +1747,34 @@
     "Transaksi berulang" : {
 
     },
+    "Transaksi berulang hanya untuk Premium." : {
+
+    },
+    "Transaksi berulang menunggu konfirmasi" : {
+
+    },
+    "Transaksi berulang untuk Premium" : {
+
+    },
+    "Transaksi berulang, otomatis atau dengan konfirmasi" : {
+
+    },
+    "Transaksi dicatat" : {
+
+    },
     "Transaksi diduplikat dengan tanggal hari ini" : {
 
     },
     "Transaksi dihapus" : {
+
+    },
+    "Transaksi dilewati" : {
+
+    },
+    "Transaksi langsung dicatat pada tanggalnya." : {
+
+    },
+    "Transaksi menunggu kamu catat atau lewati di tab Transaksi." : {
 
     },
     "Transaksi terakhir" : {
@@ -1303,6 +1792,12 @@
     "Transfer sisa saldo" : {
 
     },
+    "Tren" : {
+
+    },
+    "Tren, perbandingan, dan selisih tidak tercatat tersedia untuk Premium." : {
+
+    },
     "Tunai" : {
 
     },
@@ -1318,6 +1813,9 @@
     "Ubah akun" : {
 
     },
+    "Ubah aturan" : {
+
+    },
     "Ubah kategori" : {
 
     },
@@ -1328,6 +1826,9 @@
 
     },
     "Ubah transaksi" : {
+
+    },
+    "Uji coba gratis" : {
 
     },
     "Ulangi PIN" : {

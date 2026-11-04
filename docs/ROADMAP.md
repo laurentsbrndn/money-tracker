@@ -124,7 +124,13 @@ Kerjakan berurutan: fase demi fase, dan di dalam fase: **Kontrak → Backend →
 - [x] Export CSV/PDF (`pdf` dan `share_plus` disetujui; CSV ditulis manual)
 
 ### iOS
-- [ ] Semua item Flutter Fase 3 dengan padanan iOS
+- [x] Semua item Flutter Fase 3 dengan padanan iOS
+    - [x] RevenueCat (`purchases-ios` 5.102.0, versi dikunci tepat): `logIn`/`logOut`, paywall, layar langganan, pulihkan pembelian, polling entitlement 30 dtk, tautan syarat/privasi/kelola langganan
+    - [x] `PremiumStatus` dari entitlement server + toleransi offline 3 hari + UX batas paket (`plan_limit`, kirim ulang otomatis saat premium)
+    - [x] Transaksi berulang: kelola aturan, generator lokal (UUIDv5), konfirmasi pending
+    - [x] Laporan lokal (Swift Charts): per kategori, sumber income, tren, perbandingan, selisih tidak tercatat
+    - [x] Export CSV/PDF (aturan `FRONTEND_FLUTTER.md` §4.7)
+    - [x] `openingTotal` dashboard dari seluruh transaksi (sudah benar sejak Fase 2; diverifikasi terhadap fixture 01)
 
 ## Fase 4 — Pengembangan (belum dijadwalkan)
 

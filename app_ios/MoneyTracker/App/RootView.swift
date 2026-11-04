@@ -41,6 +41,13 @@ struct RootView: View {
         .onChange(of: scenePhase, initial: true) { _, phase in
             container.scheduler.scenePhaseChanged(phase)
             container.lock.scenePhaseChanged(phase)
+            if phase == .active {
+                Task {
+                    // The 3-day offline tolerance can run out without a database change.
+                    await container.premium.refresh()
+                    container.recurringCoordinator.requestRun()
+                }
+            }
             if phase == .active { container.notifications.requestRefresh() }
             // Retries when the window could not be made yet at launch.
             container.shield.setVisible(shieldVisible, container: container)

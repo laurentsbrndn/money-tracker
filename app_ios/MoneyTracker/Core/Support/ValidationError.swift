@@ -15,6 +15,7 @@ enum ValidationError: Error, LocalizedError {
     case adjustmentZero, snapshotDateInvalid
     case goalPercentRange, goalTotal, plannedIncomeRange
     case settingsMissing, timezoneInvalid, reminderTimeInvalid
+    case recurringIntervalRange, recurringEndBeforeStart, recurringScheduleInvalid
 
     var errorDescription: String? {
         switch self {
@@ -45,6 +46,10 @@ enum ValidationError: Error, LocalizedError {
             String(localized: "Pengaturan belum tersedia. Tunggu sinkronisasi selesai.")
         case .timezoneInvalid: String(localized: "Timezone tidak dikenal.")
         case .reminderTimeInvalid: String(localized: "Jam pengingat tidak valid")
+        case .recurringIntervalRange: String(localized: "Interval harus antara 1 dan 366.")
+        case .recurringEndBeforeStart:
+            String(localized: "Tanggal selesai tidak boleh sebelum tanggal mulai.")
+        case .recurringScheduleInvalid: String(localized: "Jadwal belum lengkap atau tidak valid.")
         }
     }
 }

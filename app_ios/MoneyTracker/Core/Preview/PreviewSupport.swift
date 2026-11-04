@@ -15,6 +15,8 @@
         case needsLogin
         case attention
         case dark
+        /// The populated data with an active Premium subscription (reports, export, recurring).
+        case premium
 
         var id: String { rawValue }
 
@@ -29,6 +31,7 @@
             case .needsLogin: "Perlu login"
             case .attention: "Perlu perhatian"
             case .dark: "Mode gelap"
+            case .premium: "Premium aktif"
             }
         }
 
@@ -82,7 +85,8 @@
                 fatalError("Cannot build the preview database: \(error)")
             }
             let config = AppConfig(
-                apiBaseURL: URL(fileURLWithPath: "/"), revenueCatKey: "", googleClientID: "",
+                apiBaseURL: URL(fileURLWithPath: "/"), revenueCatKey: "", termsURL: nil, privacyURL: nil,
+                googleClientID: "",
                 appVersion: "preview", bundleID: "com.brandon.MoneyTracker.preview")
             let container = AppContainer(
                 preview: database, config: config, router: AppRouter(),

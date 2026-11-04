@@ -15,7 +15,7 @@ App iOS native dengan SwiftUI. Perilaku harus setara dengan app Android (`FRONTE
 | Client API | `apple/swift-openapi-generator` (build plugin) + `swift-openapi-runtime` + `swift-openapi-urlsession` |
 | Secure storage | Keychain via wrapper sendiri (`Security` framework), tanpa library |
 | Login | `AuthenticationServices` (Sign in with Apple), `google/GoogleSignIn-iOS` |
-| Subscription | `RevenueCat/purchases-ios` |
+| Subscription | `RevenueCat/purchases-ios`, versi dikunci tepat (`exactVersion` di `project.yml`) |
 | Grafik | Swift Charts |
 | Background | `BackgroundTasks` (`BGAppRefreshTask`) |
 | Notifikasi | `UserNotifications` |
@@ -96,8 +96,15 @@ app_ios/
     │   │   ├── Budget.swift
     │   │   └── Recurrence.swift
     │   ├── Billing/
-    │   │   ├── BillingService.swift
-    │   │   └── EntitlementStore.swift
+    │   │   ├── BillingService.swift        # SATU-SATUNYA file yang mengimpor RevenueCat (actor)
+    │   │   ├── BillingProviding.swift      # protokol toko; preview memakai PreviewBilling
+    │   │   ├── BillingCoordinator.swift    # logIn/logOut mengikuti sesi; kirim ulang plan_limit saat premium
+    │   │   ├── PremiumStatus.swift         # @Observable: premium untuk UI, hanya dari entitlement server
+    │   │   ├── EntitlementStore.swift      # pembacaan sekali (repository)
+    │   │   ├── EntitlementInfo.swift       # murni Foundation
+    │   │   ├── EntitlementPolling.swift    # murni Foundation: polling 30 dtk
+    │   │   ├── EntitlementRepository.swift # GET /v1/me/entitlements -> sync_state.entitlement
+    │   │   ├── BillingFailure.swift, PaywallPackage.swift, PlanLimits.swift, PlanLimitError.swift
     │   ├── Notifications/
     │   │   ├── NotificationService.swift      # UNUserNotificationCenter: izin, jadwal, banner, delegate
     │   │   ├── NotificationScheduler.swift    # actor: membangun jadwal dari database + peringatan budget
@@ -130,6 +137,7 @@ app_ios/
     │   ├── Budget/
     │   ├── Categories/
     │   ├── Reports/
+    │   ├── Export/
     │   ├── Security/
     │   ├── Recurring/
     │   ├── Subscription/
@@ -233,6 +241,7 @@ Perbedaan iOS:
 - Nilai rahasia di `Config/Secrets.xcconfig` (tidak masuk repo), di-include oleh `Debug.xcconfig`/`Release.xcconfig`, lalu diteruskan ke `Info.plist` dan dibaca `AppConfig`.
 - Bundle ID dan Team ID diisi user di `project.yml`.
 - Capability: Sign in with Apple, Background Modes (Background fetch), In-App Purchase.
+- `Config/MoneyTracker.storekit`: StoreKit Configuration untuk menguji pembelian lokal di Xcode (hanya scheme Run; produk `premium_monthly` dan `premium_yearly` dengan trial 7 hari, tanpa secret). RevenueCat harus menawarkan product ID yang sama.
 - `GOOGLE_IOS_REVERSED_CLIENT_ID` (`com.googleusercontent.apps.<angka>-<hash>`) didaftarkan sebagai URL scheme di `Info.plist` supaya Google Sign-In bisa kembali ke app; `GIDClientID` di `Info.plist` memakai `GOOGLE_IOS_CLIENT_ID`. ID token Google ber-`aud` iOS client ID, yang sudah termasuk di `GOOGLE_CLIENT_IDS` server.
 - Build tanpa Simulator yang bisa dijalankan: `xcodebuild -scheme MoneyTracker -destination 'generic/platform=iOS Simulator' -skipPackagePluginValidation -skipMacroValidation CODE_SIGNING_ALLOWED=NO build` (plugin OpenAPI generator butuh `-skipPackagePluginValidation`).
 - `API_BASE_URL` lokal untuk simulator: `http://localhost:8080` (origin saja; path API sudah diawali `/v1`) (tambahkan pengecualian ATS hanya di konfigurasi Debug).
@@ -247,7 +256,7 @@ Layar bisa dilihat dan diubah di Canvas Xcode tanpa menjalankan app dan tanpa se
 - **`Core/Preview/`**: `PreviewSupport.swift` (`PreviewVariant`, `AppContainer.preview(_:)`, `PreviewHost`, `PreviewStack`) dan `PreviewSampleData.swift` (data contoh).
 - **Container preview** memakai `DatabaseQueue` in-memory dengan migrasi yang sama, transport API yang selalu gagal, token store di memori (tanpa Keychain), status konektivitas tetap, dan tidak mendaftarkan BGTask. Tidak ada panggilan jaringan.
 - **Data contoh varian "Berisi"** sama dengan `contracts/fixtures/business_rules/01_monthly_basic.json` (hari ini dipatok ke 2026-11-30), sehingga Dashboard menampilkan pemasukan 8.000.000, pengeluaran 1.852.500, dan surplus 6.147.500. Angka tetap dihitung `DomainRules` dari database contoh.
-- **Varian:** Kosong, Berisi, Nominal disembunyikan, Menyinkronkan, Menunggu sync, Offline, Perlu login, Perlu perhatian, Mode gelap.
+- **Varian:** Kosong, Berisi, Nominal disembunyikan, Menyinkronkan, Menunggu sync, Offline, Perlu login, Perlu perhatian, Mode gelap, Premium aktif.
 - Celah injeksi di kode produksi (semuanya `#if DEBUG`): `AppDatabase.init(writer:)`, `AppContainer.init(preview:...)`, `SessionStore.applyPreview`, `KeychainStore.memory`, `ConnectivityMonitor.init(previewOnline:)`, `UserClock.pinTodayForPreviews`. `AppDatabase.pool` bertipe `any DatabaseWriter`; jalur produksi tetap `DatabasePool` dan `wipeAndReopen` tetap bekerja.
 
 ## 7. Target perangkat & performa
@@ -303,3 +312,23 @@ Perilaku identik dengan Flutter; yang berbeda karena platform:
 | Hari pertama minggu | Diterapkan ke `DatePicker` lewat `\.calendar` dari `PreferencesStore` |
 | Wizard | 6 langkah: Cash, Akun, Goal, Kategori, Notifikasi, Kunci |
 | Zona waktu trigger notifikasi | Waktu tembak dihitung sebagai `Date` absolut di timezone pengguna (`UserClock`), lalu `UNCalendarNotificationTrigger` non-repeating dibuat dari komponen kalender timezone perangkat (`TimeZone.current`); tidak memakai `DateComponents.timeZone`, dan jadwal dibangun ulang saat `NSSystemTimeZoneDidChange` dan significant time change |
+
+## 11. Catatan implementasi Fase 3 (keputusan dan perbedaan dari Flutter)
+
+Perilaku identik dengan Flutter (`FRONTEND_FLUTTER.md` §4.4, §4.7, §9); yang berbeda karena platform atau struktur Swift:
+
+| Hal | Keputusan iOS |
+| --- | --- |
+| Library | Satu package baru: `RevenueCat/purchases-ios` **5.102.0**, `exactVersion` di `project.yml`, produk `RevenueCat`. Hanya dipakai dari `Core/Billing/BillingService.swift`; sisanya lewat protokol `BillingProviding`. Grafik Swift Charts, `StoreKit` (`AppStore.showManageSubscriptions`), `UIGraphicsPDFRenderer`, dan `UIActivityViewController` adalah framework sistem |
+| Kunci dan tautan | `REVENUECAT_IOS_KEY` dari `Secrets.xcconfig`. Kunci kosong: SDK tidak dikonfigurasi, paywall menampilkan "Langganan belum tersedia". `TERMS_URL` dan `PRIVACY_URL` (xcconfig, ditulis `https:/$()/host/...`) menjadi tautan di paywall; kosong menyembunyikannya |
+| Premium untuk UI | `PremiumStatus` (`@Observable`) membaca `sync_state.entitlement` (pull `meta.entitlement` atau `GET /v1/me/entitlements`) dengan toleransi 3 hari offline (`PlanLimits.isPremium`); `expires_at` null = non-premium. `customerInfo` SDK tidak pernah dibaca. Dibaca ulang saat `scenePhase` aktif karena toleransi bisa habis tanpa perubahan database |
+| Setelah beli/restore | `SubscriptionViewModel` (dimiliki `AppContainer`, jadi menunggu server tidak putus saat layar ditutup): status "Memproses pembelian…", polling `GET /v1/me/entitlements` selama 30 dtk dengan jeda 1, 2, 3, 4, 5 dtk (restore 15 dtk), lalu "Periksa lagi". 401/403 menghentikan polling ("Sesi berakhir") |
+| logIn/logOut | `BillingCoordinator`: SDK dikonfigurasi sekali dengan user id server (bila ada sesi), `SessionStore.onUserChanged` memicu `logIn`/`logOut`; `logOut` pada pelanggan anonim dilewati. Sebelum beli/restore user toko dipastikan sama dengan user server |
+| Kirim ulang plan_limit | `PremiumStatus.onBecamePremium` → `BillingCoordinator` mengirim ulang baris `failed` berkode `plan_limit`/`premium_required` lewat `FailedChangesService.retry`. Form akun/kategori/aturan menampilkan tombol "Lihat Premium" bila ditolak karena batas |
+| Kelola langganan | `AppStore.showManageSubscriptions(in:)`; tombol muncul bila `store` kosong atau `app_store` |
+| Transaksi berulang | Padanan `features/recurring`: `RecurringRepository`, `RecurringGenerator` (UUIDv5 `rule_id|YYYY-MM-DD`, namespace `151a0b48-...`; baris yang sudah ada dilewati), `RecurringCoordinator` (jalan saat gate `ready`, `scenePhase` aktif, aturan berubah/pull, premium menyala; debounce 2 dtk). Daftar riwayat tidak memuat `pending_confirmation`; bagian "Menunggu konfirmasi" ada di atas tab Transaksi. Menyimpan form transaksi pending mencatatnya. Notifikasi "menunggu konfirmasi" (identifier `mt.recurring.confirm`) membuka tab Transaksi. "Jadikan berulang" di form transaksi menutup sheet lalu membuka form aturan di tab Lainnya |
+| Laporan | `DomainRules/Report.swift` adalah port `report.dart`, dihitung lokal dari GRDB; `/v1/reports/trend` tidak dipakai. Swift Charts: donat (`SectorMark`) dan batang berkelompok (`BarMark`); dengan "Sembunyikan nominal" sumbu nilai tanpa label, tooltip dan legenda hanya persentase. Ketuk baris legenda/ringkasan membuka tab Transaksi dengan filter yang sesuai |
+| Export | Aturan persis `FRONTEND_FLUTTER.md` §4.7 (kolom, periode, CSV, pemisah, awalan `'`, paginasi 26/36 baris, nama file). Perbedaan: PDF memakai `UIGraphicsPDFRenderer` dengan font sistem (karakter di luar Latin-1, mis. emoji, tetap tampil, tidak jadi `?`) dan ditulis langsung ke file dari thread latar; berbagi lewat `UIActivityViewController` yang melaporkan hasilnya, sehingga file sementara dihapus segera setelah sheet ditutup (juga saat app mulai dan sebelum export berikutnya) |
+| Pemisah CSV otomatis | `Locale.current.decimalSeparator`: `,` menghasilkan `;`, selain itu `,` (satu fungsi, `resolveCsvDelimiter`) |
+| Teks | String Catalog; kunci adalah teks Indonesia. Tanggal memakai `CivilDate.shortText/longText` (locale `id_ID`), nominal `MoneyFormatter` |
+| Preview | Varian baru **Premium aktif** (data berisi + entitlement + aturan berulang); `PreviewBilling` menggantikan SDK; galeri `ContentView` punya bagian Langganan & Premium, Transaksi berulang, Laporan & Export |

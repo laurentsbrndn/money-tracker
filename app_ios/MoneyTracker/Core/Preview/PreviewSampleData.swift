@@ -40,6 +40,13 @@
                 effectiveMonth: date("2026-10-01"), needsPct: 50, wantsPct: 30, savingsPct: 20,
                 plannedIncome: nil
             ).insert(db)
+            try seedRecurringRules(db, base: base, premium: variant == .premium)
+            if variant == .premium {
+                try db.setSyncState(
+                    SyncStateKey.entitlement,
+                    #"{"premium":true,"expires_at":"2027-11-30T00:00:00.000Z","will_renew":true,"product_id":"premium_yearly","store":"app_store"}"#
+                )
+            }
             switch variant {
             case .attention: try markFailed(db)
             case .pending: try queueOutbox(db)
@@ -200,6 +207,37 @@
                 snapshot(
                     "s-bca-1", "acc-bca", "2026-11-28", 16_697_500, "2026-11-28T12:00:00.000Z"),
             ]
+        }
+
+        // MARK: - Recurring rules
+
+        /// A monthly salary that records itself, and a weekly one that asks for confirmation;
+        /// the second is paused (by the server when the plan is not Premium).
+        private static func seedRecurringRules(_ db: Database, base: Date, premium: Bool) throws {
+            func rule(
+                _ id: String, type: String, amount: Int64, account: String, category: String?,
+                allocation: String?, frequency: String, dayOfWeek: Int?, dayOfMonth: Int?,
+                mode: String, paused: Bool, note: String
+            ) -> RecurringRuleRecord {
+                RecurringRuleRecord(
+                    id: id, createdAt: base, updatedAt: base, deletedAt: nil, serverVersion: 1,
+                    syncStatus: "synced", syncError: nil, type: type, amount: amount,
+                    accountId: account, toAccountId: nil, categoryId: category,
+                    allocation: allocation, source: nil, note: note, frequency: frequency,
+                    intervalCount: 1, dayOfWeek: dayOfWeek, dayOfMonth: dayOfMonth,
+                    monthOfYear: nil, startDate: date("2026-10-01"), endDate: nil, mode: mode,
+                    isPaused: paused, lastGeneratedDate: date("2026-11-25"))
+            }
+            try rule(
+                "rule-salary", type: "income", amount: 8_000_000, account: "acc-bca",
+                category: "cat-salary", allocation: nil, frequency: "monthly", dayOfWeek: nil,
+                dayOfMonth: 25, mode: "auto", paused: false, note: "Gaji"
+            ).insert(db)
+            try rule(
+                "rule-gym", type: "expense", amount: 150_000, account: "acc-bca",
+                category: "cat-sub", allocation: "wants", frequency: "weekly", dayOfWeek: 3,
+                dayOfMonth: nil, mode: "confirm", paused: !premium, note: "Gym"
+            ).insert(db)
         }
 
         // MARK: - Sync state variants

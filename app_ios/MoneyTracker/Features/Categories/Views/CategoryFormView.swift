@@ -55,9 +55,7 @@ struct CategoryFormView: View {
                     }
                 }
             }
-            if let message = model.errorMessage {
-                Section { Text(message).foregroundStyle(.red) }
-            }
+            FormErrorSection(message: model.errorMessage, planLimit: model.planLimit)
         }
         .navigationTitle(model.isEditing ? "Ubah kategori" : "Tambah kategori")
         .navigationBarTitleDisplayMode(.inline)

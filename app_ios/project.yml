@@ -38,6 +38,27 @@ packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     majorVersion: 9.2.0
+  # Pinned exactly (Fase 3): the only package added for billing; used from Core/Billing only.
+  purchases-ios:
+    url: https://github.com/RevenueCat/purchases-ios
+    exactVersion: 5.102.0
+
+schemes:
+  MoneyTracker:
+    build:
+      targets:
+        MoneyTracker: all
+    run:
+      config: Debug
+      # Local purchase testing in Xcode (Run only): premium_monthly and premium_yearly with a
+      # 7-day trial. RevenueCat must offer the same product IDs. No secrets in the file.
+      storeKitConfiguration: Config/MoneyTracker.storekit
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
 
 targets:
   MoneyTracker:
@@ -60,6 +81,8 @@ targets:
         product: HTTPTypes
       - package: GoogleSignIn
         product: GoogleSignIn
+      - package: purchases-ios
+        product: RevenueCat
     settings:
       base:
         INFOPLIST_FILE: MoneyTracker/Resources/Info.plist

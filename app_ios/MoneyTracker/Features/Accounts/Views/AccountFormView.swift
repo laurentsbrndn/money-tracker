@@ -36,9 +36,7 @@ struct AccountFormView: View {
                     "Saldo ini menjadi saldo awal akun; transaksi sebelum tanggal ini tidak bisa dicatat."
                 )
             }
-            if let message = model.errorMessage {
-                Section { Text(message).foregroundStyle(.red) }
-            }
+            FormErrorSection(message: model.errorMessage, planLimit: model.planLimit)
         }
         .navigationTitle(model.isEditing ? "Ubah akun" : "Tambah akun")
         .navigationBarTitleDisplayMode(.inline)

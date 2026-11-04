@@ -2,7 +2,7 @@ import Foundation
 
 /// A free-plan limit was reached (SYNC_PROTOCOL §8.3 `plan_limit`, checked locally first).
 struct PlanLimitError: Error, LocalizedError {
-    enum Kind { case accounts, categories }
+    enum Kind { case accounts, categories, recurring }
 
     let kind: Kind
 
@@ -18,6 +18,8 @@ struct PlanLimitError: Error, LocalizedError {
                 localized:
                     "Paket gratis dibatasi 5 kategori buatan sendiri. Hapus salah satu atau tingkatkan ke Premium."
             )
+        case .recurring:
+            String(localized: "Transaksi berulang hanya untuk Premium.")
         }
     }
 }

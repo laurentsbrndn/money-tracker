@@ -2,6 +2,7 @@ import SwiftUI
 
 /// The entry form as a sheet with a large numpad (FRONTEND_IOS §4.6).
 struct TransactionFormView: View {
+    @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
     @State private var model: TransactionFormViewModel
     @State private var keyboardVisible = false
@@ -58,6 +59,15 @@ struct TransactionFormView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Batal") { dismiss() } }
+                if !model.isEdit {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            makeRecurring()
+                        } label: {
+                            Label("Jadikan berulang", systemImage: "repeat")
+                        }
+                    }
+                }
             }
             .task { await model.prepare() }
             .onChange(of: model.saved) { _, saved in if saved { dismiss() } }
@@ -72,6 +82,19 @@ struct TransactionFormView: View {
             ) {
                 _ in keyboardVisible = false
             }
+        }
+    }
+
+    /// Recurring rules are a Premium feature, so a free user is taken to the paywall instead.
+    private func makeRecurring() {
+        let router = container.router
+        let premium = container.premium.isPremium
+        let prefill = model.recurringPrefill()
+        dismiss()
+        if premium {
+            router.openRecurringForm(prefill: prefill)
+        } else {
+            router.push(.paywall(restore: false))
         }
     }
 

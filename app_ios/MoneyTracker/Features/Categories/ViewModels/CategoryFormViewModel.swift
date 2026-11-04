@@ -14,6 +14,8 @@ final class CategoryFormViewModel {
     private(set) var busy = false
     private(set) var saved = false
     var errorMessage: String?
+    /// The save was refused by the free-plan limit: the form offers the paywall.
+    private(set) var planLimit = false
 
     private var existing: CategoryRecord?
     private let repository: CategoriesRepository
@@ -43,6 +45,7 @@ final class CategoryFormViewModel {
     func save() async {
         busy = true
         errorMessage = nil
+        planLimit = false
         defer { busy = false }
         let chosen = type == "expense" ? allocation : nil
         do {
@@ -55,6 +58,7 @@ final class CategoryFormViewModel {
             }
             saved = true
         } catch {
+            planLimit = error is PlanLimitError
             errorMessage = ErrorMessages.describe(error)
         }
     }

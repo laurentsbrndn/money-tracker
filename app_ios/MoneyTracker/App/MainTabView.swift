@@ -60,6 +60,13 @@ extension View {
             case .security: SecurityView(container: container)
             case .securityPin(let mode): PinSetupView(container: container, mode: mode)
             case .notifications: NotificationSettingsView(container: container)
+            case .subscription: SubscriptionView()
+            case .paywall(let restore): PaywallView(restoreOnOpen: restore)
+            case .recurring: RecurringView(container: container)
+            case .recurringForm(let id, let prefill):
+                RecurringFormView(container: container, ruleId: id, prefill: prefill)
+            case .reports: ReportsView(container: container)
+            case .export: ExportView(container: container)
             }
         }
     }

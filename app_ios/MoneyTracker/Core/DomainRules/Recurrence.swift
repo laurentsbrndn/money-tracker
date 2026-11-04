@@ -54,6 +54,22 @@ extension DomainRules {
         return due
     }
 
+    /// The first date strictly after `after` on which the rule falls, or nil when it has ended
+    /// (or can never fall again). Shown as "Berikutnya".
+    static func nextOccurrence(rule: RecurrenceRule, after: CivilDate) -> CivilDate? {
+        // The window covers one full step of the rule, with room for a clamped month end, so a
+        // rule that still has a next date always shows it.
+        let window: Int
+        switch rule.frequency {
+        case .daily: window = rule.intervalCount + 1
+        case .weekly: window = rule.intervalCount * 7 + 7
+        case .monthly: window = rule.intervalCount * 31 + 31
+        case .yearly: window = rule.intervalCount * 366 + 366
+        }
+        return occurrences(rule: rule, lastGenerated: after, today: after.adding(days: window))
+            .first
+    }
+
     /// The n-th candidate date of the rule (n starts at 0). Candidates can fall before
     /// `startDate` (the first week, month, or year); callers skip those.
     private static func nthOccurrence(rule: RecurrenceRule, n: Int) -> CivilDate? {

@@ -63,9 +63,29 @@ struct Transaction: Sendable {
     var accountID: String
     var toAccountID: String?
     var allocation: Allocation?
-    /// Only expenses have a category.
+    /// Expenses and incomes have a category.
     var categoryID: String?
+    /// "Dari mana" of an income; the per-source report groups by it.
+    var source: String?
     var isDeleted: Bool
+
+    init(
+        id: String, type: TransactionType, status: TransactionStatus, date: CivilDate,
+        amount: Int64, accountID: String, toAccountID: String?, allocation: Allocation?,
+        categoryID: String?, source: String? = nil, isDeleted: Bool
+    ) {
+        self.id = id
+        self.type = type
+        self.status = status
+        self.date = date
+        self.amount = amount
+        self.accountID = accountID
+        self.toAccountID = toAccountID
+        self.allocation = allocation
+        self.categoryID = categoryID
+        self.source = source
+        self.isDeleted = isDeleted
+    }
 }
 
 /// The real balance a user observed on a date.

@@ -20,6 +20,23 @@ enum MoneyFormatter {
         return "\(sign)\(tenths / 10),\(tenths % 10)%"
     }
 
+    /// A short amount for chart axes: 1500000 → `1,5 jt`, 2300000000 → `2,3 M`, 4500 → `4,5 rb`
+    /// (integer math, one decimal, no currency symbol).
+    static func compact(_ amount: Int64) -> String {
+        let abs = amount.magnitude
+        let sign = amount < 0 ? "-" : ""
+        func scaled(_ unit: UInt64, _ suffix: String) -> String {
+            let tenths = abs * 10 / unit
+            let whole = tenths / 10
+            let fraction = tenths % 10
+            return "\(sign)\(whole)\(fraction == 0 ? "" : ",\(fraction)") \(suffix)"
+        }
+        if abs >= 1_000_000_000 { return scaled(1_000_000_000, "M") }
+        if abs >= 1_000_000 { return scaled(1_000_000, "jt") }
+        if abs >= 1000 { return scaled(1000, "rb") }
+        return "\(sign)\(abs)"
+    }
+
     /// `1234567` → `1.234.567` (no currency symbol).
     static func grouped(_ value: UInt64) -> String {
         let digits = Array(String(value))
